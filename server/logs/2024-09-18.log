@@ -1,0 +1,152 @@
+2024-09-18T06:13:14.272Z [my-app] info: Sending shareable link email
+2024-09-18T06:13:17.477Z [my-app] info: Shareable link email sent successfully
+2024-09-18T07:19:54.434Z [my-app] info: Sending shareable link email
+2024-09-18T07:19:57.215Z [my-app] info: Shareable link email sent successfully
+2024-09-18T07:33:26.067Z [my-app] info: Sending shareable link email
+2024-09-18T07:33:29.127Z [my-app] info: Shareable link email sent successfully
+2024-09-18T07:34:40.982Z [my-app] info: Sending shareable link email
+2024-09-18T07:34:44.214Z [my-app] info: Shareable link email sent successfully
+2024-09-18T07:55:13.944Z [my-app] info: Sending shareable link email
+2024-09-18T07:55:18.062Z [my-app] info: Shareable link email sent successfully
+2024-09-18T07:57:28.681Z [my-app] info: Sending shareable link email
+2024-09-18T07:57:32.537Z [my-app] info: Shareable link email sent successfully
+2024-09-18T08:02:51.318Z [my-app] info: Sending shareable link email
+2024-09-18T08:02:54.424Z [my-app] info: Shareable link email sent successfully
+2024-09-18T08:03:09.915Z [my-app] info: Sending shareable link email
+2024-09-18T08:03:12.692Z [my-app] info: Shareable link email sent successfully
+2024-09-18T08:22:37.806Z [my-app] info: Sending shareable link email
+2024-09-18T08:22:42.026Z [my-app] info: Shareable link email sent successfully
+2024-09-18T08:41:41.548Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:41:41.599Z [file-manager-app-logs] error: An error occurred while downloading the folder
+2024-09-18T08:42:40.647Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:42:40.690Z [file-manager-app-logs] error: An error occurred while downloading the folder
+2024-09-18T08:43:25.091Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:43:25.135Z [file-manager-app-logs] error: An error occurred while downloading the folder
+2024-09-18T08:43:45.520Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:43:45.554Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:43:45.555Z [file-manager-app-logs] error: Folder does not exist on the server
+2024-09-18T08:44:20.306Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:44:20.343Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:44:20.344Z [file-manager-app-logs] error: Folder does not exist on the server
+2024-09-18T08:44:55.295Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:44:55.334Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:44:55.335Z [file-manager-app-logs] error: Folder does not exist on the server
+2024-09-18T08:45:55.663Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:45:55.720Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:45:55.720Z [file-manager-app-logs] error: Folder does not exist on the server
+2024-09-18T08:46:55.759Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:46:55.795Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:46:55.803Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T08:46:55.805Z [file-manager-app-logs] info: Zipped 22 total bytes.
+2024-09-18T08:46:55.807Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T08:47:43.987Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:47:43.988Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:47:43.991Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T08:47:43.992Z [file-manager-app-logs] info: Zipped 22 total bytes.
+2024-09-18T08:47:43.994Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T08:52:15.144Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:52:15.149Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:52:15.163Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T08:52:15.165Z [file-manager-app-logs] info: Zipped 22 total bytes.
+2024-09-18T08:52:15.167Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T08:52:26.576Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:52:26.578Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:52:26.582Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T08:52:26.583Z [file-manager-app-logs] info: Zipped 22 total bytes.
+2024-09-18T08:52:26.585Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T08:55:33.224Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:55:33.226Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:55:33.233Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T08:55:33.234Z [file-manager-app-logs] info: Zipped 22 total bytes.
+2024-09-18T08:55:33.235Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T08:56:03.105Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T08:56:03.107Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T08:56:03.110Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T08:56:03.111Z [file-manager-app-logs] info: Zipped 22 total bytes.
+2024-09-18T08:56:03.112Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T08:58:28.226Z [file-manager-app-logs] info: Sending shareable link email
+2024-09-18T08:58:31.189Z [file-manager-app-logs] info: Shareable link email sent successfully
+2024-09-18T09:01:03.610Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T09:01:03.612Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T09:01:03.632Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T09:01:03.634Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T09:01:03.636Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T09:04:32.854Z [file-manager-app-logs] info: Sending shareable link email
+2024-09-18T09:04:35.602Z [file-manager-app-logs] info: Shareable link email sent successfully
+2024-09-18T09:06:02.472Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T09:06:02.500Z [file-manager-app-logs] error: Error in downloadFiles function
+2024-09-18T09:06:25.814Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T09:06:25.851Z [file-manager-app-logs] info: File download action logged
+2024-09-18T09:06:25.856Z [file-manager-app-logs] info: File download successful
+2024-09-18T09:06:26.130Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T09:06:26.133Z [file-manager-app-logs] info: File download action logged
+2024-09-18T09:06:26.136Z [file-manager-app-logs] info: File download successful
+2024-09-18T09:06:59.965Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T09:06:59.968Z [file-manager-app-logs] info: File download action logged
+2024-09-18T09:06:59.972Z [file-manager-app-logs] info: File download successful
+2024-09-18T09:07:04.118Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T09:07:04.122Z [file-manager-app-logs] info: File download action logged
+2024-09-18T09:07:04.131Z [file-manager-app-logs] info: File download successful
+2024-09-18T09:07:42.718Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T09:07:42.721Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T09:07:42.742Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T09:07:42.743Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T09:07:42.745Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T09:12:54.484Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T09:12:54.520Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T09:12:54.543Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T09:12:54.545Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T09:12:54.547Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T09:14:10.132Z [file-manager-app-logs] info: Sending shareable link email
+2024-09-18T09:14:14.248Z [file-manager-app-logs] info: Shareable link email sent successfully
+2024-09-18T09:14:29.998Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T09:14:30.001Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T09:14:30.016Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T09:14:30.017Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T09:14:30.019Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T10:35:56.990Z [file-manager-app-logs] info: Sending shareable link email
+2024-09-18T10:36:01.543Z [file-manager-app-logs] info: Shareable link email sent successfully
+2024-09-18T10:42:20.253Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T10:42:20.258Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T10:42:20.296Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T10:42:20.299Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T10:42:20.305Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T10:44:22.932Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T10:44:22.967Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T10:44:22.988Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T10:44:22.989Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T10:44:22.992Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T10:45:39.463Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T10:45:39.467Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T10:45:39.500Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T10:45:39.502Z [file-manager-app-logs] info: Zipped 166569 total bytes.
+2024-09-18T10:45:39.509Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T10:49:17.246Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T10:49:17.282Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T10:49:17.305Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T10:49:17.306Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T10:49:17.310Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T10:49:45.838Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T10:49:45.871Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T10:49:45.893Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T10:49:45.894Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T10:49:45.897Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file
+2024-09-18T11:38:47.678Z [file-manager-app-logs] info: Sending shareable link email
+2024-09-18T11:38:52.296Z [file-manager-app-logs] info: Shareable link email sent successfully
+2024-09-18T11:47:45.132Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T11:47:45.135Z [file-manager-app-logs] info: File download action logged
+2024-09-18T11:47:45.140Z [file-manager-app-logs] info: File download successful
+2024-09-18T11:47:48.713Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T11:47:48.719Z [file-manager-app-logs] info: File download action logged
+2024-09-18T11:47:48.724Z [file-manager-app-logs] info: File download successful
+2024-09-18T11:48:48.935Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T11:48:48.938Z [file-manager-app-logs] info: File download action logged
+2024-09-18T11:48:48.941Z [file-manager-app-logs] info: File download successful
+2024-09-18T11:48:51.995Z [file-manager-app-logs] info: Starting file download process
+2024-09-18T11:48:51.996Z [file-manager-app-logs] info: File download action logged
+2024-09-18T11:48:51.998Z [file-manager-app-logs] info: File download successful
+2024-09-18T11:51:28.922Z [file-manager-app-logs] info: Request to download folder
+2024-09-18T11:51:28.957Z [file-manager-app-logs] info: Folder path resolved
+2024-09-18T11:51:28.978Z [file-manager-app-logs] info: ZIP file creation completed
+2024-09-18T11:51:28.980Z [file-manager-app-logs] info: Zipped 166422 total bytes.
+2024-09-18T11:51:28.982Z [file-manager-app-logs] info: ZIP file streamed to client, deleting file

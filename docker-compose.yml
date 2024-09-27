@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  # PostgreSQL service
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_USER: your_db_user
+      POSTGRES_PASSWORD: your_db_password
+      POSTGRES_DB: your_db_name
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Node.js API service
+  nodejs:
+    image: node:18
+    container_name: nodejs
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://your_db_user:your_db_password@postgres:5432/your_db_name
+    depends_on:
+      - postgres
+    command: sh -c "npm install && npm run dev"
+
+  # WebSocket service
+  websocket:
+    image: node:18
+    container_name: websocket
+    working_dir: /app
+    volumes:
+      - ./websocket:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - nodejs
+    command: sh -c "npm install && npm start"
+
+  # Vite React service
+  vite:
+    image: node:18
+    container_name: vite
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://nodejs:4000
+    depends_on:
+      - nodejs
+    command: sh -c "npm install && npm run dev"
+
+volumes:
+  postgres_data:

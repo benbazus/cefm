@@ -1,0 +1,322 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DocumentUser {
+  id             String         @id @default(cuid())
+  userId         String
+  documentId     String
+  permission     Permission
+  documentAccess DocumentAccess
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document       Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  SharedFile     SharedFile[]
+  activities     FileActivity[]
+
+  // @@unique([userId, documentId])
+  @@index([userId], name: "idx_documentuser_userId")
+  @@index([documentId], name: "idx_documentuser_documentId")
+  @@map("documentUser")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.Text
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId], name: "idx_account_userId")
+  @@map("accounts")
+}
+
+model NetworkDrive {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  driveLetter String
+  networkPath String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("network_drives")
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  name                  String?
+  email                 String?                @unique
+  emailVerified         DateTime?              @map("email_verified")
+  image                 String?
+  password              String?
+  otpToken              String?
+  otpExpires            DateTime?
+  lastActive            DateTime?
+  confirmationToken     String?
+  resetPasswordToken    String?
+  resetPasswordExpires  DateTime?
+  usedStorage           Int?                   @default(0)
+  maxStorageSize        Int?                   @default(1073741824)
+  role                  UserRole               @default(USER)
+  accounts              Account[]
+  files                 File[]
+  folders               Folder[]
+  sharedFile            SharedFile[]
+  isTwoFactorEnabled    Boolean                @default(false)
+  twoFactorConfirmation TwoFactorConfirmation?
+  activities            FileActivity[]
+  StorageHistory        StorageHistory[]
+  refreshTokens         RefreshToken[]
+  documents             Document[]
+  documentUser          DocumentUser[]
+  UserPermission        UserPermission[]
+  networkDrives         NetworkDrive[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  @@map("users")
+}
+
+model Document {
+  id             String           @id @default(cuid())
+  userId         String?
+  user           User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  data           Json?
+  title          String?
+  size           Int?
+  trashed        Boolean          @default(false)
+  isShared       Boolean          @default(false)
+  mimeType       String
+  password       String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  UserPermission UserPermission[]
+  users          DocumentUser[]
+
+  @@index([userId], name: "idx_document_userId")
+  @@map("documents")
+}
+
+model UserPermission {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentId     String
+  document       Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  permission     Permission
+  documentAccess DocumentAccess @default(RESTRICTED)
+
+  // @@unique([userId, documentId])
+  @@map("userPermissions")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId], name: "idx_refresh_token_userId")
+  @@map("refreshTokens")
+}
+
+model StorageHistory {
+  id                     String   @id @default(cuid())
+  userId                 String
+  usedStorage            Int      @default(0)
+  totalStorage           Int      @default(0)
+  timestamp              DateTime @default(now())
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storageType            String?
+  storageLocation        String?
+  storageUsagePercentage Decimal? @db.Decimal(5, 2)
+  storageLimit           Int      @default(1073741824)
+  overflowStorage        Int      @default(2073741824)
+  notificationSent       Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("storage_histories")
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+  @@map("verification_tokens")
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+  @@map("twoFactorTokens")
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@map("twoFactorConfirmation")
+}
+
+model FileActivity {
+  id              String         @id @default(cuid())
+  userId          String?
+  documentId      String?
+  activityType    ShareableType? @default(File)
+  action          String?
+  ipAddress       String?
+  userAgent       String?
+  device          String?
+  operatingSystem String?
+  browser         String?
+  filePath        String?
+  fileExtension   String?
+  fileSize        Int?
+  fileType        String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  DocumentUser DocumentUser? @relation(fields: [documentId], references: [id])
+  File         File?         @relation(fields: [fileId], references: [id])
+  fileId       String?
+  Folder       Folder?       @relation(fields: [folderId], references: [id])
+  folderId     String?
+
+  @@map("file_activities")
+}
+
+model File {
+  id         String   @id @default(cuid())
+  name       String
+  size       Int
+  trashed    Boolean  @default(false)
+  isShared   Boolean  @default(false)
+  mimeType   String
+  userId     String
+  fileUrl    String?
+  previewUrl String?
+  filePath   String?
+  folderId   String?
+  location   String?
+  fileType   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  folder     Folder?        @relation(fields: [folderId], references: [id])
+  user       User           @relation(fields: [userId], references: [id])
+  SharedFile SharedFile[]
+  activities FileActivity[]
+
+  @@map("files")
+}
+
+model Folder {
+  id           String         @id @default(cuid())
+  name         String
+  folderPath   String?
+  parentId     String?
+  folderUrl    String?
+  userId       String
+  size         Int?
+  createdAt    DateTime       @default(now())
+  trashed      Boolean        @default(false)
+  isShared     Boolean        @default(false)
+  location     String?
+  parent       Folder?        @relation("ParentFolder", fields: [parentId], references: [id], onDelete: Cascade)
+  children     Folder[]       @relation("ParentFolder")
+  files        File[]
+  user         User           @relation(fields: [userId], references: [id])
+  SharedFile   SharedFile[]
+  updatedAt    DateTime       @updatedAt
+  FileActivity FileActivity[]
+
+  @@map("folders")
+}
+
+model SharedFile {
+  id                  String         @id @default(cuid())
+  sharedUrl           String?
+  shareableType       ShareableType? @default(File)
+  sharedWith          String?
+  password            String?
+  shareWithMessage    String?
+  userId              String?
+  expirationDate      DateTime?
+  isExpirationEnabled Boolean        @default(false)
+  isPasswordEnabled   Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  user                User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  documentUser        DocumentUser?  @relation(fields: [documentUserId], references: [id])
+  documentUserId      String?
+  File                File?          @relation(fields: [fileId], references: [id])
+  fileId              String?
+  Folder              Folder?        @relation(fields: [folderId], references: [id])
+  folderId            String?
+
+  @@map("shared_files")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  SUPERADMIN
+}
+
+enum DocumentAccess {
+  RESTRICTED
+  ANYONE
+}
+
+enum Permission {
+  READ
+  WRITE
+  SHARE
+  DELETE
+}
+
+enum ShareableType {
+  File
+  Folder
+  Document
+}
