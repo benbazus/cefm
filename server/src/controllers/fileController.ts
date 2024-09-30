@@ -53,7 +53,6 @@ export function getUserInfo(req: Request): UserInfo {
 export const handleFileUpload = async (req: Request, res: Response) => {
     try {
 
-
         const files = req.files as Express.Multer.File[];
         const parentId = req.body.parentId;
 

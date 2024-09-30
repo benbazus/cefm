@@ -2,8 +2,7 @@
 import prisma from '../config/database';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { generateTokens, verifyAccessToken } from '../utils/jwt';
-import { TwoFactorToken, User, VerificationToken } from '@prisma/client';
+import { User, VerificationToken } from '@prisma/client';
 import path from 'path';
 
 import { promises as fs } from 'fs';

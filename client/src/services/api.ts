@@ -1,61 +1,130 @@
 
-import { AccountFormValues, FileActivity, FilesResponse, FolderItem, GetFileCountResponse, GetFoldersResponse, ProfileFormValues, SharedLinkResponse, StorageInfo, UserResponse, VerificationResponse } from '@/types/types';
+import { AccountFormValues, FileActivity, FilesResponse, FileWithProgress, FolderItem, GetFileCountResponse, GetFoldersResponse, ProfileFormValues, SharedLinkResponse, StorageInfo, UserResponse, VerificationResponse } from '@/types/types';
 import { handleError } from '@/utils/helpers';
-import axios from 'axios';
-import { axiosRequest, publicAxiosRequest } from './api-client';
 
-const chunkSize = 10 * 1024 // Ensure this is the same as in the component
-
-//const API_URL = process.env.VITE_API_URL || 'http://localhost:5000/api';
-
-const API_URL = 'http://localhost:5000/api';
-
-const api = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-});
-
-// Create a separate axios instance for non-authenticated requests
-const publicApi = axios.create({
-    baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+const chunkSize = 10 * 1024
 
 
-// Request interceptor to add the Authorization token
-api.interceptors.request.use((config) => {
-
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-}, (error) => {
-    // Handle request error
-    handleError(error);
-    return Promise.reject(error);
-});
-
-api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        handleError(error);
-        return Promise.reject(error);
-    }
-);
+import axios, {
+    AxiosInstance,
+    AxiosRequestConfig,
+    AxiosResponse,
+    AxiosError,
+} from 'axios';
+import retry, { Options as RetryOptions } from 'async-retry';
 
 
-export interface FileWithProgress extends File {
-    progress: number;
+const API_URL = '/api';
+
+// Define custom error type
+export interface ApiError extends Error {
+    response?: AxiosResponse;
+    status?: number;
 }
 
+// Create axios instances
+const createAxiosInstance = (useAuth: boolean): AxiosInstance => {
+    const instance = axios.create({
+        baseURL: API_URL,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        withCredentials: useAuth,
+    });
 
-//
+    if (useAuth) {
+        instance.interceptors.request.use(
+            (config) => {
+                const token = localStorage.getItem('token');
+                if (token && config.headers) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+                return config;
+            },
+            (error: AxiosError) => {
+                return Promise.reject(error);
+            }
+        );
+
+        instance.interceptors.response.use((response) => response, async (error: AxiosError) => {
+            const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+            if (error.response?.status === 401 && !originalRequest._retry) {
+                originalRequest._retry = true;
+                try {
+                    const { data } = await instance.post<{ accessToken: string }>('/auth/refresh-token');
+                    localStorage.setItem('token', data.accessToken);
+                    if (instance.defaults.headers.common) {
+                        instance.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
+                    }
+                    return instance(originalRequest);
+                } catch (refreshError) {
+                    localStorage.removeItem('token');
+                    return Promise.reject(refreshError);
+                }
+            }
+            return Promise.reject(error);
+        }
+        );
+    }
+
+    return instance;
+};
+
+const api = createAxiosInstance(true);
+const publicApi = createAxiosInstance(false);
+
+const retryOptions: RetryOptions = {
+    retries: 3,
+    factor: 2,
+    minTimeout: 1000,
+    maxTimeout: 30000,
+    onRetry: (err: Error, attempt: number) => {
+        console.warn(`Retry #${attempt} failed with error: ${err.message}`);
+    },
+};
+
+const axiosWithRetry = async <T>(config: AxiosRequestConfig, useAuth: boolean = true): Promise<AxiosResponse<T>> => {
+    const axiosInstance = useAuth ? api : publicApi;
+
+    return retry(
+        async (bail) => {
+            try {
+                const response = await axiosInstance<T>(config);
+                return response;
+            } catch (error) {
+                if (axios.isAxiosError(error) && error.response) {
+                    if ([401, 402, 404].includes(error.response.status)) {
+                        bail(error);
+                        return Promise.reject(error);
+                    }
+                }
+                throw error;
+            }
+        },
+        retryOptions
+    );
+};
+
+export const axiosRequest = async <T>(config: AxiosRequestConfig, useAuth: boolean = true): Promise<AxiosResponse<T>> => {
+    try {
+        const response = await axiosWithRetry<T>(config, useAuth);
+        return response;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const apiError: ApiError = new Error(error.message);
+            apiError.response = error.response;
+            apiError.status = error.response?.status;
+            throw apiError;
+        } else {
+            console.error('An unexpected error occurred:', error);
+            throw error;
+        }
+    }
+};
+
+export const publicAxiosRequest = async <T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> => {
+    return axiosRequest<T>(config, false);
+};
 
 export const newVerification = async (code: string): Promise<VerificationResponse | null> => {
     const config = {
@@ -639,15 +708,7 @@ export const uploadFiles = async (files: FileWithProgress[],
     await Promise.all(uploads);
 };
 
-// export const fetchUserData = async () => {
-//     try {
-//         const response = await api.get('/auth/profile');
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
+
 
 export const verifyToken = async (token: string) => {
     try {
@@ -701,51 +762,6 @@ export const forgotPassword = async (email: string) => {
         throw error;
     }
 };
-
-
-
-// export const getFolderPath = async (folderId: string) => {
-
-//       try {
-//         const response = await axiosRequest .post('/files/create-documents', { email });
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-
-//     try {
-//         const response = await axios.get(`${API_URL}/folders/${folderId}/path`)
-//         return response.data
-//     } catch (error) {
-//         console.error('Error fetching folder path:', error)
-//         throw error
-//     }
-// }
-
-// // ... rest of the file
-
-// export const createNewDocument = async (name: string, folderId: string | null, email: string | undefined, userId: string | undefined) => {
-
-//     try {
-//         const response = await publicApi.post('/files/create-documents', { email });
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-
-// }
-// export const createNewFolder = async (folderName: string, parentFolderId: string | null) => {
-//     try {
-//         const response = await api.post('/folders/create-folder', { folderName, parentFolderId })
-//         return response.data
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
-
 
 export const renameAFile = async (fileId: string, newName: string) => {
     try {
@@ -808,37 +824,6 @@ export const getFileUploadsPerDay = async () => {
         throw error;
     }
 };
-
-// export const getRecentActivity = async () => {
-//     try {
-//         const response = await api.get(`/dashboard/recent-activity`)
-//         return response.data
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
-
-// export const getStorageInfo = async () => {
-//     try {
-//         const response = await api.get(`/dashboard/storage-info`)
-//         return response.data
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
-// export const getUserStats = async () => {
-//     try {
-//         const response = await api.get(`/dashboard/user-stats`)
-//         return response.data
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
-
-
 
 
 export const getFileUpload = async () => {
@@ -1059,15 +1044,6 @@ export const getPhotos = async (): Promise<FilesResponse | null> => {
     }
 }
 
-// export const getPhotos = async () => {
-//     try {
-//         const response = await api.get(`/files/get-photo`);
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
 
 export const getSharedItems = async (itemId: string) => {
     try {
@@ -1092,8 +1068,6 @@ export const getExcelFiles = async (): Promise<FilesResponse | null> => {
     }
 }
 
-
-//
 export const getCustomDocuments = async () => {
 
     try {
@@ -1192,7 +1166,6 @@ export const downloadItem1 = async (isFile: boolean | undefined, itemId: string,
         ? `/files/download-file/${itemId}`
         : `/files/download-folder/${itemId}`
 
-
     try {
 
         if (isFile) {
@@ -1229,8 +1202,6 @@ export const downloadItem1 = async (isFile: boolean | undefined, itemId: string,
         throw error;
     }
 }
-
-//restore-file/
 
 export const restoreFile = async (isFile: boolean, fileId: string) => {
 

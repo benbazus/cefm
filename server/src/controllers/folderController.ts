@@ -177,15 +177,4 @@ export const getFileCount = async (req: Request, res: Response, next: NextFuncti
 };
 
 
-// export const getFolderChildren = async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//         const { parentId } = req.params;
-//         const count = await folderService.getFolderChildren(parentId);
-//         res.json(count);
-//     } catch (error) {
-//         next(error);
-//     }
-// };
-
-
 

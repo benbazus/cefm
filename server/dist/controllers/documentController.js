@@ -127,14 +127,6 @@ const shareDocumentToUser = (req, res, next) => __awaiter(void 0, void 0, void 0
     try {
         const { email, message, documentId, permission, currentUrl, documentAccess } = req.body;
         const { userId } = req.user;
-        console.log(' ++++++++shareDocumentToUser 0000000 +++++++++++++++ ');
-        console.log(documentId);
-        console.log(email);
-        console.log(message);
-        console.log(permission);
-        console.log(currentUrl);
-        console.log(documentAccess);
-        console.log(' ++++++++shareDocumentToUser 0000000 +++++++++++++++ ');
         const document = yield database_1.default.document.findUnique({ where: { id: documentId } });
         if (!document) {
             return res.status(404).json({ error: 'Document not found' });

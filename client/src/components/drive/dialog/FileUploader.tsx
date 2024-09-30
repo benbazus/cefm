@@ -2,7 +2,9 @@ import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/custom/button'
-import { uploadFiles, FileWithProgress } from '@/services/api'
+import { FileWithProgress } from '@/types/types'
+import { uploadFiles } from '@/services/api'
+ 
 
 export function FileUploader() {
   const [files, setFiles] = useState<FileWithProgress[]>([])

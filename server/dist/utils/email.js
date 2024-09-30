@@ -16,7 +16,6 @@ exports.sendTwoFactorTokenEmail = exports.sendVerificationEmail1 = exports.sendV
 exports.sendOtpEmail = sendOtpEmail;
 exports.sendOtpEmail1 = sendOtpEmail1;
 exports.sendPasswordResetEmail = sendPasswordResetEmail;
-//import nodemailer from 'nodemailer';
 const nodemailer_1 = require("nodemailer");
 const logger_1 = __importDefault(require("./logger"));
 const transporterLocalhost = (0, nodemailer_1.createTransport)({
@@ -29,7 +28,6 @@ const transporterLocalhost = (0, nodemailer_1.createTransport)({
     },
 });
 const transporter = (0, nodemailer_1.createTransport)({
-    // Configure your email service here
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || '587'),
     auth: {
@@ -37,7 +35,6 @@ const transporter = (0, nodemailer_1.createTransport)({
         pass: process.env.EMAIL_PASS,
     },
 });
-// Nodemailer configuration
 const transporterGmail = (0, nodemailer_1.createTransport)({
     host: process.env.GMAIL_SERVER_HOST,
     port: Number(process.env.GMAIL_SERVER_PORT),
@@ -62,15 +59,6 @@ function sendMail(to, subject, html) {
         }
     });
 }
-/**
- * Sends an email to share a document with the specified recipient.
- *
- * @param {string} senderEmail - The email address of the sender.
- * @param {string} recipientEmail - The email address of the recipient.
- * @param {string} emailMessage - A custom message to accompany the document share.
- * @param {string} documentUrl - The URL link to the shared document.
- * @returns {Promise<void>} A promise that resolves when the email has been successfully sent.
- */
 const sendDocumentShareEmail = (name, senderEmail, recipientEmail, emailMessage, documentUrl, permission, documentName) => __awaiter(void 0, void 0, void 0, function* () {
     let documentPermission;
     if (permission == 'READ') {
@@ -309,12 +297,6 @@ const sendSharedLinkEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({
 });
 exports.sendSharedLinkEmail = sendSharedLinkEmail;
 const sendSharedLinkEmail1 = (toEmail, message, fromEmail, shareableLink) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(" ++++++++++ sendSharedLinkEmail  +++++++++++++ ");
-    console.log(toEmail);
-    console.log(message);
-    console.log(fromEmail);
-    console.log(shareableLink);
-    console.log(" +++++++++ sendSharedLinkEmail+++++++++++++ ");
     const renderedEmail = `
            <!DOCTYPE html>
 <html lang="en">

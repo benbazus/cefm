@@ -4,16 +4,11 @@ import { ComponentType } from "react";
 import { User } from "./next-auth";
 
 
-// export interface Folder {
-//   id: string;
-//   name: string;
-//   parentId?: string | null;
-//   createdAt: string;
-//   updatedAt: string;
-//   fileCount?: number;
-//   size?: number;
-//   userId?:string
-// }
+
+export interface FileWithProgress extends File {
+  progress: number;
+}
+
 
 export interface GetFoldersResponse {
   folders: FolderItem[];

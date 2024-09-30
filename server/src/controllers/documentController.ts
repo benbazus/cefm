@@ -145,14 +145,7 @@ export const shareDocumentToUser = async (req: Request, res: Response, next: Nex
         const { email, message, documentId, permission, currentUrl, documentAccess } = req.body;
         const { userId } = req.user as { userId: string };
 
-        console.log(' ++++++++shareDocumentToUser 0000000 +++++++++++++++ ')
-        console.log(documentId)
-        console.log(email)
-        console.log(message)
-        console.log(permission)
-        console.log(currentUrl)
-        console.log(documentAccess)
-        console.log(' ++++++++shareDocumentToUser 0000000 +++++++++++++++ ')
+
 
         const document = await prisma.document.findUnique({ where: { id: documentId } });
         if (!document) {

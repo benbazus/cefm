@@ -99,76 +99,6 @@ const login = (email, password, code) => __awaiter(void 0, void 0, void 0, funct
         } });
 });
 exports.login = login;
-// export const generateTwoFactorToken = async (userId: string, email: string): Promise<TwoFactorToken> => {
-//     const { otp, otpExpires } = generateOtp();
-//     const existingToken = await prisma.twoFactorToken.findFirst({ where: { email } });
-//     if (existingToken) {
-//         await prisma.twoFactorToken.delete({ where: { id: existingToken.id } });
-//     }
-//     const token = tokenResponse.accessToken as string;
-//     return prisma.twoFactorToken.create({
-//         data: { email, token, expires },
-//     });
-// };
-// ... (rest of the code remains the same)
-// import prisma from '../config/database';
-// import bcrypt from 'bcrypt';
-// import { v4 as uuidv4 } from 'uuid';
-// import { User, TwoFactorToken } from '@prisma/client';
-// import { generateVerificationToken, getUserByEmail, getVerificationTokenByToken } from './userService';
-// import { sendOtpEmail, sendTwoFactorTokenEmail, sendVerificationEmail } from '../utils/email';
-// import { generateTokens, verifyRefreshToken } from '../utils/jwt';
-// export const refreshAccessToken = async (refreshToken: string) => {
-//     const userId = await verifyRefreshToken(refreshToken);
-//     if (!userId) throw new Error('Invalid refresh token');
-//     return generateTokens(userId);
-// };
-// export const login = async (email: string, password: string, code?: string): Promise<{ accessToken: string; refreshToken: string; user: Partial<User> } | { success: string } | { error: string } | { twoFactor: boolean }> => {
-//     const user = await prisma.user.findUnique({
-//         where: { email: email }
-//     });
-//     if (!user) throw new Error('Invalid credentials');
-//     const isMatch = await bcrypt.compare(password, user.password as string);
-//     if (!isMatch) throw new Error('Invalid credentials');
-//     if (!user.emailVerified) {
-//         const verificationToken = await generateVerificationToken(user.email as string);
-//         await sendVerificationEmail(user.email as string, user.name ?? '', verificationToken.token);
-//         return { success: "Verification email sent!" };
-//     }
-//     if (user.isTwoFactorEnabled && user.email) {
-//         if (code) {
-//             console.log(" 0000000000000000000000000000000 ")
-//             const twoFactorToken = await prisma.twoFactorToken.findFirst({ where: { email } });
-//             if (!twoFactorToken || twoFactorToken.token !== code) return { error: "Invalid code!" };
-//             if (new Date(twoFactorToken.expires) < new Date()) return { error: "Code expired!" };
-//             await prisma.twoFactorToken.delete({ where: { id: twoFactorToken.id } });
-//         } else {
-//             const otp = Math.floor(100000 + Math.random() * 900000).toString();
-//             const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-//             await prisma.user.update({
-//                 where: { id: user.id },
-//                 data: { lastActive: new Date(), otpToken: otp, otpExpires, },
-//             });
-//             await sendTwoFactorTokenEmail(email, user.name as string, otp,);
-//             return { twoFactor: true };
-//         }
-//     }
-//     await prisma.user.update({
-//         where: { id: user.id },
-//         data: { lastActive: new Date(), },
-//     });
-//     const tokens = await generateTokens(user.id);
-//     return {
-//         ...tokens,
-//         user: {
-//             id: user.id,
-//             name: user.name,
-//             email: user.email,
-//             isTwoFactorEnabled: user.isTwoFactorEnabled
-//         },
-//     };
-// };
-// Constants
 const OTP_EXPIRATION_MINUTES = 10;
 const SALT_ROUNDS = 10;
 // Register new user
@@ -279,56 +209,6 @@ const newVerification = (token) => __awaiter(void 0, void 0, void 0, function* (
     return "Account verified!";
 });
 exports.newVerification = newVerification;
-// // export const login11 = async (email: string, password: string, code?: string) => {
-// //     const user = await getUserByEmail(email);
-// //     if (!user) throw new Error('Invalid credentials');
-// //     const isMatch = await bcrypt.compare(password, user.password as string);
-// //     if (!isMatch) throw new Error('Invalid credentials');
-// //     if (!user.emailVerified) {
-// //         const verificationToken = await generateVerificationToken(user.email as string);
-// //         await sendVerificationEmail(user.email as string, user.name ?? '', verificationToken.token);
-// //         return { success: "Verification email sent!" };
-// //     }
-// //     if (user.isTwoFactorEnabled && user.email) {
-// //         if (code) {
-// //             const twoFactorToken = await prisma.twoFactorToken.findFirst({ where: { email } });
-// //             if (!twoFactorToken || twoFactorToken.token !== code) return { error: "Invalid code!" };
-// //             if (new Date(twoFactorToken.expires) < new Date()) return { error: "Code expired!" };
-// //             await prisma.twoFactorToken.delete({ where: { id: twoFactorToken.id } });
-// //         } else {
-// //             const twoFactorToken = await generateTwoFactorToken(user.id, user.email);
-// //             await sendTwoFactorTokenEmail(user.email, user.name ?? '', twoFactorToken.token);
-// //             return { twoFactor: true };
-// //         }
-// //     }
-// //     return generateTokens(user.id);
-// // };
-// // // Login function
-// // export const login1 = async (email: string, password: string, code?: string): Promise<string | { success?: string; error?: string; twoFactor?: boolean }> => {
-// //     const user = await getUserByEmail(email);
-// //     if (!user) throw new Error('Invalid credentials');
-// //     const isMatch = await bcrypt.compare(password, user.password as string);
-// //     if (!isMatch) throw new Error('Invalid credentials');
-// //     // if (!user.emailVerified) {
-// //     //     const verificationToken = await generateVerificationToken(user.email as string);
-// //     //     await sendVerificationEmail(user.email as string, user.name ?? '', verificationToken.token);
-// //     //     return { success: "Verification email sent!" };
-// //     // }
-// //     if (user.isTwoFactorEnabled && user.email) {
-// //         if (code) {
-// //             const twoFactorToken = await prisma.twoFactorToken.findFirst({ where: { email } });
-// //             if (!twoFactorToken || twoFactorToken.token !== code) return { error: "Invalid code!" };
-// //             if (new Date(twoFactorToken.expires) < new Date()) return { error: "Code expired!" };
-// //             await prisma.twoFactorToken.delete({ where: { id: twoFactorToken.id } });
-// //         } else {
-// //             const twoFactorToken = await generateTwoFactorToken(user.id, user.email);
-// //             await sendTwoFactorTokenEmail(user.email, user.name ?? '', twoFactorToken.token);
-// //             return { twoFactor: true };
-// //         }
-// //     }
-// //     return generateTokens(user.id);
-// // };
-// //===========================================================
 const createUser = (name, email, password) => __awaiter(void 0, void 0, void 0, function* () {
     const hashedPassword = yield bcrypt_1.default.hash(password, 10);
     return database_1.default.user.create({
@@ -340,17 +220,6 @@ const createUser = (name, email, password) => __awaiter(void 0, void 0, void 0, 
     });
 });
 exports.createUser = createUser;
-// export const validateUser = async (email: string, password: string) => {
-//     const user = await prisma.user.findUnique({ where: { email } });
-//     if (!user || !user.emailVerified) {
-//         throw new Error('Invalid credentials or email not confirmed');
-//     }
-//     const isPasswordValid = await bcrypt.compare(password, user.password as string);
-//     if (!isPasswordValid) {
-//         throw new Error('Invalid credentials');
-//     }
-//     return user;
-// };
 const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield database_1.default.user.findUnique({
         where: { id: userId },
@@ -368,12 +237,6 @@ const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* (
     return user;
 });
 exports.getUserProfile = getUserProfile;
-// export const setConfirmationToken = async (userId: string, token: string) => {
-//     await prisma.user.update({
-//         where: { id: userId },
-//         data: { confirmationToken: token },
-//     });
-// };
 const confirmEmail = (token) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = yield (0, jwt_1.verifyRefreshToken)(token);
     if (!userId) {
@@ -398,9 +261,6 @@ const createPasswordResetToken = (email) => __awaiter(void 0, void 0, void 0, fu
         throw new Error('User not found');
     }
     const resetToken = yield generateResetToken();
-    console.log(" ++++++++++resresetTokensetPassword+++++++++++++++ ");
-    console.log(resetToken);
-    console.log(" +++++++++++resetTokens++++++++++++++ ");
     const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour from now
     yield database_1.default.user.update({
         where: { id: user.id },
@@ -416,9 +276,6 @@ const resetPassword = (token, newPassword) => __awaiter(void 0, void 0, void 0, 
             resetPasswordExpires: { gt: new Date() },
         },
     });
-    console.log(" ++++++++++resetPassword+++++++++++++++ ");
-    console.log(user);
-    console.log(" +++++++++++resetPassword++++++++++++++ ");
     if (!user) {
         throw new Error('Invalid or expired reset token');
     }

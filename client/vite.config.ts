@@ -6,6 +6,9 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   build: {
+    chunkSizeWarningLimit: 1200,
+    outDir: path.resolve(__dirname, '../server/client/dist'),
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -18,8 +21,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/File Manager/uploads': 'http://localhost:5000',
+      '/api': 'http://127.0.0.1:5000',
     },
   },
   resolve: {

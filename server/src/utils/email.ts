@@ -1,4 +1,4 @@
-//import nodemailer from 'nodemailer';
+
 import { createTransport } from 'nodemailer';
 import logger from './logger';
 
@@ -22,7 +22,7 @@ const transporterLocalhost = createTransport({
 
 
 const transporter = createTransport({
-    // Configure your email service here
+
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || '587'),
     auth: {
@@ -31,7 +31,7 @@ const transporter = createTransport({
     },
 });
 
-// Nodemailer configuration
+
 const transporterGmail = createTransport({
     host: process.env.GMAIL_SERVER_HOST,
     port: Number(process.env.GMAIL_SERVER_PORT),
@@ -58,15 +58,6 @@ async function sendMail(to: string, subject: string, html: string): Promise<void
 }
 
 
-/**
- * Sends an email to share a document with the specified recipient.
- *
- * @param {string} senderEmail - The email address of the sender.
- * @param {string} recipientEmail - The email address of the recipient.
- * @param {string} emailMessage - A custom message to accompany the document share.
- * @param {string} documentUrl - The URL link to the shared document.
- * @returns {Promise<void>} A promise that resolves when the email has been successfully sent.
- */
 export const sendDocumentShareEmail = async (name: string,
     senderEmail: string,
     recipientEmail: string,
@@ -225,8 +216,6 @@ export const sendShareDocumentEmail = async (
     await transporterLocalhost.sendMail(mailOptions);
 };
 
-
-
 export const sendShareDocumentEmail1 = async (from: string, to: string, message: string,
     title: string, password: string, date: Date, permission: string, currentUrl: string,) => {
     const mailOptions = {
@@ -249,7 +238,6 @@ export const sendShareDocumentEmail1 = async (from: string, to: string, message:
     // Send the email
     await transporterLocalhost.sendMail(mailOptions);
 }
-
 
 export const sendShareDocumentEmail2 = async (from: string, to: string, message: string,
     title: string, password: string, date: Date, permission: string, currentUrl: string,) => {
@@ -338,14 +326,6 @@ export const sendSharedLinkEmail = async ({
 
 export const sendSharedLinkEmail1 = async (toEmail: string, message?: string, fromEmail?: string, shareableLink?: string) => {
 
-    console.log(" ++++++++++ sendSharedLinkEmail  +++++++++++++ ")
-    console.log(toEmail)
-    console.log(message)
-    console.log(fromEmail)
-    console.log(shareableLink)
-
-    console.log(" +++++++++ sendSharedLinkEmail+++++++++++++ ")
-
     const renderedEmail = `
            <!DOCTYPE html>
 <html lang="en">
@@ -426,7 +406,6 @@ export const sendSharedLinkEmail1 = async (toEmail: string, message?: string, fr
 
     await sendMail(toEmail, `${fromEmail} Shared an item with you`, renderedEmail);
 };
-
 
 export const sendVerificationEmail = async (email: string, name?: string, token?: string) => {
     const verificationLink = `${process.env.PUBLIC_APP_URL}/email-verification/${token}`;
@@ -511,7 +490,6 @@ export const sendVerificationEmail = async (email: string, name?: string, token?
 
     await sendMail(email, 'Verify Your Email Address', renderedEmail);
 };
-
 
 export const sendVerificationEmail1 = async (email: string, name?: string, token?: string) => {
     const verificationLink = `${process.env.PUBLIC_APP_URL}/email-verification/${token}`;
@@ -747,7 +725,6 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
     }
 }
 
-
 export async function sendOtpEmail1(email: string, otp: string): Promise<void> {
     const renderedEmail = `
             <!DOCTYPE html>
@@ -822,7 +799,6 @@ export async function sendOtpEmail1(email: string, otp: string): Promise<void> {
 
     await sendMail(email, 'Your OTP Code', renderedEmail);
 }
-
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
     const resetLink = `${process.env.PUBLIC_APP_URL}/reset-password/${token}`;

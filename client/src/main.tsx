@@ -8,12 +8,10 @@ import '@/index.css'
 import { ViewProvider } from './contexts/UserContext'
 import { FolderProvider } from './contexts/FolderContext'
 import { FolderFileProvider } from './contexts/FileFolderContext'
-//import { AppStateProvider } from './hooks/use-app-state'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-      {/* <AppStateProvider> */}
       <ViewProvider>
         <FolderFileProvider>
           <FolderProvider>
@@ -22,7 +20,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           </FolderProvider>
         </FolderFileProvider>
       </ViewProvider>
-      {/* </AppStateProvider> */}
     </ThemeProvider>
   </React.StrictMode>
 )
