@@ -29,15 +29,15 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 const PORT = Number(process.env.PORT) || 5000;
 
 let server;
-if (isDevelopment) {
-    server = createServer(app);
-} else {
-    // In production, use HTTPS
-    const privateKey = fs.readFileSync('/path/to/private-key.pem', 'utf8');
-    const certificate = fs.readFileSync('/path/to/certificate.pem', 'utf8');
-    const credentials = { key: privateKey, cert: certificate };
-    server = https.createServer(credentials, app);
-}
+// if (isDevelopment) {
+server = createServer(app);
+// } else {
+//     // In production, use HTTPS
+//     const privateKey = fs.readFileSync('/path/to/private-key.pem', 'utf8');
+//     const certificate = fs.readFileSync('/path/to/certificate.pem', 'utf8');
+//     const credentials = { key: privateKey, cert: certificate };
+//     server = https.createServer(credentials, app);
+// }
 
 const io = new Server(server, {
     cors: {
