@@ -27,16 +27,22 @@ A fully functional Google Clone application built with **Vite** for the client s
 
 ## Demo
 
-### Client Side:
+### Dashboard Page:
 
- ![image](https://github.com/user-attachments/assets/c559a1ad-ea99-4432-a9f4-327df3a13601)
+ ![image](https://github.com/user-attachments/assets/56bfdf84-f698-41ad-be12-972a920d7e76)
 
-
-### Server Side:
+### Home Page:
 
  ![image](https://github.com/user-attachments/assets/6b2fdca0-9fde-4e83-bdd4-e83cea4d5e95)
- 
 
+### Share file:
+![image](https://github.com/user-attachments/assets/9a6fed0f-accf-4974-9ad0-2e25d3bd8d0a)
+
+ ### Document file:
+ ![image](https://github.com/user-attachments/assets/8d01a038-b6fb-46ba-9d7c-16cca9697415)
+
+ ### Document file:
+![image](https://github.com/user-attachments/assets/ab5de6e3-9d17-4706-b345-3ac0f1409d8c)
 
 ## Technologies Used
 
