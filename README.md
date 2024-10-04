@@ -29,12 +29,13 @@ A fully functional Google Clone application built with **Vite** for the client s
 
 ### Client Side:
 
-![Client Side Image] ![image](https://github.com/user-attachments/assets/c559a1ad-ea99-4432-a9f4-327df3a13601)
+ ![image](https://github.com/user-attachments/assets/c559a1ad-ea99-4432-a9f4-327df3a13601)
 
 
 ### Server Side:
 
-![Server Side Image](path-to-server-side-image.png)
+ ![image](https://github.com/user-attachments/assets/6b2fdca0-9fde-4e83-bdd4-e83cea4d5e95)
+ 
 
 
 ## Technologies Used
