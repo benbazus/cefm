@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.createPasswordResetToken = exports.setConfirmationToken = exports.validateUser = exports.createUser = exports.getUserProfile = exports.verifyOtp = exports.getTwoFactorConfirmationByUserId = exports.getTwoFactorTokenByEmail = exports.getPasswordResetTokenByEmail = exports.getPasswordResetTokenByToken = exports.getTwoFactorTokenByToken = exports.getUserById = exports.getVerificationTokenByEmail = exports.register = exports.generateVerificationToken = exports.getVerificationTokenByToken = exports.getUserByEmail = void 0;
+exports.resetPassword = exports.createPasswordResetToken = exports.setConfirmationToken = exports.validateUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserProfile = exports.verifyOtp = exports.getTwoFactorConfirmationByUserId = exports.getTwoFactorTokenByEmail = exports.getPasswordResetTokenByEmail = exports.getPasswordResetTokenByToken = exports.getTwoFactorTokenByToken = exports.getUserById = exports.getVerificationTokenByEmail = exports.getUsers = exports.generateVerificationToken = exports.getVerificationTokenByToken = exports.getUserByEmail = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const uuid_1 = require("uuid");
@@ -61,128 +61,11 @@ const generateVerificationToken = (email) => __awaiter(void 0, void 0, void 0, f
     });
 });
 exports.generateVerificationToken = generateVerificationToken;
-// // Generate two-factor token
-// export const generateTwoFactorToken = async (userId: string, email: string): Promise<TwoFactorToken> => {
-//     const token = generateTokens(userId);
-//     const expires = new Date(new Date().getTime() + 5 * 60 * 1000); // 5 minutes
-//     const existingToken = await prisma.twoFactorToken.findFirst({ where: { email } });
-//     if (existingToken) {
-//         await prisma.twoFactorToken.delete({ where: { id: existingToken.id } });
-//     }
-//     return prisma.twoFactorToken.create({
-//         data: { email, token, expires },
-//     });
-// };
-// // Login function
-// export const login = async (email: string, password: string, code?: string): Promise<string | { success?: string; error?: string; twoFactor?: boolean }> => {
-//     const user = await getUserByEmail(email);
-//     if (!user) throw new Error('Invalid credentials');
-//     const isMatch = await bcrypt.compare(password, user.password as string);
-//     if (!isMatch) throw new Error('Invalid credentials');
-//     // if (!user.emailVerified) {
-//     //     const verificationToken = await generateVerificationToken(user.email as string);
-//     //     await sendVerificationEmail(user.email as string, user.name ?? '', verificationToken.token);
-//     //     return { success: "Verification email sent!" };
-//     // }
-//     if (user.isTwoFactorEnabled && user.email) {
-//         if (code) {
-//             const twoFactorToken = await prisma.twoFactorToken.findFirst({ where: { email } });
-//             if (!twoFactorToken || twoFactorToken.token !== code) return { error: "Invalid code!" };
-//             if (new Date(twoFactorToken.expires) < new Date()) return { error: "Code expired!" };
-//             await prisma.twoFactorToken.delete({ where: { id: twoFactorToken.id } });
-//         } else {
-//             const twoFactorToken = await generateTwoFactorToken(user.id, user.email);
-//             await sendTwoFactorTokenEmail(user.email, user.name ?? '', twoFactorToken.token);
-//             return { twoFactor: true };
-//         }
-//     }
-//     return generateTokens(user.id);
-// };
-// Register new user
-const register = (name, email, password) => __awaiter(void 0, void 0, void 0, function* () {
-    const existingUser = yield database_1.default.user.findUnique({ where: { email } });
-    if (existingUser)
-        throw new Error("User email already exists.");
-    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-    const createdUser = yield database_1.default.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword,
-        },
-    });
-    const folderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', email);
-    yield fs_1.promises.mkdir(folderPath, { recursive: true });
-    yield database_1.default.folder.create({
-        data: { name: email, userId: createdUser.id },
-    });
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-    yield database_1.default.user.update({
-        where: { id: createdUser.id },
-        data: { otpToken: otp, otpExpires },
-    });
-    yield (0, email_1.sendOtpEmail)(email, otp);
-    const verificationToken = yield (0, exports.generateVerificationToken)(email);
-    yield (0, email_1.sendVerificationEmail)(email, name, verificationToken.token);
-    // const confirmationToken = generateToken(user.id as string);
-    // await userService.setConfirmationToken(user.id, confirmationToken);
-    // await sendConfirmationEmail(user.email as string, confirmationToken);
-    return "Successfully registered. Verify your email!";
+const getUsers = () => __awaiter(void 0, void 0, void 0, function* () {
+    const users = yield database_1.default.user.findMany({ select: { id: true, name: true, email: true, role: true } });
+    return users;
 });
-exports.register = register;
-// export const login1 = async (email: string, password: string, code: string) => {
-//     // Check if user exists
-//     const user = await getUserByEmail(email);
-//     if (!user) {
-//         throw new Error('Invalid credentials');
-//     }
-//     // Check password
-//     const isMatch = await bcrypt.compare(password, user.password as string);
-//     if (!isMatch) {
-//         throw new Error('Invalid credentials');
-//     }
-//     if (!user.emailVerified) {
-//         const verificationToken = await generateVerificationToken(user.email as string);
-//         await sendVerificationEmail(verificationToken.email, user?.name as string, verificationToken.token);
-//         return { success: "Verification email sent!" };
-//     }
-//     if (user.isTwoFactorEnabled && user.email) {
-//         if (code) {
-//             const twoFactorToken = await prisma.twoFactorToken.findFirst({
-//                 where: { email },
-//             });
-//             if (!twoFactorToken || twoFactorToken.token !== code) {
-//                 return { error: "Invalid code!" };
-//             }
-//             const hasExpired = new Date(twoFactorToken.expires) < new Date();
-//             if (hasExpired) {
-//                 return { error: "Code expired!" };
-//             }
-//             await prisma.twoFactorToken.delete({
-//                 where: { id: twoFactorToken.id },
-//             });
-//             const existingConfirmation = await prisma.twoFactorConfirmation.findUnique({ where: { userId: user.id } });
-//             if (existingConfirmation) {
-//                 await prisma.twoFactorConfirmation.delete({
-//                     where: { id: existingConfirmation.id },
-//                 });
-//             }
-//             await prisma.twoFactorConfirmation.create({
-//                 data: {
-//                     userId: user.id,
-//                 },
-//             });
-//         } else {
-//             const twoFactorToken = await generateTwoFactorToken(user.id, user.email);
-//             await sendTwoFactorTokenEmail(twoFactorToken.email, user?.name as string, twoFactorToken.token);
-//             return { twoFactor: true };
-//         }
-//     }
-//     // Generate JWT token
-//     const token = generateTokens(user.id);
-//     return token;
-// }
+exports.getUsers = getUsers;
 const getVerificationTokenByEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const verificationToken = yield database_1.default.verificationToken.findFirst({
@@ -257,14 +140,6 @@ const getTwoFactorTokenByEmail = (email) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.getTwoFactorTokenByEmail = getTwoFactorTokenByEmail;
-// export const sendSharedFileEmail = async (email: string, message: string, shareableLink: string) => {
-//     const user = await prisma.user.findUnique({ where: { email }, });
-//     if (!user) {
-//         throw new Error('User not found')
-//     }
-//     await sendSharedLinkEmail(email, message, user?.email as string, shareableLink)
-//     return { success: true };
-// }
 const getTwoFactorConfirmationByUserId = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const twoFactorConfirmation = yield database_1.default.twoFactorConfirmation.findUnique({
@@ -292,42 +167,6 @@ const verifyOtp = (email, otp) => __awaiter(void 0, void 0, void 0, function* ()
     return 'Email verified successfully';
 });
 exports.verifyOtp = verifyOtp;
-// export const register1 = async (name: string, email: string, password: string): Promise<string> => {
-//     const hashedPassword = await bcrypt.hash(password, 10);
-//     const existingUser = await prisma.user.findUnique({ where: { email }, });
-//     // console.log(existingUser);
-//     if (existingUser) {
-//         throw new Error("User email already exists.")
-//     }
-//     const createdUser = await prisma.user.create({
-//         data: {
-//             name,
-//             email,
-//             password: hashedPassword,
-//         },
-//     });
-//     // Create folder in the public directory based on email
-//     const folderPath = path.join(process.cwd(), 'public', 'File Manager', email);
-//     await fs.mkdir(folderPath, { recursive: true });
-//     // Save folder metadata to the database
-//     await prisma.folder.create({
-//         data: {
-//             name: email,
-//             userId: createdUser.id
-//         },
-//     });
-//     // Generate OTP
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString()
-//     const otpExpires = new Date(Date.now() + 10 * 60 * 1000) // OTP expires in 10 minutes
-//     await prisma.user.create({
-//         data: { isVerified: false, otpToken: otp, otpExpires: otpExpires },
-//     });
-//     // Send OTP to user's email
-//     await sendOtpEmail(email, otp)
-//     const verificationToken = await generateVerificationToken(email);
-//     await sendVerificationEmail(verificationToken.email, name, verificationToken.token);
-//     return "Successfully registered. Verify your email!";
-// };
 const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield database_1.default.user.findUnique({
         where: { id: userId },
@@ -342,17 +181,32 @@ const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* (
     return user;
 });
 exports.getUserProfile = getUserProfile;
-const createUser = (name, email, password) => __awaiter(void 0, void 0, void 0, function* () {
+const createUser = (name, email, password, role) => __awaiter(void 0, void 0, void 0, function* () {
     const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-    return database_1.default.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword,
-        },
+    const user = yield database_1.default.user.create({ data: { name, email, password: hashedPassword, role: role } });
+    const folderPath = path_1.default.join(__dirname, 'Storage', 'File Manager', email);
+    yield fs_1.promises.mkdir(folderPath, { recursive: true });
+    yield database_1.default.folder.create({
+        data: { name: email, userId: user.id },
     });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    yield database_1.default.user.update({
+        where: { id: user.id },
+        data: { otpToken: otp, otpExpires },
+    });
+    const verificationToken = yield (0, exports.generateVerificationToken)(email);
+    yield (0, email_1.sendVerificationEmail)(email, name, verificationToken.token);
 });
 exports.createUser = createUser;
+const updateUser = (id, name, email, role) => __awaiter(void 0, void 0, void 0, function* () {
+    yield database_1.default.user.update({ where: { id }, data: { name, email, role: role } });
+});
+exports.updateUser = updateUser;
+const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    yield database_1.default.user.delete({ where: { id } });
+});
+exports.deleteUser = deleteUser;
 const validateUser = (email, password) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield database_1.default.user.findUnique({ where: { email } });
     if (!user) {
@@ -372,17 +226,6 @@ const setConfirmationToken = (userId, token) => __awaiter(void 0, void 0, void 0
     });
 });
 exports.setConfirmationToken = setConfirmationToken;
-// export const confirmEmail = async (token: string) => {
-//     const userId = verifyAccessToken(token);
-//     const user = await prisma.user.findUnique({ where: { id: userId } });
-//     if (!user || user.confirmationToken !== token) {
-//         throw new Error('Invalid confirmation token');
-//     }
-//     await prisma.user.update({
-//         where: { id: userId },
-//         data: { isEmailConfirmed: true, confirmationToken: null },
-//     });
-// };
 const createPasswordResetToken = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield database_1.default.user.findUnique({ where: { email } });
     if (!user) {
@@ -418,11 +261,3 @@ const resetPassword = (token, newPassword) => __awaiter(void 0, void 0, void 0, 
     });
 });
 exports.resetPassword = resetPassword;
-// export const validateRefreshToken = async (refreshToken: string) => {
-//     const userId = verifyAccessToken(refreshToken);
-//     const user = await prisma.user.findUnique({ where: { id: userId } });
-//     if (!user) {
-//         throw new Error('Invalid refresh token');
-//     }
-//     return userId;
-// };

@@ -4,31 +4,24 @@ import bcrypt from 'bcrypt';
 import { Prisma, User } from '@prisma/client';
 import { generateVerificationToken, getUserByEmail, getVerificationTokenByToken } from './userService';
 import { sendTwoFactorTokenEmail, sendVerificationEmail } from '../utils/email';
-import { generateTokens, verifyRefreshToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { generateOtp } from '../utils/helpers';
 import { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import path from 'path';
 import { promises as fs } from 'fs';
 
-export const refreshAccessToken1 = async (refreshToken: string) => {
-    const userId = await verifyRefreshToken(refreshToken);
-    if (!userId) throw new Error('Invalid refresh token');
-    return generateTokens(userId);
-};
 
 
-export const refreshAccessToken = async (refreshToken: string) => {
+const OTP_EXPIRATION_MINUTES = 10;
+const SALT_ROUNDS = 10;
+
+export const refreshToken = async (refreshToken: string) => {
     try {
         const decoded = verifyRefreshToken(refreshToken) as JwtPayload;
-        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        const accessToken = generateAccessToken(decoded.id);
 
-        if (!user) {
-            throw new Error('User not found');
-        }
-
-        const tokens = generateTokens(user.id);
-        return tokens;
+        return accessToken;
     } catch (error) {
         console.error('Error refreshing access token:', error);
         return null;
@@ -91,9 +84,11 @@ export const login = async (email: string, password: string, code?: string): Pro
         data: { lastActive: new Date() },
     });
 
-    const tokens = await generateTokens(user.id);
+    const accessToken = await generateAccessToken(user.id);
+    const refreshToken = await generateRefreshToken(user.id);
+
     return {
-        ...tokens,
+        ...accessToken, refreshToken,
         user: {
             id: user.id,
             name: user.name,
@@ -104,11 +99,64 @@ export const login = async (email: string, password: string, code?: string): Pro
 
 
 
-const OTP_EXPIRATION_MINUTES = 10;
-const SALT_ROUNDS = 10;
+// Determine storage path based on environment
+const getStoragePath = (email: string) => {
+    if (process.env.NODE_ENV === 'production') {
+        return path.join('/var/www/cefmdrive/storage', email);
+    } else {
+        return path.join(__dirname, 'public', 'storage', email); // Development path
+    }
+};
 
 // Register new user
 export const register = async (name: string, email: string, password: string): Promise<string> => {
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) throw new Error("User email already exists.");
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user in the database
+    const createdUser = await prisma.user.create({
+        data: {
+            name,
+            email,
+            password: hashedPassword,
+        },
+    });
+
+
+    // Create folder for user files
+    const folderPath = getStoragePath(email);
+    await fs.mkdir(folderPath, { recursive: true });
+    await fs.chmod(folderPath, 0o700);
+
+    // Create a folder record in the database (if you have a folder model)
+    await prisma.folder.create({
+        data: { name: email, userId: createdUser.id },
+    });
+
+    // Generate OTP and expiry
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+
+    // Update user with OTP token and expiry
+    await prisma.user.update({
+        where: { id: createdUser.id },
+        data: { otpToken: otp, otpExpires },
+    });
+
+    // Generate and send verification token and email
+    const verificationToken = await generateVerificationToken(email);
+    await sendVerificationEmail(email, name, verificationToken.token);
+
+    return "Successfully registered. Verify your email!";
+};
+
+
+// Register new user
+export const register1 = async (name: string, email: string, password: string): Promise<string> => {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) throw new Error("User email already exists.");
 
@@ -121,7 +169,7 @@ export const register = async (name: string, email: string, password: string): P
         },
     });
 
-    const folderPath = path.join(process.cwd(), 'public', 'File Manager', email);
+    const folderPath = path.join(__dirname, 'Storage', 'File Manager', email);
     await fs.mkdir(folderPath, { recursive: true });
 
     await prisma.folder.create({
@@ -254,6 +302,11 @@ export const createUser = async (name: string, email: string, password: string) 
 
 
 export const getUserProfile = async (userId: string) => {
+
+    console.log(" ++++ getUserProfile +++++++  ")
+    console.log(userId)
+    console.log(" ++++ getUserProfile +++++++  ")
+
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {

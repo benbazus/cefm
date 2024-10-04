@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.downloadFolders1 = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.uploadFile1 = exports.uploadFile = exports.uploadFilee = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.fileUpload11 = exports.fileUpload = exports.handleFileUpload = void 0;
+exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.downloadFolders1 = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.uploadFile1 = exports.uploadFile11 = exports.uploadFile = exports.uploadFilee = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.fileUpload11 = exports.fileUpload = exports.handleFileUpload = void 0;
 exports.getUserInfo = getUserInfo;
 const fileService = __importStar(require("./../services/fileService"));
 const folderService = __importStar(require("../services/folderService"));
@@ -347,7 +347,176 @@ const uploadFilee = (file) => __awaiter(void 0, void 0, void 0, function* () {
     return uploadPath;
 });
 exports.uploadFilee = uploadFilee;
+const getBaseFolderPath = (email) => {
+    return process.env.NODE_ENV === 'production'
+        ? path_1.default.join('/var/www/cefmdrive/storage', email)
+        : path_1.default.join(process.cwd(), 'public', 'File Manager', email);
+};
 const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const bb = (0, busboy_1.default)({ headers: req.headers });
+        const uploadPromises = [];
+        const { userId } = req.user;
+        const userInfo = getUserInfo(req);
+        const { ipAddress, userAgent, deviceType: device, operatingSystem, browser } = userInfo;
+        let folderId = null;
+        let baseFolderPath = '';
+        let fileRelativePath = '';
+        bb.on('field', (name, val) => {
+            if (name === 'folderId') {
+                folderId = val;
+            }
+            if (name === 'relativePath') {
+                fileRelativePath = val;
+            }
+        });
+        bb.on('file', (name, fileStream, info) => __awaiter(void 0, void 0, void 0, function* () {
+            const { filename, mimeType } = info;
+            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
+            relativePath.pop();
+            console.log(" 0000000000000000000000000 ");
+            // Get folder path from the database
+            if (folderId) {
+                const folderResponse = yield folderService.getFolderById(folderId);
+                if (folderResponse) {
+                    baseFolderPath = folderResponse.folderPath;
+                }
+            }
+            const user = yield database_1.default.user.findUnique({ where: { id: userId } });
+            // If folder path is still empty, set default base path
+            if (!baseFolderPath) {
+                baseFolderPath = getBaseFolderPath(user === null || user === void 0 ? void 0 : user.email);
+            }
+            const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
+            const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(filename)}`;
+            const writeStream = fs_extra_1.default.createWriteStream(fullPath);
+            fileStream.pipe(writeStream);
+            uploadPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
+                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+                    try {
+                        const stats = yield fs_extra_1.default.promises.stat(fullPath);
+                        // Check storage usage before saving the file
+                        const currentStorage = yield database_1.default.storageHistory.findFirst({
+                            where: { userId: userId },
+                            orderBy: { createdAt: 'desc' },
+                        });
+                        const newUsedStorage = ((currentStorage === null || currentStorage === void 0 ? void 0 : currentStorage.usedStorage) || 0) + stats.size;
+                        const maxStorageSize = (user === null || user === void 0 ? void 0 : user.maxStorageSize) || 0;
+                        if (newUsedStorage > maxStorageSize) {
+                            fs_extra_1.default.unlinkSync(fullPath);
+                            return reject(new Error('Storage limit exceeded. File not saved.'));
+                        }
+                        // Determine file type based on extension or mime type
+                        const extension = path_1.default.extname(filename).toLowerCase();
+                        const mimeTypes = {
+                            '.pdf': 'Adobe Portable Document Format (PDF)',
+                            '.xlsx': 'Microsoft Excel Spreadsheet (XLSX)',
+                            '.xls': 'Microsoft Excel Spreadsheet (XLS)',
+                            '.png': 'PNG Image',
+                            '.jpg': 'JPEG Image',
+                            '.jpeg': 'JPEG Image',
+                            '.doc': 'Microsoft Word Document',
+                            '.docx': 'Microsoft Word Document',
+                            '.ppt': 'Microsoft PowerPoint Presentation',
+                            '.pptx': 'Microsoft PowerPoint Presentation',
+                            '.txt': 'Plain Text File',
+                            '.zip': 'ZIP Archive',
+                            '.mp4': 'Video File',
+                            '.mov': 'Video File',
+                            '.avi': 'Video File',
+                            '.mkv': 'Video File',
+                            '.webm': 'Video File',
+                            '.mp3': 'Audio File',
+                            '.wav': 'Audio File',
+                            '.aac': 'Audio File',
+                            '.flac': 'Audio File',
+                            '.ogg': 'Audio File',
+                            '.m4a': 'Audio File',
+                        };
+                        const fileType = mimeTypes[extension] || mimeType;
+                        if (!folderId) {
+                            const folder = yield database_1.default.folder.findFirst({ where: { name: user === null || user === void 0 ? void 0 : user.email } });
+                            folderId = (folder === null || folder === void 0 ? void 0 : folder.id) || null;
+                        }
+                        const fileData = yield database_1.default.file.create({
+                            data: {
+                                name: filename,
+                                filePath: fullPath,
+                                fileUrl: fileUrl,
+                                mimeType: mimeType,
+                                size: stats.size,
+                                userId: userId,
+                                folderId: folderId,
+                                fileType: fileType,
+                            },
+                        });
+                        // Log file activity
+                        yield database_1.default.fileActivity.create({
+                            data: {
+                                userId,
+                                fileId: fileData.id,
+                                activityType: 'File',
+                                action: 'CREATE FILE',
+                                ipAddress,
+                                userAgent,
+                                device,
+                                operatingSystem,
+                                browser,
+                                filePath: fullPath,
+                                fileSize: stats.size,
+                                fileType: fileType,
+                            },
+                        });
+                        // Update storage history
+                        const totalStorage = (user === null || user === void 0 ? void 0 : user.maxStorageSize) || 0;
+                        const storageUsagePercentage = (newUsedStorage / Math.max(totalStorage, 1)) * 100;
+                        const overflowStorage = Math.max(0, newUsedStorage - totalStorage);
+                        yield database_1.default.storageHistory.create({
+                            data: {
+                                userId: userId,
+                                usedStorage: newUsedStorage,
+                                totalStorage: totalStorage,
+                                storageType: 'file',
+                                storageLocation: baseFolderPath,
+                                storageUsagePercentage: Math.min(storageUsagePercentage, 100),
+                                storageLimit: totalStorage,
+                                overflowStorage: overflowStorage,
+                                notificationSent: storageUsagePercentage > 90,
+                            },
+                        });
+                        resolve(fileData);
+                    }
+                    catch (error) {
+                        reject(error);
+                    }
+                }));
+                writeStream.on('error', (error) => {
+                    reject(error);
+                });
+            })));
+        }));
+        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const results = yield Promise.all(uploadPromises);
+                res.json({ message: 'Files uploaded successfully', files: results });
+            }
+            catch (error) {
+                if (error.message === 'Storage limit exceeded. File not saved.') {
+                    res.status(400).json({ error: error.message });
+                }
+                else {
+                    res.status(500).json({ error: 'Error uploading files' });
+                }
+            }
+        }));
+        req.pipe(bb);
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.uploadFile = uploadFile;
+const uploadFile11 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const bb = (0, busboy_1.default)({ headers: req.headers });
         const uploadPromises = [];
@@ -385,7 +554,7 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 baseFolderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
             }
             const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
-            const fileUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(filename)}`;
+            const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(filename)}`;
             const writeStream = fs_extra_1.default.createWriteStream(fullPath);
             fileStream.pipe(writeStream);
             uploadPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
@@ -530,7 +699,7 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         next(error);
     }
 });
-exports.uploadFile = uploadFile;
+exports.uploadFile11 = uploadFile11;
 const uploadFile1 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const bb = (0, busboy_1.default)({ headers: req.headers });

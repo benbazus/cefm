@@ -8,7 +8,6 @@ import UnauthorisedError from './pages/errors/unauthorised-error'
 
 const router = createBrowserRouter([
   // Auth routes
-
   {
     path: '/login',
     lazy: async () => ({
@@ -109,7 +108,6 @@ const router = createBrowserRouter([
   // Main routes
   {
     path: '/',
-
     element: (
       <PrivateRoute>
         <AppShell />
@@ -121,6 +119,12 @@ const router = createBrowserRouter([
         index: true,
         lazy: async () => ({
           Component: (await import('./pages/dashboard')).default,
+        }),
+      },
+      {
+        path: '/dashboard',
+        lazy: async () => ({
+          Component: (await import('./pages/drive/home')).default,
         }),
       },
       {
@@ -195,7 +199,6 @@ const router = createBrowserRouter([
           Component: (await import('./pages/drive/share')).default,
         }),
       },
-
       {
         path: '/drive/sharedwithme',
         lazy: async () => ({
@@ -220,24 +223,6 @@ const router = createBrowserRouter([
           Component: (await import('./pages/document')).default,
         }),
       },
-      // {
-      //   path: 'FilePreview',
-      //   lazy: async () => ({
-      //     Component: (await import('./pages/FileUpload')).default,
-      //   }),
-      // },
-      // {
-      //   path: 'document/:id/:name',
-      //   lazy: async () => ({
-      //     Component: (await import('./pages/document')).default,
-      //   }),
-      // },
-      // {
-      //   path: 'document/:id',
-      //   lazy: async () => ({
-      //     Component: (await import('./pages/document')).default,
-      //   }),
-      // },
       {
         path: 'editor/:id',
         lazy: async () => ({
@@ -282,14 +267,6 @@ const router = createBrowserRouter([
               Component: (await import('./pages/settings/display')).default,
             }),
           },
-          // {
-          //   path: 'error-example',
-          //   lazy: async () => ({
-          //     Component: (await import('./pages/settings/error-example'))
-          //       .default,
-          //   }),
-          //   errorElement: <GeneralError className='h-[50svh]' minimal />,
-          // },
         ],
       },
     ],

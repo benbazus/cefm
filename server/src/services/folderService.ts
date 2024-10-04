@@ -26,8 +26,126 @@ interface CreateFolderResult {
 }
 
 
+// Helper function to determine the base folder path
+const getBaseFolderPath = (email: string): string => {
+    return process.env.NODE_ENV === 'production'
+        ? path.join('/var/www/cefmdrive/storage', email)
+        : path.join(process.cwd(), 'public', 'File Manager', email);
+};
 
+// Create new folder function
 export const createNewFolder = async (
+    userId: string,
+    folderName: string,
+    parentFolderId: string | null,
+    ipAddress: string,
+    userAgent: string,
+    operatingSystem: string,
+    browser: string,
+    device: string,
+): Promise<CreateFolderResult> => {
+    try {
+        const user = await userService.getUserById(userId);
+        if (!user) {
+            return { success: false, message: 'User not found' };
+        }
+
+        const email = user?.email as string;
+
+        const baseFolder = getBaseFolderPath(email);
+        let newFolderPath: string;
+        let newFolderUrl: string;
+        let location: string;
+        let finalParentFolderId = parentFolderId;
+
+        if (!finalParentFolderId) {
+            // Find the root folder
+            const rootFolder = await prisma.folder.findFirst({
+                where: { name: email, userId: user.id },
+            });
+
+            if (!rootFolder) {
+                return { success: false, message: 'Root folder not found' };
+            }
+
+            finalParentFolderId = rootFolder.id;
+            newFolderPath = path.join(baseFolder, folderName);
+            newFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            location = `/${folderName}`;
+        } else {
+            // Find parent folder and construct path based on it
+            const parentFolder = await prisma.folder.findUnique({
+                where: { id: finalParentFolderId },
+            });
+
+            if (!parentFolder) {
+                return { success: false, message: 'Parent folder not found' };
+            }
+
+            newFolderPath = parentFolder.folderPath
+                ? path.join(parentFolder.folderPath, folderName)
+                : path.join(baseFolder, folderName);
+
+            newFolderUrl = parentFolder.folderUrl
+                ? `${parentFolder.folderUrl}/${encodeURIComponent(folderName)}`
+                : `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+
+            location = parentFolder.location
+                ? `${parentFolder.location}/${folderName}`
+                : `/${folderName}`;
+        }
+
+        // Check if the folder already exists
+        try {
+            await fs.access(newFolderPath);
+            return { success: false, message: 'Folder already exists' };
+        } catch (error) {
+            // Folder doesn't exist, so create it
+            await fs.mkdir(newFolderPath, { recursive: true });
+            // Optionally, set permissions if needed
+            await fs.chmod(newFolderPath, 0o755); // Owner has full permissions, others can read and execute
+        }
+
+        // Create folder in the database
+        const newFolder = await prisma.folder.create({
+            data: {
+                name: folderName,
+                parentId: finalParentFolderId,
+                folderPath: newFolderPath,
+                folderUrl: newFolderUrl,
+                location,
+                userId: user.id,
+            },
+        });
+
+        // Log the activity in the database
+        await prisma.fileActivity.create({
+            data: {
+                userId,
+                folderId: newFolder.id,
+                activityType: 'Folder',
+                action: 'CREATE',
+                ipAddress,
+                userAgent,
+                device,
+                operatingSystem,
+                browser,
+                filePath: newFolderPath,
+                fileSize: 0, // Folders don't have a size
+                fileType: 'folder',
+            },
+        });
+
+        return { success: true, message: 'Folder created successfully', folder: newFolder };
+    } catch (error) {
+        console.error('Error creating folder:', error);
+        return { success: false, message: 'An error occurred while creating the folder' };
+    }
+};
+
+
+
+export const createNewFolder1 = async (
     userId: string,
     folderName: string,
     parentFolderId: string | null,

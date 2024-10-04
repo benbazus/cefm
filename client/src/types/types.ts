@@ -1,8 +1,140 @@
-
-
 import { ComponentType } from "react";
-import { User } from "./next-auth";
 
+export interface SharedFile {
+  id: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+  user: User
+  activities: FileActivity[]
+  storageInfo: StorageInfo
+  fileDistribution: FileTypeDistribution
+  storageUsageHistory: StorageUsageHistory
+}
+
+export interface SharedFolder {
+  id: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
+  user: User
+  files: FileItem[]
+  activities: FileActivity[]
+  storageInfo: StorageInfo
+  fileDistribution: FileTypeDistribution
+  storageUsageHistory: StorageUsageHistory
+}
+
+export interface SharedLink {
+  id: string
+  name: string
+  url: string
+  password: string
+  createdAt: Date
+  updatedAt: Date
+  user: User
+  folder: FolderItem
+  file: FileItem
+  activities: FileActivity[]
+  storageInfo: StorageInfo
+  fileDistribution: FileTypeDistribution
+  storageUsageHistory: StorageUsageHistory
+}
+
+export interface UserResponse extends User {
+  token?: string;
+  accessToken?: string
+  success?: boolean
+  error?: string
+  twoFactor?: boolean
+  isOAuth: boolean;
+  // user?: {
+  //   id: string
+  //   name: string;
+  //   email: string;
+  //   image?: string;
+  //   role: UserRole
+  //   isTwoFactorEnabled: boolean
+  // }
+}
+
+export interface AuthResponse {
+  accessToken?: string
+  refreshToken?: string
+  success?: boolean
+  twoFactor?: boolean
+  error?: string
+  isTwoFactorEnabled: boolean
+  user?: {
+    id: string
+    name: string;
+    email: string;
+    image?: string;
+    role: UserRole
+    isTwoFactorEnabled: boolean
+    createdAt: Date
+    updatedAt: Date
+    folders: FolderItem[]
+    files: FileItem[]
+    activities: FileActivity[]
+    storageInfo: StorageInfo
+    fileDistribution: FileTypeDistribution
+    storageUsageHistory: StorageUsageHistory
+    sharedLinks: SharedLink[]
+    sharedFolders: SharedFolder[]
+    sharedFiles: SharedFile[]
+    sharedFoldersCount: number
+    sharedFilesCount: number
+    sharedLinksCount: number
+    sharedFoldersWithLink: SharedFolder[]
+    sharedFilesWithLink: SharedFile[]
+    sharedLinksWithLink: SharedLink[]
+    sharedFoldersWithLinkCount: number
+  }
+}
+
+
+export interface User {
+  id: string
+  name: string;
+  email: string;
+  image?: string;
+  role: UserRole
+  isTwoFactorEnabled: boolean
+  createdAt: Date
+  updatedAt: Date
+  folders: FolderItem[]
+  files: FileItem[]
+  activities: FileActivity[]
+  storageInfo: StorageInfo
+  fileDistribution: FileTypeDistribution
+  storageUsageHistory: StorageUsageHistory
+  sharedLinks: SharedLink[]
+  sharedFolders: SharedFolder[]
+  sharedFiles: SharedFile[]
+  sharedFoldersCount: number
+  sharedFilesCount: number
+  sharedLinksCount: number
+  sharedFoldersWithLink: SharedFolder[]
+  sharedFilesWithLink: SharedFile[]
+  sharedLinksWithLink: SharedLink[]
+  sharedFoldersWithLinkCount: number
+
+}
+export interface UserRole {
+  id: string
+  name: string
+  description: string
+  permissions: string[]
+}
+
+
+export interface Permissions {
+  id: string
+  name: string
+  description: string
+  permissions: string[]
+}
 
 
 export interface FileWithProgress extends File {
@@ -81,17 +213,7 @@ export interface StorageInfo {
 
 
 
-export interface UserResponse extends User {
-  id: string
-  name: string;
-  email: string;
-  full_name?: string;
-  image?: string;
-  // role: UserRole;
-  isTwoFactorEnabled: boolean;
-  isOAuth: boolean;
-  avatarUrl?: string
-}
+
 
 export interface VerificationResponse {
   success?: string
@@ -152,15 +274,15 @@ export interface GetPdfResponse {
   files: FileItemResponse[]
 }
 
-export interface AuthResponse {
-  accessToken?: string
-  success?: boolean
-  twoFactor?: boolean
-  error?: string
-  user?: {
-    isTwoFactorEnabled: boolean
-  }
-}
+// export interface AuthResponse {
+//   accessToken?: string
+//   success?: boolean
+//   twoFactor?: boolean
+//   error?: string
+//   user?: {
+//     isTwoFactorEnabled: boolean
+//   }
+// }
 
 export interface FileItemResponse {
   id: string
@@ -237,13 +359,13 @@ export interface ProfileFormValues {
 
 
 
-export interface UserDetails {
-  id: string
-  first_name: string;
-  last_name: string;
-  full_name?: string;
-  avatar_url?: string;
-}
+// export interface UserDetails {
+//   id: string
+//   first_name: string;
+//   last_name: string;
+//   full_name?: string;
+//   avatar_url?: string;
+// }
 
 
 

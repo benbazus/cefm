@@ -20,7 +20,6 @@ model DocumentUser {
   SharedFile     SharedFile[]
   activities     FileActivity[]
 
-  // @@unique([userId, documentId])
   @@index([userId], name: "idx_documentuser_userId")
   @@index([documentId], name: "idx_documentuser_documentId")
   @@map("documentUser")
@@ -124,7 +123,6 @@ model UserPermission {
   permission     Permission
   documentAccess DocumentAccess @default(RESTRICTED)
 
-  // @@unique([userId, documentId])
   @@map("userPermissions")
 }
 
@@ -297,11 +295,17 @@ model SharedFile {
   @@map("shared_files")
 }
 
+model Setting {
+  id       String @id @default(uuid())
+  key      String @unique
+  value    String
+}
+
 enum UserRole {
   ADMIN
   USER
-  SUPERADMIN
 }
+
 
 enum DocumentAccess {
   RESTRICTED

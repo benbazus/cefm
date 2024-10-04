@@ -8,11 +8,12 @@ import { useFolderFile } from '@/contexts/FileFolderContext'
 import { useFolder } from '@/contexts/FolderContext'
 import { BreadCrumb } from '@/components/custom/Bread-crumb'
 import { ChevronRight, Home } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 
 export default function HomePage() {
   const [isLoading, setLoading] = useState(false)
   const [fileItems, setFileItems] = useState<FileItem[]>([])
-  const { setFolderId } = useFolder()
+  const { setFolderId, setFolderName } = useFolder()
   const { refresh } = useFolderFile()
 
   const fetchAndHandleRootFolder = useCallback(async () => {
@@ -22,6 +23,7 @@ export default function HomePage() {
       const rootFolder = await getRootFolder()
       if (rootFolder) {
         setFolderId(rootFolder.id)
+        setFolderName(rootFolder.name)
       }
 
       const rootFolders: DriveItemsResponse = await getRootChildren()
@@ -79,7 +81,7 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
-  }, [setFolderId])
+  }, [setFolderId, setFolderName])
 
   useEffect(() => {
     fetchAndHandleRootFolder()
@@ -87,19 +89,28 @@ export default function HomePage() {
 
   return (
     <>
-      <div className='container mx-auto px-4'>
+      <Card className='hidden rounded-lg border px-4 shadow-sm'>
+        <BreadCrumb
+          className='my-2 flex items-center'
+          homeIcon={<Home className='h-4 w-4' />}
+          separator={<ChevronRight className='h-4 w-4' />}
+        />
+      </Card>
+
+      {/* <div className='container mx-auto px-4'>
         <BreadCrumb
           className='my-4'
           homeIcon={<Home className='h-4 w-4' />}
           separator={<ChevronRight className='h-4 w-4' />}
         />
-      </div>
+      </div> */}
 
       {/* <Breadcrumb>
         <BreadcrumbItem>
           <Link to='/drive/home'>Home</Link>
         </BreadcrumbItem>
       </Breadcrumb> */}
+
       <DriveTopMenu />
       <DriveContainer fileItems={fileItems} isLoading={isLoading} />
     </>

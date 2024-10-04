@@ -35,6 +35,7 @@ export const errorHandler = (
             return res.status(400).json(errorResponse);
         case 'UnauthorizedError':
             // Redirect to login page for unauthorized errors
+            console.log(" ++++++++++ UnauthorizedError ++++++++++  ")
             return res.redirect('/login');
         default:
             // In production, don't send the stack trace

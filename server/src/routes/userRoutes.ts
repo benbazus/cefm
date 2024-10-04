@@ -1,15 +1,16 @@
+
+
 import express from 'express';
+import { adminMiddleware, authMiddleware } from '../middleware/auth-middle-ware';
 import * as userController from '../controllers/userController';
-import { auth } from '../middleware/auth';
 
 const router = express.Router();
 
-//router.get('/profile', auth, userController.getProfile);
-router.post('/register', userController.register);
-//router.post('/login', userController.login);
-//router.get('/confirm-email/:token', userController.confirmEmail);
-router.post('/forgot-password', userController.forgotPassword);
-router.post('/reset-password/:token', userController.resetPassword);
-//router.post('/refresh-token', userController.refreshToken);
+router.get('/', authMiddleware, adminMiddleware, userController.getUsers);
+router.post('/', authMiddleware, adminMiddleware, userController.createUser);
+router.put('/:id', authMiddleware, adminMiddleware, userController.updateUser);
+router.delete('/:id', authMiddleware, adminMiddleware, userController.deleteUser);
+router.post('/me', authMiddleware, userController.getMe);
 
 export { router as userRouter };
+

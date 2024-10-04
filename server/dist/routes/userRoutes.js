@@ -28,12 +28,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRouter = void 0;
 const express_1 = __importDefault(require("express"));
+const auth_middle_ware_1 = require("../middleware/auth-middle-ware");
 const userController = __importStar(require("../controllers/userController"));
 const router = express_1.default.Router();
 exports.userRouter = router;
-//router.get('/profile', auth, userController.getProfile);
-router.post('/register', userController.register);
-//router.post('/login', userController.login);
-//router.get('/confirm-email/:token', userController.confirmEmail);
-router.post('/forgot-password', userController.forgotPassword);
-router.post('/reset-password/:token', userController.resetPassword);
+router.get('/', auth_middle_ware_1.authMiddleware, auth_middle_ware_1.adminMiddleware, userController.getUsers);
+router.post('/', auth_middle_ware_1.authMiddleware, auth_middle_ware_1.adminMiddleware, userController.createUser);
+router.put('/:id', auth_middle_ware_1.authMiddleware, auth_middle_ware_1.adminMiddleware, userController.updateUser);
+router.delete('/:id', auth_middle_ware_1.authMiddleware, auth_middle_ware_1.adminMiddleware, userController.deleteUser);
+router.post('/me', auth_middle_ware_1.authMiddleware, userController.getMe);

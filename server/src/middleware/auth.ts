@@ -27,7 +27,6 @@ export const auth = async (req: Request, res: Response, next: NextFunction): Pro
             throw new Error('User not found');
         }
 
-        // Set the user and token on the request object
         req.user = {
             id: user.id,
             email: user.email,

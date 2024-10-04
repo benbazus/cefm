@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateRefreshToken = exports.resetPassword = exports.createPasswordResetToken = exports.confirmEmail = exports.getUserProfile = exports.createUser = exports.newVerification = exports.signIn = exports.register = exports.login = exports.refreshAccessToken = exports.refreshAccessToken1 = void 0;
+exports.validateRefreshToken = exports.resetPassword = exports.createPasswordResetToken = exports.confirmEmail = exports.getUserProfile = exports.createUser = exports.newVerification = exports.signIn = exports.register1 = exports.register = exports.login = exports.refreshToken = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const client_1 = require("@prisma/client");
@@ -23,29 +23,20 @@ const helpers_1 = require("../utils/helpers");
 const crypto_1 = __importDefault(require("crypto"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = require("fs");
-const refreshAccessToken1 = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = yield (0, jwt_1.verifyRefreshToken)(refreshToken);
-    if (!userId)
-        throw new Error('Invalid refresh token');
-    return (0, jwt_1.generateTokens)(userId);
-});
-exports.refreshAccessToken1 = refreshAccessToken1;
-const refreshAccessToken = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
+const OTP_EXPIRATION_MINUTES = 10;
+const SALT_ROUNDS = 10;
+const refreshToken = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const decoded = (0, jwt_1.verifyRefreshToken)(refreshToken);
-        const user = yield database_1.default.user.findUnique({ where: { id: decoded.userId } });
-        if (!user) {
-            throw new Error('User not found');
-        }
-        const tokens = (0, jwt_1.generateTokens)(user.id);
-        return tokens;
+        const accessToken = (0, jwt_1.generateAccessToken)(decoded.id);
+        return accessToken;
     }
     catch (error) {
         console.error('Error refreshing access token:', error);
         return null;
     }
 });
-exports.refreshAccessToken = refreshAccessToken;
+exports.refreshToken = refreshToken;
 const login = (email, password, code) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const user = yield database_1.default.user.findUnique({ where: { email } });
@@ -91,18 +82,64 @@ const login = (email, password, code) => __awaiter(void 0, void 0, void 0, funct
         where: { id: user.id },
         data: { lastActive: new Date() },
     });
-    const tokens = yield (0, jwt_1.generateTokens)(user.id);
-    return Object.assign(Object.assign({}, tokens), { user: {
+    const accessToken = yield (0, jwt_1.generateAccessToken)(user.id);
+    const refreshToken = yield (0, jwt_1.generateRefreshToken)(user.id);
+    return Object.assign(Object.assign({}, accessToken), { refreshToken, user: {
             id: user.id,
             name: user.name,
             email: user.email
         } });
 });
 exports.login = login;
-const OTP_EXPIRATION_MINUTES = 10;
-const SALT_ROUNDS = 10;
+// Determine storage path based on environment
+const getStoragePath = (email) => {
+    if (process.env.NODE_ENV === 'production') {
+        return path_1.default.join('/var/www/cefmdrive/storage', email);
+    }
+    else {
+        return path_1.default.join(__dirname, 'public', 'storage', email); // Development path
+    }
+};
 // Register new user
 const register = (name, email, password) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if user already exists
+    const existingUser = yield database_1.default.user.findUnique({ where: { email } });
+    if (existingUser)
+        throw new Error("User email already exists.");
+    // Hash the password
+    const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+    // Create user in the database
+    const createdUser = yield database_1.default.user.create({
+        data: {
+            name,
+            email,
+            password: hashedPassword,
+        },
+    });
+    // Create folder for user files
+    const folderPath = getStoragePath(email);
+    yield fs_1.promises.mkdir(folderPath, { recursive: true });
+    yield fs_1.promises.chmod(folderPath, 0o700);
+    // Create a folder record in the database (if you have a folder model)
+    yield database_1.default.folder.create({
+        data: { name: email, userId: createdUser.id },
+    });
+    // Generate OTP and expiry
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
+    // Update user with OTP token and expiry
+    yield database_1.default.user.update({
+        where: { id: createdUser.id },
+        data: { otpToken: otp, otpExpires },
+    });
+    // Generate and send verification token and email
+    const verificationToken = yield (0, userService_1.generateVerificationToken)(email);
+    yield (0, email_1.sendVerificationEmail)(email, name, verificationToken.token);
+    return "Successfully registered. Verify your email!";
+});
+exports.register = register;
+// Register new user
+const register1 = (name, email, password) => __awaiter(void 0, void 0, void 0, function* () {
     const existingUser = yield database_1.default.user.findUnique({ where: { email } });
     if (existingUser)
         throw new Error("User email already exists.");
@@ -114,7 +151,7 @@ const register = (name, email, password) => __awaiter(void 0, void 0, void 0, fu
             password: hashedPassword,
         },
     });
-    const folderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', email);
+    const folderPath = path_1.default.join(__dirname, 'Storage', 'File Manager', email);
     yield fs_1.promises.mkdir(folderPath, { recursive: true });
     yield database_1.default.folder.create({
         data: { name: email, userId: createdUser.id },
@@ -129,7 +166,7 @@ const register = (name, email, password) => __awaiter(void 0, void 0, void 0, fu
     yield (0, email_1.sendVerificationEmail)(email, name, verificationToken.token);
     return "Successfully registered. Verify your email!";
 });
-exports.register = register;
+exports.register1 = register1;
 // Register new user
 const signIn = (name, email, password) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -221,6 +258,9 @@ const createUser = (name, email, password) => __awaiter(void 0, void 0, void 0, 
 });
 exports.createUser = createUser;
 const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(" ++++ getUserProfile +++++++  ");
+    console.log(userId);
+    console.log(" ++++ getUserProfile +++++++  ");
     const user = yield database_1.default.user.findUnique({
         where: { id: userId },
         select: {

@@ -19,6 +19,7 @@ import compression from "compression";
 import { errorHandler } from "./middleware/errorHandler";
 import fs from "fs";
 import https from "https";
+import { settingsRouter } from "./routes/settingRoutes";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -29,15 +30,15 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
 const PORT = Number(process.env.PORT) || 5000;
 
 let server;
-// if (isDevelopment) {
-server = createServer(app);
-// } else {
-//     // In production, use HTTPS
-//     const privateKey = fs.readFileSync('/path/to/private-key.pem', 'utf8');
-//     const certificate = fs.readFileSync('/path/to/certificate.pem', 'utf8');
-//     const credentials = { key: privateKey, cert: certificate };
-//     server = https.createServer(credentials, app);
-// }
+if (isDevelopment) {
+    server = createServer(app);
+} else {
+    // In production, use HTTPS
+    const privateKey = fs.readFileSync('/path/to/private-key.pem', 'utf8');
+    const certificate = fs.readFileSync('/path/to/certificate.pem', 'utf8');
+    const credentials = { key: privateKey, cert: certificate };
+    server = https.createServer(credentials, app);
+}
 
 const io = new Server(server, {
     cors: {
@@ -48,12 +49,12 @@ const io = new Server(server, {
 });
 
 /* MIDDLEWARE */
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '100mb' }));
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan(isDevelopment ? "dev" : "combined"));
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ extended: false, limit: '10mb' }));
+app.use(bodyParser.json({ limit: '100mb' }));
+app.use(bodyParser.urlencoded({ extended: false, limit: '100mb' }));
 app.use(compression());
 
 // CORS configuration
@@ -95,9 +96,10 @@ app.use('/api/files', fileRouter);
 app.use('/api/folders', folderRouter);
 app.use('/api/dashboard', dashBoardRouter);
 app.use('/api/documents', documentRouter);
+app.use('/api/settings', settingsRouter);
 
 // Serve static files in production
-if (isDevelopment) {
+if (!isDevelopment) {
     const clientBuildPath = path.join(__dirname, '../client/dist');
     app.use(express.static(clientBuildPath, { maxAge: '1d' }));
 
@@ -163,4 +165,4 @@ process.on('unhandledRejection', (reason, promise) => {
     gracefulShutdown();
 });
 
-
+export default app;

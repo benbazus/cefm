@@ -29,7 +29,7 @@ export const FolderFileProvider: React.FC<{ children: React.ReactNode }> = ({
   )
 }
 
-// Custom hook to access the context
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFolderFile = () => {
   const context = useContext(FolderFileContext)
   if (context === undefined) {

@@ -63,9 +63,9 @@ export default function Dashboard() {
           getFileUploadsPerDay(),
         ])
 
-        console.log(' ++++++++++++activity++++++++++++++++++++++ ')
-        console.log(activity)
-        console.log(' +++++++++++++activity+++++++++++++++++++++ ')
+        console.log(' +++++++ usageHistory ++++++++++ ')
+        console.log(usageHistory)
+        console.log(' ++++++ usageHistory +++++++++++ ')
 
         setRecentActivity(activity || [])
         setStorageInfo(
@@ -104,6 +104,27 @@ export default function Dashboard() {
   if (error) {
     return <div className='text-red-500'>{error}</div>
   }
+
+  const formatStorageUsageData = (history: StorageUsageHistory | null) => {
+    if (!history || !Array.isArray(history)) return null
+
+    const labels = history.map((entry) => entry.date)
+    const usedData = history.map((entry) => entry.used / (1024 * 1024)) // Convert bytes to MB
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Used Storage (MB)',
+          data: usedData,
+          borderColor: 'rgba(75,192,192,1)',
+          backgroundColor: 'rgba(75,192,192,0.2)',
+        },
+      ],
+    }
+  }
+
+  const storageUsageData = formatStorageUsageData(storageUsageHistory)
 
   return (
     <div className='space-y-4'>
@@ -211,8 +232,10 @@ export default function Dashboard() {
             <CardTitle>Storage Usage Over Time</CardTitle>
           </CardHeader>
           <CardContent>
-            {storageUsageHistory && (
-              <StorageUsageLineChart data={storageUsageHistory} />
+            {storageUsageData ? (
+              <StorageUsageLineChart data={storageUsageData} />
+            ) : (
+              <div>No data available</div>
             )}
           </CardContent>
         </Card>

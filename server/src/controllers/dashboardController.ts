@@ -43,6 +43,8 @@ export const getFileTypeDistribution = async (req: Request, res: Response, next:
 
 export const getStorageUsageHistory = async (req: Request, res: Response, next: NextFunction) => {
     try {
+
+
         const { userId } = req.user as { userId: string };
         const items = await dashboardService.getStorageUsageHistory(userId);
         res.status(200).json(items);

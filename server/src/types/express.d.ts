@@ -1,6 +1,5 @@
 import { User } from '@prisma/client';
 
-import { User } from '@prisma/client'; // Assuming you're using Prisma
 
 declare global {
     namespace Express {
@@ -16,7 +15,7 @@ declare global {
 }
 
 
-interface UserInfo {
+export interface UserInfo {
     ipAddress: string;
     userAgent: string;
     operatingSystem: string;
@@ -25,4 +24,14 @@ interface UserInfo {
     deviceModel: string;
     deviceVendor: string;
     os: string;
+}
+
+
+export interface AuthRequest extends Request {
+    user?: {
+        userId: string;
+        email: string | null;
+        role: 'USER' | 'ADMIN';
+    };
+    token?: string;
 }

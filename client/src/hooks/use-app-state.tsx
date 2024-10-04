@@ -1,90 +1,155 @@
-// 'use client'
+import { signIn, signOut, fetchUserData } from '@/services/api'
+import api from '@/services/api-client'
+import { AuthResponse, User, UserResponse } from '@/types/types'
+import { handleError } from '@/utils/helpers'
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react'
 
-// import type { ReactNode, Dispatch } from 'react'
-// import React, { createContext, useReducer, useContext } from 'react'
+type AuthContext = {
+  authToken: string | null
+  currentUser: User | null
+  logInUser: (
+    email: string,
+    password: string,
+    code: string
+  ) => Promise<AuthResponse>
+  logOutUser: () => Promise<void>
+  loading: boolean
+}
 
-// // Define types for folder, file, list, and grid actions with name payloads
-// type RefreshAction = { type: 'REFRESH_PAGE'; payload: boolean }
-// type FolderAction = { type: 'DISPLAY_FOLDER'; payload: string }
-// type FileAction = { type: 'DISPLAY_FILE'; payload: string }
-// type ListAction = { type: 'DISPLAY_LIST'; payload: string }
-// type GridAction = { type: 'DISPLAY_GRID'; payload: string }
+const AuthContext = createContext<AuthContext | undefined>(undefined)
 
-// type AppAction =
-//   | RefreshAction
-//   | FolderAction
-//   | FileAction
-//   | ListAction
-//   | GridAction
+type AuthProviderProps = PropsWithChildren
 
-// // Define the initial state and reducer
-// interface AppState {
-//   refresh: boolean
-//   folders: string
-//   files: string
-//   lists: string
-//   grids: string
-// }
+export default function AuthProvider({ children }: AuthProviderProps) {
+  const [authToken, setAuthToken] = useState<string | null>(() =>
+    localStorage.getItem('accessToken')
+  )
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
 
-// const initialAppState: AppState = {
-//   refresh: false,
-//   folders: '',
-//   files: '',
-//   lists: '',
-//   grids: '',
-// }
+  const fetchUser = useCallback(async () => {
+    if (!authToken) {
+      setLoading(false)
+      return
+    }
 
-// const appReducer = (state: AppState, action: AppAction): AppState => {
-//   switch (action.type) {
-//     case 'REFRESH_PAGE':
-//       return { ...state, refresh: action.payload }
-//     case 'DISPLAY_FOLDER':
-//       return { ...state, folders: action.payload }
-//     case 'DISPLAY_FILE':
-//       return { ...state, files: action.payload }
-//     case 'DISPLAY_LIST':
-//       return { ...state, lists: action.payload }
-//     case 'DISPLAY_GRID':
-//       return { ...state, grids: action.payload }
-//     default:
-//       return state
-//   }
-// }
+    try {
+      setLoading(true)
+      const user = (await fetchUserData()) as UserResponse
+      // const { email } = user
 
-// // Create context with types for the state and dispatch
-// interface AppStateContextProps {
-//   state: AppState
-//   dispatch: Dispatch<AppAction>
-// }
+      console.log(' ====fetchUser======== ')
+      console.log(user)
+      console.log(' ====fetchUser====== ')
 
-// const AppStateContext = createContext<AppStateContextProps | undefined>(
-//   undefined
-// )
+      if (user) {
+        console.log(' 00000000000000000000000000')
+        setCurrentUser(user)
+      } else {
+        console.log(' 1111111111111111111111111111 ')
+        setCurrentUser(null)
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+      }
+    } catch (error) {
+      console.log(' 222222222222222222222222222222 ')
+      handleError(error)
+      setAuthToken(null)
+      setCurrentUser(null)
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+    } finally {
+      setLoading(false)
+    }
+  }, [authToken])
 
-// interface AppStateProviderProps {
-//   children: ReactNode
-// }
+  useEffect(() => {
+    fetchUser()
+  }, [fetchUser])
 
-// // Create the context provider component
-// export const AppStateProvider: React.FC<AppStateProviderProps> = ({
-//   children,
-// }) => {
-//   const [state, dispatch] = useReducer(appReducer, initialAppState)
+  const logInUser = useCallback(
+    async (
+      email: string,
+      password: string,
+      code: string
+    ): Promise<AuthResponse> => {
+      setLoading(true)
+      try {
+        const response = (await signIn(email, password, code)) as AuthResponse
 
-//   return (
-//     <AppStateContext.Provider value={{ state, dispatch }}>
-//       {children}
-//     </AppStateContext.Provider>
-//   )
-// }
+        // console.log(' =======useCallback============ ')
+        // console.log(response)
+        // console.log(' =======useCallback========== ')
 
-// // Custom hook to use the AppState context
-// export const useAppState = (): AppStateContextProps => {
-//   const context = useContext(AppStateContext)
+        if (response?.accessToken && response?.user) {
+          const { accessToken, refreshToken, user } = response
+          setAuthToken(accessToken || null)
+          setCurrentUser(user)
 
-//   if (context === undefined) {
-//     throw new Error('useAppState must be used within an AppStateProvider')
-//   }
+          localStorage.setItem('accessToken', accessToken || '')
+          localStorage.setItem('refreshToken', refreshToken || '')
+          api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+        }
 
-//   return context
-// }
+        return response
+      } catch (error) {
+        handleError(error)
+        setAuthToken(null)
+        setCurrentUser(null)
+        throw error
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
+
+  const logOutUser = useCallback(async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken')
+      if (refreshToken) {
+        await signOut(refreshToken)
+      }
+    } catch (error) {
+      console.error('Error during logout:', error)
+    } finally {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+
+      api.defaults.headers.common['Authorization'] = ''
+      setAuthToken(null)
+      setCurrentUser(null)
+    }
+  }, [])
+  return (
+    <AuthContext.Provider
+      value={{
+        authToken,
+        currentUser,
+        logInUser,
+        logOutUser,
+        loading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useAuth() {
+  const context = useContext(AuthContext)
+
+  if (context === undefined) {
+    throw new Error('useAuth must be used inside of a AuthProvider')
+  }
+
+  return context
+}

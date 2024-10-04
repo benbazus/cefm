@@ -61,9 +61,12 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         });
         res.json({
             message: 'Login successful',
-            accessToken,
+            accessToken, refreshToken,
             user,
         });
+        console.log(" +++++++++ result +++++++++++++  ");
+        console.log(result);
+        console.log(" +++++++ result ++++++++++++++  ");
     }
     catch (error) {
         console.error('Login error:', error);
@@ -72,23 +75,15 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.login = login;
 const refreshToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        const refreshToken = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.refreshToken;
-        if (!refreshToken) {
-            return res.status(401).json({ error: 'Refresh token not found' });
-        }
-        const result = yield authService.refreshAccessToken(refreshToken);
-        if (!result || !result.accessToken || !result.refreshToken) {
+        const { refreshToken } = req.body;
+        console.log(" +++++++++ refreshToken +++++++++++++  ");
+        console.log(refreshToken);
+        console.log(" +++++++ refreshToken ++++++++++++++  ");
+        const accessToken = yield authService.refreshToken(refreshToken);
+        if (!accessToken) {
             return res.status(401).json({ error: 'Invalid refresh token' });
         }
-        const { accessToken, refreshToken: newRefreshToken } = result;
-        res.cookie('refreshToken', newRefreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
         res.json({ accessToken });
     }
     catch (error) {
@@ -99,6 +94,8 @@ const refreshToken = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 exports.refreshToken = refreshToken;
 const logout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const { refreshToken } = req.body;
+        yield database_1.default.refreshToken.delete({ where: { token: refreshToken } });
         res.clearCookie('refreshToken');
         res.json({ message: 'Logout successful' });
     }
@@ -199,9 +196,10 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
 exports.register = register;
 const getProfile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { userId } = req.user;
-        const user = yield authService.getUserProfile(userId);
-        res.json(user);
+        // const { userId } = req.user as { userId: string };
+        // const user = await authService.getUserProfile(userId);
+        // res.json(user);
+        res.send(req.user);
     }
     catch (error) {
         next(error);

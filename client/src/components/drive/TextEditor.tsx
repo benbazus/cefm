@@ -52,7 +52,7 @@ export default function TextEditor({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   //  const [userPermission, setUserPermission] = useState<'WRITE' | 'READ'>('READ')
 
-  const [sharedDoc, setSharedDoc] = useState<{
+  const [sharedDoc] = useState<{
     email: string
     message: string
     date: string
@@ -151,6 +151,7 @@ export default function TextEditor({
   useEffect(() => {
     if (socket == null || quill == null) return
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = (delta: any, oldDelta: any, source: string) => {
       if (source !== 'user') return
       socket.emit('send-changes', delta)
@@ -292,7 +293,7 @@ export default function TextEditor({
                 className='border-none text-lg font-medium leading-tight text-gray-900 focus:outline-none focus:ring-0'
                 disabled={documentAction !== 'new' && documentAction !== 'edit'}
               />
-              <div className='flex hidden space-x-2 text-sm text-gray-500'>
+              <div className='hidden space-x-2 text-sm text-gray-500'>
                 <button className='rounded px-2 py-1 hover:bg-gray-100'>
                   File
                 </button>

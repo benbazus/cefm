@@ -34,7 +34,6 @@ const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () 
         if (!user) {
             throw new Error('User not found');
         }
-        // Set the user and token on the request object
         req.user = {
             id: user.id,
             email: user.email,

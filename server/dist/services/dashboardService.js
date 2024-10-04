@@ -110,6 +110,7 @@ const storageInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         return {
             used: totalUsed._sum.size || 0,
             total: maxStorageSize || 0,
+            date: '',
             documentUsage: documentUsage._sum.size || 0,
             imageUsage: imageUsage._sum.size || 0,
             mediaUsage: mediaUsage._sum.size || 0,
@@ -137,12 +138,12 @@ const getStorageUsageHistory = (userId) => __awaiter(void 0, void 0, void 0, fun
         where: { userId },
         orderBy: { timestamp: 'asc' },
     });
-    // If no history entries are found, return null
     if (history.length === 0) {
         return null;
     }
     return history.map((entry) => ({
         used: entry.usedStorage,
+        date: entry.timestamp.toISOString().split('T')[0],
         total: entry.totalStorage,
         documentUsage: 0,
         imageUsage: 0,
@@ -176,7 +177,7 @@ exports.getFileTypeDistribution = getFileTypeDistribution;
 const getFileUploadsPerDay = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const uploads = yield database_1.default.$queryRaw `
         SELECT
-            DATE("createdAt") as date,
+            TO_CHAR(DATE("createdAt"), 'YYYY-MM-DD') as date,
             COUNT(id) as count
         FROM "files"
         WHERE "userId" = ${userId}

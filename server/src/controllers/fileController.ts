@@ -381,7 +381,198 @@ export const uploadFilee = async (file: Express.Multer.File) => {
 
 
 
+const getBaseFolderPath = (email: string): string => {
+    return process.env.NODE_ENV === 'production'
+        ? path.join('/var/www/cefmdrive/storage', email)
+        : path.join(process.cwd(), 'public', 'File Manager', email);
+};
+
 export const uploadFile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const bb = busboy({ headers: req.headers });
+        const uploadPromises: Promise<any>[] = [];
+        const { userId } = req.user as { userId: string };
+
+        const userInfo = getUserInfo(req);
+        const { ipAddress, userAgent, deviceType: device, operatingSystem, browser } = userInfo;
+
+        let folderId: string | null = null;
+        let baseFolderPath = '';
+        let fileRelativePath = '';
+
+        bb.on('field', (name, val) => {
+            if (name === 'folderId') {
+                folderId = val;
+            }
+            if (name === 'relativePath') {
+                fileRelativePath = val;
+            }
+        });
+
+        bb.on('file', async (name, fileStream, info) => {
+            const { filename, mimeType } = info;
+            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
+            relativePath.pop();
+
+            console.log(" 0000000000000000000000000 ")
+
+            // Get folder path from the database
+            if (folderId) {
+                const folderResponse = await folderService.getFolderById(folderId);
+                if (folderResponse) {
+                    baseFolderPath = folderResponse.folderPath as string;
+                }
+            }
+
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+
+            // If folder path is still empty, set default base path
+            if (!baseFolderPath) {
+                baseFolderPath = getBaseFolderPath(user?.email as string);
+            }
+
+            const fullPath = path.join(baseFolderPath, ...relativePath, filename);
+            const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user?.email as string)}/${encodeURIComponent(filename)}`;
+
+            const writeStream = fs.createWriteStream(fullPath);
+            fileStream.pipe(writeStream);
+
+            uploadPromises.push(new Promise(async (resolve, reject) => {
+                writeStream.on('finish', async () => {
+                    try {
+                        const stats = await fs.promises.stat(fullPath);
+
+                        // Check storage usage before saving the file
+                        const currentStorage = await prisma.storageHistory.findFirst({
+                            where: { userId: userId },
+                            orderBy: { createdAt: 'desc' },
+                        });
+
+                        const newUsedStorage = (currentStorage?.usedStorage || 0) + stats.size;
+                        const maxStorageSize = user?.maxStorageSize as number || 0;
+
+                        if (newUsedStorage > maxStorageSize) {
+                            fs.unlinkSync(fullPath);
+                            return reject(new Error('Storage limit exceeded. File not saved.'));
+                        }
+
+                        // Determine file type based on extension or mime type
+                        const extension = path.extname(filename).toLowerCase();
+                        const mimeTypes: { [key: string]: string } = {
+                            '.pdf': 'Adobe Portable Document Format (PDF)',
+                            '.xlsx': 'Microsoft Excel Spreadsheet (XLSX)',
+                            '.xls': 'Microsoft Excel Spreadsheet (XLS)',
+                            '.png': 'PNG Image',
+                            '.jpg': 'JPEG Image',
+                            '.jpeg': 'JPEG Image',
+                            '.doc': 'Microsoft Word Document',
+                            '.docx': 'Microsoft Word Document',
+                            '.ppt': 'Microsoft PowerPoint Presentation',
+                            '.pptx': 'Microsoft PowerPoint Presentation',
+                            '.txt': 'Plain Text File',
+                            '.zip': 'ZIP Archive',
+                            '.mp4': 'Video File',
+                            '.mov': 'Video File',
+                            '.avi': 'Video File',
+                            '.mkv': 'Video File',
+                            '.webm': 'Video File',
+                            '.mp3': 'Audio File',
+                            '.wav': 'Audio File',
+                            '.aac': 'Audio File',
+                            '.flac': 'Audio File',
+                            '.ogg': 'Audio File',
+                            '.m4a': 'Audio File',
+                        };
+                        const fileType = mimeTypes[extension] || mimeType;
+
+                        if (!folderId) {
+                            const folder = await prisma.folder.findFirst({ where: { name: user?.email as string } });
+                            folderId = folder?.id || null;
+                        }
+
+                        const fileData = await prisma.file.create({
+                            data: {
+                                name: filename,
+                                filePath: fullPath,
+                                fileUrl: fileUrl,
+                                mimeType: mimeType,
+                                size: stats.size,
+                                userId: userId,
+                                folderId: folderId,
+                                fileType: fileType,
+                            },
+                        });
+
+                        // Log file activity
+                        await prisma.fileActivity.create({
+                            data: {
+                                userId,
+                                fileId: fileData.id,
+                                activityType: 'File',
+                                action: 'CREATE FILE',
+                                ipAddress,
+                                userAgent,
+                                device,
+                                operatingSystem,
+                                browser,
+                                filePath: fullPath,
+                                fileSize: stats.size,
+                                fileType: fileType,
+                            },
+                        });
+
+                        // Update storage history
+                        const totalStorage = user?.maxStorageSize || 0;
+                        const storageUsagePercentage = (newUsedStorage / Math.max(totalStorage, 1)) * 100;
+                        const overflowStorage = Math.max(0, newUsedStorage - totalStorage);
+
+                        await prisma.storageHistory.create({
+                            data: {
+                                userId: userId,
+                                usedStorage: newUsedStorage,
+                                totalStorage: totalStorage,
+                                storageType: 'file',
+                                storageLocation: baseFolderPath,
+                                storageUsagePercentage: Math.min(storageUsagePercentage, 100),
+                                storageLimit: totalStorage,
+                                overflowStorage: overflowStorage,
+                                notificationSent: storageUsagePercentage > 90,
+                            },
+                        });
+
+                        resolve(fileData);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                writeStream.on('error', (error) => {
+                    reject(error);
+                });
+            }));
+        });
+
+        bb.on('finish', async () => {
+            try {
+                const results = await Promise.all(uploadPromises);
+                res.json({ message: 'Files uploaded successfully', files: results });
+            } catch (error: any) {
+                if (error.message === 'Storage limit exceeded. File not saved.') {
+                    res.status(400).json({ error: error.message });
+                } else {
+                    res.status(500).json({ error: 'Error uploading files' });
+                }
+            }
+        });
+
+        req.pipe(bb);
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const uploadFile11 = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const bb = busboy({ headers: req.headers });
         const uploadPromises: Promise<any>[] = [];
@@ -430,7 +621,7 @@ export const uploadFile = async (req: Request, res: Response, next: NextFunction
             }
 
             const fullPath = path.join(baseFolderPath, ...relativePath, filename);
-            const fileUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(user?.email as string)}/${encodeURIComponent(filename)}`;
+            const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user?.email as string)}/${encodeURIComponent(filename)}`;
 
             const writeStream = fs.createWriteStream(fullPath);
             fileStream.pipe(writeStream);

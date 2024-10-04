@@ -33,6 +33,7 @@ const compression_1 = __importDefault(require("compression"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const fs_1 = __importDefault(require("fs"));
 const https_1 = __importDefault(require("https"));
+const settingRoutes_1 = require("./routes/settingRoutes");
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -58,12 +59,12 @@ const io = new socket_io_1.Server(server, {
     },
 });
 /* MIDDLEWARE */
-app.use(express_1.default.json({ limit: '10mb' }));
+app.use(express_1.default.json({ limit: '100mb' }));
 app.use((0, helmet_1.default)());
 app.use(helmet_1.default.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use((0, morgan_1.default)(isDevelopment ? "dev" : "combined"));
-app.use(body_parser_1.default.json({ limit: '10mb' }));
-app.use(body_parser_1.default.urlencoded({ extended: false, limit: '10mb' }));
+app.use(body_parser_1.default.json({ limit: '100mb' }));
+app.use(body_parser_1.default.urlencoded({ extended: false, limit: '100mb' }));
 app.use((0, compression_1.default)());
 // CORS configuration
 const corsOptions = {
@@ -99,8 +100,9 @@ app.use('/api/files', fileRoutes_1.fileRouter);
 app.use('/api/folders', folderRoutes_1.folderRouter);
 app.use('/api/dashboard', dashboardRoute_1.dashBoardRouter);
 app.use('/api/documents', documentRoutes_1.documentRouter);
+app.use('/api/settings', settingRoutes_1.settingsRouter);
 // Serve static files in production
-if (isDevelopment) {
+if (!isDevelopment) {
     const clientBuildPath = path_1.default.join(__dirname, '../client/dist');
     app.use(express_1.default.static(clientBuildPath, { maxAge: '1d' }));
     app.get('*', (req, res) => res.sendFile(path_1.default.join(clientBuildPath, 'index.html')));
@@ -155,3 +157,4 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     gracefulShutdown();
 });
+exports.default = app;

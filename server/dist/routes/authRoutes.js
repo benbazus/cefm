@@ -39,6 +39,6 @@ router.post('/login', authController.login);
 router.get('/email-verification/:token', authController.emailVerification);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password/:token', authController.resetPassword);
-//router.post('/refresh-token', authController.refreshToken);
+router.post('/refresh-token', authController.refreshToken);
 router.post('/resend-otp', authController.resendOtp);
 router.post('/verify-otp', authController.verifyOtp);

@@ -1,13 +1,13 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import prisma from "../config/database";
-import { log } from "console";
+
 
 
 interface RecentActivity {
     id: string;
     fileName: string;
     action: string | null;
-    timestamp: Date; // Use Date type for timestamp
+    timestamp: Date;
 }
 
 
@@ -15,6 +15,7 @@ interface RecentActivity {
 interface StorageInfo {
     used: number
     total: number
+    date: string
     documentUsage: number
     imageUsage: number
     mediaUsage: number
@@ -28,7 +29,7 @@ interface UserStats {
 
 interface UploadPerDay {
     date: string;
-    count: Decimal; // Keep Decimal for precise storage count
+    count: Decimal;
 }
 
 
@@ -140,6 +141,7 @@ export const storageInfo = async (userId: string): Promise<StorageInfo | null> =
         return {
             used: totalUsed._sum.size || 0,
             total: maxStorageSize || 0,
+            date: '',
             documentUsage: documentUsage._sum.size || 0,
             imageUsage: imageUsage._sum.size || 0,
             mediaUsage: mediaUsage._sum.size || 0,
@@ -163,18 +165,22 @@ export const userStats = async (userId: string): Promise<UserStats> => {
 };
 
 export const getStorageUsageHistory = async (userId: string): Promise<StorageInfo[] | null> => {
+
     const history = await prisma.storageHistory.findMany({
         where: { userId },
         orderBy: { timestamp: 'asc' },
     });
 
-    // If no history entries are found, return null
+
     if (history.length === 0) {
         return null;
     }
 
+
+
     return history.map((entry) => ({
         used: entry.usedStorage,
+        date: entry.timestamp.toISOString().split('T')[0],
         total: entry.totalStorage,
         documentUsage: 0,
         imageUsage: 0,
@@ -208,10 +214,11 @@ export const getFileTypeDistribution = async (userId: string): Promise<{ labels:
     };
 };
 
+
 export const getFileUploadsPerDay = async (userId: string): Promise<{ labels: string[]; datasets: any[] }> => {
     const uploads = await prisma.$queryRaw<UploadPerDay[]>`
         SELECT
-            DATE("createdAt") as date,
+            TO_CHAR(DATE("createdAt"), 'YYYY-MM-DD') as date,
             COUNT(id) as count
         FROM "files"
         WHERE "userId" = ${userId}

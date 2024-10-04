@@ -12,8 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import useUser from '@/hooks/use-user'
-import useAuth from '@/hooks/use-auth'
 import {
   IconUser,
   IconSettings,
@@ -35,24 +33,14 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { FileUploadDialog } from './drive/dialog/FileUploadDialog'
+import { useAuth } from '@/hooks/use-app-state'
 
 interface CustomFile extends File {
   webkitGetAsEntry?: () => FileSystemEntry | null
 }
 
-interface CustomUser {
-  id: string
-  name: string
-  email: string
-  image?: string
-}
-
 export function UserNav() {
-  const { user, loading } = useUser() as {
-    user: CustomUser | null
-    loading: boolean
-  }
-  const { logOut } = useAuth()
+  const { logOutUser, loading, currentUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -69,7 +57,7 @@ export function UserNav() {
 
   const handleLogout = async () => {
     try {
-      await logOut()
+      await logOutUser()
       navigate('/login')
       toast({
         title: 'Logged out successfully',
@@ -178,8 +166,8 @@ export function UserNav() {
 
   if (loading) return <div>Loading...</div>
 
-  if (user?.id) {
-    localStorage.setItem('userId', user.id)
+  if (currentUser?.id) {
+    localStorage.setItem('userId', currentUser.id)
   }
 
   return (
@@ -291,19 +279,21 @@ export function UserNav() {
           <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
             <Avatar className='h-8 w-8'>
               <AvatarImage
-                src={user?.image || '/avatars/default.png'}
-                alt={user?.name || 'User Avatar'}
+                src={currentUser?.image || '/avatars/default.png'}
+                alt={currentUser?.name || 'User Avatar'}
               />
-              <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className='w-56' align='end' forceMount>
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col space-y-1'>
-              <p className='text-sm font-medium leading-none'>{user?.name}</p>
+              <p className='text-sm font-medium leading-none'>
+                {currentUser?.name}
+              </p>
               <p className='text-xs leading-none text-muted-foreground'>
-                {user?.email}
+                {currentUser?.email}
               </p>
             </div>
           </DropdownMenuLabel>

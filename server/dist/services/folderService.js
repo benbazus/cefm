@@ -35,14 +35,111 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFolderDetails = exports.getFolderFileCount1 = exports.getFolderFileCount = exports.shareFolder = exports.getFolderById = exports.renameFolder = exports.findOrCreateFolder = exports.createFolder = exports.getRootChildren = exports.getFoldersAndFilesByFolderId = exports.getRootFolder = exports.createNewFolder = void 0;
+exports.getFolderDetails = exports.getFolderFileCount1 = exports.getFolderFileCount = exports.shareFolder = exports.getFolderById = exports.renameFolder = exports.findOrCreateFolder = exports.createFolder = exports.getRootChildren = exports.getFoldersAndFilesByFolderId = exports.getRootFolder = exports.createNewFolder1 = exports.createNewFolder = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const userService = __importStar(require("../services/userService"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = require("fs");
 const helpers_1 = require("../utils/helpers");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+// Helper function to determine the base folder path
+const getBaseFolderPath = (email) => {
+    return process.env.NODE_ENV === 'production'
+        ? path_1.default.join('/var/www/cefmdrive/storage', email)
+        : path_1.default.join(process.cwd(), 'public', 'File Manager', email);
+};
+// Create new folder function
 const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgent, operatingSystem, browser, device) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield userService.getUserById(userId);
+        if (!user) {
+            return { success: false, message: 'User not found' };
+        }
+        const email = user === null || user === void 0 ? void 0 : user.email;
+        const baseFolder = getBaseFolderPath(email);
+        let newFolderPath;
+        let newFolderUrl;
+        let location;
+        let finalParentFolderId = parentFolderId;
+        if (!finalParentFolderId) {
+            // Find the root folder
+            const rootFolder = yield database_1.default.folder.findFirst({
+                where: { name: email, userId: user.id },
+            });
+            if (!rootFolder) {
+                return { success: false, message: 'Root folder not found' };
+            }
+            finalParentFolderId = rootFolder.id;
+            newFolderPath = path_1.default.join(baseFolder, folderName);
+            newFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            location = `/${folderName}`;
+        }
+        else {
+            // Find parent folder and construct path based on it
+            const parentFolder = yield database_1.default.folder.findUnique({
+                where: { id: finalParentFolderId },
+            });
+            if (!parentFolder) {
+                return { success: false, message: 'Parent folder not found' };
+            }
+            newFolderPath = parentFolder.folderPath
+                ? path_1.default.join(parentFolder.folderPath, folderName)
+                : path_1.default.join(baseFolder, folderName);
+            newFolderUrl = parentFolder.folderUrl
+                ? `${parentFolder.folderUrl}/${encodeURIComponent(folderName)}`
+                : `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            location = parentFolder.location
+                ? `${parentFolder.location}/${folderName}`
+                : `/${folderName}`;
+        }
+        // Check if the folder already exists
+        try {
+            yield fs_1.promises.access(newFolderPath);
+            return { success: false, message: 'Folder already exists' };
+        }
+        catch (error) {
+            // Folder doesn't exist, so create it
+            yield fs_1.promises.mkdir(newFolderPath, { recursive: true });
+            // Optionally, set permissions if needed
+            yield fs_1.promises.chmod(newFolderPath, 0o755); // Owner has full permissions, others can read and execute
+        }
+        // Create folder in the database
+        const newFolder = yield database_1.default.folder.create({
+            data: {
+                name: folderName,
+                parentId: finalParentFolderId,
+                folderPath: newFolderPath,
+                folderUrl: newFolderUrl,
+                location,
+                userId: user.id,
+            },
+        });
+        // Log the activity in the database
+        yield database_1.default.fileActivity.create({
+            data: {
+                userId,
+                folderId: newFolder.id,
+                activityType: 'Folder',
+                action: 'CREATE',
+                ipAddress,
+                userAgent,
+                device,
+                operatingSystem,
+                browser,
+                filePath: newFolderPath,
+                fileSize: 0, // Folders don't have a size
+                fileType: 'folder',
+            },
+        });
+        return { success: true, message: 'Folder created successfully', folder: newFolder };
+    }
+    catch (error) {
+        console.error('Error creating folder:', error);
+        return { success: false, message: 'An error occurred while creating the folder' };
+    }
+});
+exports.createNewFolder = createNewFolder;
+const createNewFolder1 = (userId, folderName, parentFolderId, ipAddress, userAgent, operatingSystem, browser, device) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield userService.getUserById(userId);
         if (!user) {
@@ -122,7 +219,7 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
         return { success: false, message: 'An error occurred while creating the folder' };
     }
 });
-exports.createNewFolder = createNewFolder;
+exports.createNewFolder1 = createNewFolder1;
 //=================================================================================
 const getRootFolder = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const folder = yield database_1.default.folder.findFirst({ where: { parentId: null, userId }, });

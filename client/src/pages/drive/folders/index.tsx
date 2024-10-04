@@ -82,7 +82,7 @@ export default function FolderPage() {
 
   return (
     <>
-      <Card className='rounded-lg border px-4 shadow-sm'>
+      <Card className='hidden rounded-lg border px-4 shadow-sm'>
         <BreadCrumb
           className='my-2 flex items-center'
           homeIcon={<Home className='h-4 w-4' />}

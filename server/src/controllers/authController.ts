@@ -31,9 +31,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
         res.json({
             message: 'Login successful',
-            accessToken,
+            accessToken, refreshToken,
             user,
         });
+
+        console.log(" +++++++++ result +++++++++++++  ")
+        console.log(result)
+        console.log(" +++++++ result ++++++++++++++  ")
+
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'An error occurred during login' });
@@ -42,25 +47,18 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
 export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const refreshToken = req.cookies?.refreshToken;
-        if (!refreshToken) {
-            return res.status(401).json({ error: 'Refresh token not found' });
-        }
 
-        const result = await authService.refreshAccessToken(refreshToken);
+        const { refreshToken } = req.body;
 
-        if (!result || !result.accessToken || !result.refreshToken) {
+        console.log(" +++++++++ refreshToken +++++++++++++  ")
+        console.log(refreshToken)
+        console.log(" +++++++ refreshToken ++++++++++++++  ")
+
+        const accessToken = await authService.refreshToken(refreshToken);
+
+        if (!accessToken) {
             return res.status(401).json({ error: 'Invalid refresh token' });
         }
-
-        const { accessToken, refreshToken: newRefreshToken } = result;
-
-        res.cookie('refreshToken', newRefreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
 
         res.json({ accessToken });
     } catch (error) {
@@ -71,6 +69,8 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
 
 export const logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { refreshToken } = req.body;
+        await prisma.refreshToken.delete({ where: { token: refreshToken } });
         res.clearCookie('refreshToken');
         res.json({ message: 'Logout successful' });
     } catch (error) {
@@ -78,7 +78,6 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
         res.status(500).json({ error: 'An error occurred during logout' });
     }
 };
-
 
 export const verifyOtp = async (req: Request, res: Response) => {
     const { email, otp } = req.body;
@@ -167,7 +166,6 @@ export const resendOtp = async (req: Request, res: Response) => {
     }
 };
 
-
 export const emailVerification = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { token } = req.params;
@@ -189,15 +187,15 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
-
 export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        const { userId } = req.user as { userId: string };
+        // const { userId } = req.user as { userId: string };
+        // const user = await authService.getUserProfile(userId);
+        // res.json(user);
 
-        const user = await authService.getUserProfile(userId);
+        res.send(req.user);
 
-        res.json(user);
     } catch (error) {
         next(error);
     }

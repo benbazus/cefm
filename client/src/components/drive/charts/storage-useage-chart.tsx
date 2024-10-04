@@ -55,7 +55,7 @@ export const StorageUsageLineChart: React.FC<StorageUsageLineChartProps> = ({
         position: 'top' as const,
       },
       title: {
-        display: true,
+        display: false,
         text: 'Storage Usage Over Time',
       },
     },

@@ -66,12 +66,11 @@ const DriveTopMenu: React.FC = () => {
       <div className='flex flex-col items-center justify-between space-y-2 md:flex-row md:space-y-0'>
         <div className='flex items-center space-x-2'>
           <div
-            className='text-lg font-medium capitalize'
+            className='hidden text-lg font-medium capitalize'
             style={{ textTransform: 'capitalize' }}
           >
             {currentPage}
           </div>
-
           {!isExcludedPage && (
             <div className='flex space-x-2'>
               <ButtonComponent
@@ -109,4 +108,3 @@ const DriveTopMenu: React.FC = () => {
 }
 
 export default DriveTopMenu
- 

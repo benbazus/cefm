@@ -28,7 +28,7 @@ import { encodeFolderId, formatSize } from '@/utils/helpers'
 import { useToast } from '@/components/ui/use-toast'
 
 import { addDays, format } from 'date-fns'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Input } from '@/components/ui/input'
 import {
   Table,
@@ -61,7 +61,7 @@ import {
   restoreFile,
 } from '@/services/api'
 import PreviewDialog from './dialog/PreviewDialog'
-import { IconFileText } from '@tabler/icons-react'
+import { IconFileText, IconFileZip } from '@tabler/icons-react'
 
 interface GridContainerProps {
   fileItems: FileItem[]
@@ -81,7 +81,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const [confirmTrashFile, setConfirmTrashFile] = useState<FileItem | null>(
     null
   )
-
+  const location = useLocation()
   const [shareWithMessage, setShareWithMessage] = useState('')
   const [sharedWith, setSharedWith] = useState('')
   const [shareFile, setShareFile] = useState<FileItem | null>(null)
@@ -102,6 +102,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     pageIndex: 0,
     pageSize: 10,
   })
+  const pathnames = location.pathname.split('/').filter((x) => x)
 
   const { triggerRefresh } = useFolderFile()
   const { setFolderId, setFolderName } = useFolder()
@@ -115,6 +116,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     () => (file: FileItem) => {
       if (file.type === 'folder')
         return <Folder className='h-12 w-12 text-yellow-500' />
+
       switch (file.mimeType) {
         case 'application/pdf':
           return <FileText className='h-12 w-12 text-red-500' />
@@ -136,11 +138,12 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
           return <FileText className='h-12 w-12 text-blue-700' />
         case 'application/x-msdownload':
           return <FileCode className='h-12 w-12 text-red-600' />
-        case 'application/zip':
         case 'application/x-zip-compressed':
           return <FileArchive className='h-12 w-12 text-yellow-600' />
         case 'application/doc':
           return <IconFileText className='h-12 w-12 text-green-600' />
+        case 'application/x-compressed':
+          return <IconFileZip className='h-12 w-12 text-green-600' />
         default:
           return <File className='h-12 w-12 text-green-500' />
       }
@@ -159,6 +162,12 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
       const encodedFolderId = encodeFolderId(file.id)
       setFolderId(file.id)
       setFolderName(file.name)
+
+      console.log(' ======= handleDoubleClick =========== ')
+      console.log(file.name)
+      console.log(pathnames)
+      console.log(' ======= handleDoubleClick ======== ')
+
       navigate(`/drive/folders/${encodedFolderId}`)
     } else if (file.mimeType === 'application/pdf') {
       try {
@@ -712,7 +721,13 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     const items =
       selectedView.contentType === 'files' ? memoizedFiles : memoizedFolders
     return (
-      <div className='container mx-auto px-4 py-8'>
+      //  <div className='container mx-auto px-4 py-12'>
+      //   {selectedView.viewType === 'grid'
+      //     ? showItemGrid(items)
+      //     : showItemList()}
+      // </div>
+
+      <div className='px-2'>
         {selectedView.viewType === 'grid'
           ? showItemGrid(items)
           : showItemList()}
