@@ -1,12 +1,6 @@
-Here's a sample `README.md` file for your Google Clone App, structured to include descriptions for both the client and server sides, as well as placeholder sections for images. You can customize the content further based on your specific project details.
-
----
-
 # Google Clone App
 
 A fully functional Google Clone application built with **Vite** for the client side and **Node.js** with **Express** for the server side. The app mimics key features of Google’s search engine, file storage, and sharing functionality. It also includes user authentication, file uploads, and folder management.
-
----
 
 ## Table of Contents
 
@@ -18,8 +12,6 @@ A fully functional Google Clone application built with **Vite** for the client s
 - [Server](#server)
 - [Folder Structure](#folder-structure)
 - [License](#license)
-
----
 
 ## Features
 
@@ -43,7 +35,6 @@ A fully functional Google Clone application built with **Vite** for the client s
 
 ![Server Side Image](path-to-server-side-image.png)
 
----
 
 ## Technologies Used
 
@@ -64,8 +55,6 @@ A fully functional Google Clone application built with **Vite** for the client s
 - **bcrypt**: For hashing passwords
 - **Busboy**: Handling large file uploads and file streams
 
----
-
 ## Installation
 
 ### Prerequisites
@@ -78,7 +67,7 @@ A fully functional Google Clone application built with **Vite** for the client s
 1. **Clone the repository**:
 
 ```bash
-git clone https://github.com/your-username/google-clone.git
+git clone https://github.com/benbazus/cefm.git
 cd google-clone
 ```
 
@@ -111,7 +100,7 @@ PORT=5000
 #### Client-side `.env`
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+VITE_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
 4. **Start the client and server**:
@@ -130,9 +119,7 @@ npm run dev
 
 5. **Access the app**:
 
-Open your browser and go to `http://localhost:3000` for the client side.
-
----
+Open your browser and go to `http://localhost:5173` for the client side.
 
 ## Client
 
@@ -192,24 +179,17 @@ google-clone/
 └── ...
 ```
 
----
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
 
 ## Contributions
 
 Feel free to submit pull requests and open issues if you find any bugs or have suggestions for improvements!
 
----
-
 ## Contact
 
-For any inquiries or feedback, please contact me at [your-email@example.com](mailto:your-email@example.com).
+For any inquiries or feedback, please contact me at [info@benhost.net](mailto:benhost.net).
 
----
 
 This `README.md` provides a comprehensive guide to understanding and setting up the project. Make sure to replace the placeholder image paths with the actual images and include more details as necessary based on the project’s current status.
