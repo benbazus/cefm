@@ -1,4 +1,4 @@
-# Google Clone App
+# File Manager and Sharing App
 
 A fully functional Google Clone application built with **Vite** for the client side and **Node.js** with **Express** for the server side. The app mimics key features of Google’s search engine, file storage, and sharing functionality. It also includes user authentication, file uploads, and folder management.
 
