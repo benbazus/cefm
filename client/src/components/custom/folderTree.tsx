@@ -12,12 +12,14 @@ interface FolderTreeProps {
   folders: Folder[]
   selectedFolder: string | null
   onSelectFolder: (folderId: string) => void
+  currentFolderId?: string | null
 }
 
 export function FolderTree({
   folders,
   selectedFolder,
   onSelectFolder,
+  currentFolderId,
 }: FolderTreeProps) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
 
@@ -37,12 +39,19 @@ export function FolderTree({
     const isSelected = folder.id === selectedFolder
     const hasChildren = folder.children.length > 0
     const isExpanded = expandedFolders.has(folder.id)
+    const isCurrent = folder.id === currentFolderId
 
     return (
       <React.Fragment key={folder.id}>
         <tr
-          className={`cursor-pointer ${isSelected ? 'bg-accent' : ''}`}
-          onClick={() => onSelectFolder(folder.id)}
+          className={`cursor-pointer ${isSelected ? 'bg-accent' : ''} ${
+            isCurrent ? 'opacity-50' : ''
+          }`}
+          onClick={() => {
+            if (!isCurrent) {
+              onSelectFolder(folder.id)
+            }
+          }}
         >
           <td className='pl-custom relative m-0 flex flex-nowrap items-center'>
             <div
@@ -69,7 +78,10 @@ export function FolderTree({
             </div>
             <div className='folder-tree-list-item-name flex w-full flex-nowrap items-center'>
               <Folder className='mr-2 h-4 w-4' />
-              <span className='text-nowrap pr-8'>{folder.name}</span>
+              <span className='text-nowrap pr-8'>
+                {folder.name}
+                {isCurrent && ' (Current)'}
+              </span>
             </div>
           </td>
         </tr>

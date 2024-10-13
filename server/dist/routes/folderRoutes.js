@@ -32,7 +32,7 @@ const folderController = __importStar(require("../controllers/folderController")
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 exports.folderRouter = router;
-router.post("/deleteFolderPermanently/:folderId", auth_1.auth, folderController.deleteFolderPermanently);
+router.get("/deleteFolderPermanently/:folderId", auth_1.auth, folderController.deleteFolderPermanently);
 router.get("/get-folders-tree", auth_1.auth, folderController.getFoldersTree);
 router.post("/trash/:folderId", auth_1.auth, folderController.moveFolderToTrash);
 router.post("/restore-folder/:folderId", auth_1.auth, folderController.restoreFolder);

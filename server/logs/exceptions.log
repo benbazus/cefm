@@ -52,3 +52,45 @@ src/controllers/folderController.ts(170,18): error TS2552: Cannot find name 'fol
     at Module.load (node:internal/modules/cjs/loader:1206:32)
     at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
     at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-13T13:04:54.941Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(15,56): error TS2339: Property 'moveFolderToTrash' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(17,65): error TS2339: Property 'restoreFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(19,57): error TS2339: Property 'getFolderDetails' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(21,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(23,51): error TS2339: Property 'unlockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(25,49): error TS2339: Property 'lockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(27,55): error TS2339: Property 'copyFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(29,48): error TS2339: Property 'moveFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(31,60): error TS2339: Property 'getFileCount' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(33,55): error TS2339: Property 'getRootFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(35,57): error TS2339: Property 'getRootChildren' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(40,20): error TS2339: Property 'getChildrenFoldersByParentFolderId' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(43,54): error TS2339: Property 'createNewFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(45,56): error TS2339: Property 'downloadFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(15,56): error TS2339: Property 'moveFolderToTrash' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(17,65): error TS2339: Property 'restoreFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(19,57): error TS2339: Property 'getFolderDetails' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(21,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(23,51): error TS2339: Property 'unlockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(25,49): error TS2339: Property 'lockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(27,55): error TS2339: Property 'copyFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(29,48): error TS2339: Property 'moveFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(31,60): error TS2339: Property 'getFileCount' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(33,55): error TS2339: Property 'getRootFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(35,57): error TS2339: Property 'getRootChildren' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(40,20): error TS2339: Property 'getChildrenFoldersByParentFolderId' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(43,54): error TS2339: Property 'createNewFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(45,56): error TS2339: Property 'downloadFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)

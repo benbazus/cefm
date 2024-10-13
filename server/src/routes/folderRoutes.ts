@@ -4,7 +4,7 @@ import { auth } from "../middleware/auth";
 
 const router = express.Router();
 
-router.post(
+router.get(
   "/deleteFolderPermanently/:folderId",
   auth,
   folderController.deleteFolderPermanently

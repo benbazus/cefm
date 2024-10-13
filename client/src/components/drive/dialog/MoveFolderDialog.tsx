@@ -11,7 +11,7 @@ import { FolderTree } from '@/components/custom/folderTree'
 import { getFoldersTree, moveFileItem } from '@/services/api'
 import { FileItem } from '@/types/types'
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Folder {
   id: string
@@ -45,6 +45,12 @@ export function MoveFolderDialog({
   const handleMove = async () => {
     if (!file?.id || !selectedFolder) return
 
+    // Check if the selected folder is different from the current folder
+    if (selectedFolder === file.parentId) {
+      console.log('Cannot move to the same folder')
+      return
+    }
+
     await moveFileItem(file.id, selectedFolder)
     console.log('Moving to folder:', selectedFolder)
     onMoved()
@@ -64,13 +70,17 @@ export function MoveFolderDialog({
             folders={folders}
             selectedFolder={selectedFolder}
             onSelectFolder={setSelectedFolder}
+            currentFolderId={file?.parentId}
           />
         </DialogDescription>
         <DialogFooter>
           <Button variant='outline' onClick={onClose}>
             Close
           </Button>
-          <Button onClick={handleMove} disabled={!selectedFolder}>
+          <Button
+            onClick={handleMove}
+            disabled={!selectedFolder || selectedFolder === file?.parentId}
+          >
             Move
           </Button>
         </DialogFooter>

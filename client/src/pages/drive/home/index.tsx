@@ -97,13 +97,13 @@ export default function HomePage() {
         />
       </Card>
 
-      {/* <div className='container mx-auto px-4'>
+      <div className='container mx-auto px-4'>
         <BreadCrumb
           className='my-4'
           homeIcon={<Home className='h-4 w-4' />}
           separator={<ChevronRight className='h-4 w-4' />}
         />
-      </div> */}
+      </div>
 
       {/* <Breadcrumb>
         <BreadcrumbItem>

@@ -6,10 +6,7 @@ import { formatSize, getBaseFolderPath } from "../utils/helpers";
 import prisma from "../config/database";
 import archiver from "archiver";
 import { createReadStream, createWriteStream, promises as fs } from "fs";
-import { copyFile, mkdir } from "fs/promises";
-import { chmod } from "fs/promises";
-import { access, constants } from "fs/promises";
-import { rm } from "fs/promises";
+import { copyFile, mkdir, access, constants, chmod, rm } from "fs/promises";
 
 interface UserInfo {
   ipAddress: string;
@@ -81,7 +78,7 @@ export const getFoldersTree = async (
   }
 };
 
-export const deleteFolderPermanently = async (
+export const deleteFolderPermanently1 = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -89,8 +86,6 @@ export const deleteFolderPermanently = async (
   try {
     const { folderId } = req.params;
     const { userId } = req.user as { userId: string };
-
-    console.log(" 0000000000000000000000000000000000 ");
 
     // Start a transaction
     await prisma.$transaction(async (prismaTransaction) => {
@@ -116,6 +111,16 @@ export const deleteFolderPermanently = async (
 
       // Recursively delete all subfolders and files
       const deleteRecursive = async (currentFolderId: string) => {
+        // Find all subfolders
+        const subfolders = await prismaTransaction.folder.findMany({
+          where: { parentId: currentFolderId },
+        });
+
+        // Recursively delete subfolders and their contents
+        for (const subfolder of subfolders) {
+          await deleteRecursive(subfolder.id);
+        }
+
         // Find all files in the current folder
         const files = await prismaTransaction.file.findMany({
           where: { folderId: currentFolderId },
@@ -135,16 +140,6 @@ export const deleteFolderPermanently = async (
         await prismaTransaction.fileActivity.deleteMany({
           where: { folderId: currentFolderId },
         });
-
-        // Find all subfolders
-        const subfolders = await prismaTransaction.folder.findMany({
-          where: { parentId: currentFolderId },
-        });
-
-        // Recursively delete subfolders and their contents
-        for (const subfolder of subfolders) {
-          await deleteRecursive(subfolder.id);
-        }
 
         // Delete the folder itself
         await prismaTransaction.folder.delete({
@@ -192,7 +187,7 @@ export const deleteFolderPermanently = async (
   }
 };
 
-export const deleteFolderPermanently2 = async (
+export const deleteFolderPermanently = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -262,22 +257,23 @@ export const deleteFolderPermanently2 = async (
       await deleteRecursive(folderId);
 
       // Log the activity
-      await prismaTransaction.fileActivity.create({
-        data: {
-          userId,
-          folderId,
-          activityType: "Folder",
-          action: "DELETE_PERMANENT",
-          filePath: folder.folderPath || "",
-          fileSize: 0,
-          fileType: "folder",
-        },
-      });
+      //   await prismaTransaction.fileActivity.create({
+      //     data: {
+      //       userId,
+      //       folderId,
+      //       activityType: "Folder",
+      //       action: "DELETE_PERMANENT",
+      //       filePath: folder.folderPath || "",
+      //       fileSize: 0,
+      //       fileType: "folder",
+      //     },
+      //   });
     });
 
     // Delete the folder from the file system
     if (folder.folderPath) {
       try {
+        //  await checkRecursivePermissions(folder.folderPath);
         await rm(folder.folderPath, { recursive: true, force: true });
       } catch (error) {
         console.error("Error deleting folder from file system:", error);
@@ -299,6 +295,24 @@ export const deleteFolderPermanently2 = async (
     next(error);
   }
 };
+
+async function checkRecursivePermissions(folderPath: string): Promise<void> {
+  try {
+    await fs.access(folderPath, constants.W_OK);
+    const entries = await fs.readdir(folderPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(folderPath, entry.name);
+      if (entry.isDirectory()) {
+        await checkRecursivePermissions(fullPath);
+      } else {
+        await fs.access(fullPath, constants.W_OK);
+      }
+    }
+  } catch (error) {
+    throw new Error(`Permission denied for path: ${folderPath}`);
+  }
+}
 
 export const restoreFolder = async (
   req: Request,

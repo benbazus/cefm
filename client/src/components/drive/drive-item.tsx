@@ -136,6 +136,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
       file.mimeType === 'application/pdf' ||
       file.mimeType.startsWith('image/')
     ) {
+      setIsPreviewDialogOpen(true)
       setPreviewFile(file)
     } else {
       toast({
@@ -247,7 +248,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const handleMoveToTrash = (file: FileItem) => {
     setConfirmTrashFile(file)
 
-    //triggerRefresh()
+    triggerRefresh()
   }
 
   const handleRestoreTrash = async (file: FileItem) => {

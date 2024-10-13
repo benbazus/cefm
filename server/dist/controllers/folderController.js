@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.moveFolder = exports.copyFolder = exports.lockFolder = exports.unlockFolder = exports.getFileCount = exports.getFolderDetails = exports.getRootChildren = exports.getRootFolder = exports.getChildrenFoldersByParentFolderId = exports.downloadFolder = exports.createNewFolder = exports.createNewFolder2 = exports.renameFolder = exports.moveFolderToTrash = exports.restoreFolder = exports.deleteFolderPermanently2 = exports.deleteFolderPermanently = exports.getFoldersTree = void 0;
+exports.moveFolder = exports.copyFolder = exports.lockFolder = exports.unlockFolder = exports.getFileCount = exports.getFolderDetails = exports.getRootChildren = exports.getRootFolder = exports.getChildrenFoldersByParentFolderId = exports.downloadFolder = exports.createNewFolder = exports.createNewFolder2 = exports.renameFolder = exports.moveFolderToTrash = exports.restoreFolder = exports.deleteFolderPermanently = exports.deleteFolderPermanently1 = exports.getFoldersTree = void 0;
 exports.getUserInfo = getUserInfo;
 const folderService = __importStar(require("../services/folderService"));
 const ua_parser_js_1 = __importDefault(require("ua-parser-js"));
@@ -45,9 +45,6 @@ const database_1 = __importDefault(require("../config/database"));
 const archiver_1 = __importDefault(require("archiver"));
 const fs_1 = require("fs");
 const promises_1 = require("fs/promises");
-const promises_2 = require("fs/promises");
-const promises_3 = require("fs/promises");
-const promises_4 = require("fs/promises");
 function getUserInfo(req) {
     const parser = new ua_parser_js_1.default(req.headers["user-agent"]);
     const result = parser.getResult();
@@ -97,11 +94,10 @@ const getFoldersTree = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getFoldersTree = getFoldersTree;
-const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteFolderPermanently1 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folderId } = req.params;
         const { userId } = req.user;
-        console.log(" 0000000000000000000000000000000000 ");
         // Start a transaction
         yield database_1.default.$transaction((prismaTransaction) => __awaiter(void 0, void 0, void 0, function* () {
             // Find the folder
@@ -114,7 +110,7 @@ const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, vo
             // Check if the user has write permissions on the folder
             if (folder.folderPath) {
                 try {
-                    yield (0, promises_3.access)(folder.folderPath, promises_3.constants.W_OK);
+                    yield (0, promises_1.access)(folder.folderPath, promises_1.constants.W_OK);
                 }
                 catch (error) {
                     throw new Error("Permission denied. You don't have write access to this folder.");
@@ -122,6 +118,14 @@ const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, vo
             }
             // Recursively delete all subfolders and files
             const deleteRecursive = (currentFolderId) => __awaiter(void 0, void 0, void 0, function* () {
+                // Find all subfolders
+                const subfolders = yield prismaTransaction.folder.findMany({
+                    where: { parentId: currentFolderId },
+                });
+                // Recursively delete subfolders and their contents
+                for (const subfolder of subfolders) {
+                    yield deleteRecursive(subfolder.id);
+                }
                 // Find all files in the current folder
                 const files = yield prismaTransaction.file.findMany({
                     where: { folderId: currentFolderId },
@@ -138,14 +142,6 @@ const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, vo
                 yield prismaTransaction.fileActivity.deleteMany({
                     where: { folderId: currentFolderId },
                 });
-                // Find all subfolders
-                const subfolders = yield prismaTransaction.folder.findMany({
-                    where: { parentId: currentFolderId },
-                });
-                // Recursively delete subfolders and their contents
-                for (const subfolder of subfolders) {
-                    yield deleteRecursive(subfolder.id);
-                }
                 // Delete the folder itself
                 yield prismaTransaction.folder.delete({
                     where: { id: currentFolderId },
@@ -153,7 +149,7 @@ const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, vo
                 // Delete the folder from the file system
                 if (folder.folderPath) {
                     try {
-                        yield (0, promises_4.rm)(folder.folderPath, { recursive: true, force: true });
+                        yield (0, promises_1.rm)(folder.folderPath, { recursive: true, force: true });
                     }
                     catch (error) {
                         console.error("Error deleting folder from file system:", error);
@@ -189,8 +185,8 @@ const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, vo
         next(error);
     }
 });
-exports.deleteFolderPermanently = deleteFolderPermanently;
-const deleteFolderPermanently2 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+exports.deleteFolderPermanently1 = deleteFolderPermanently1;
+const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folderId } = req.params;
         const { userId } = req.user;
@@ -207,7 +203,7 @@ const deleteFolderPermanently2 = (req, res, next) => __awaiter(void 0, void 0, v
             // Check if the user has write permissions on the folder
             if (folder.folderPath) {
                 try {
-                    yield (0, promises_3.access)(folder.folderPath, promises_3.constants.W_OK);
+                    yield (0, promises_1.access)(folder.folderPath, promises_1.constants.W_OK);
                 }
                 catch (error) {
                     throw new Error("Permission denied. You don't have write access to this folder.");
@@ -243,22 +239,23 @@ const deleteFolderPermanently2 = (req, res, next) => __awaiter(void 0, void 0, v
             // Start the recursive deletion
             yield deleteRecursive(folderId);
             // Log the activity
-            yield prismaTransaction.fileActivity.create({
-                data: {
-                    userId,
-                    folderId,
-                    activityType: "Folder",
-                    action: "DELETE_PERMANENT",
-                    filePath: folder.folderPath || "",
-                    fileSize: 0,
-                    fileType: "folder",
-                },
-            });
+            //   await prismaTransaction.fileActivity.create({
+            //     data: {
+            //       userId,
+            //       folderId,
+            //       activityType: "Folder",
+            //       action: "DELETE_PERMANENT",
+            //       filePath: folder.folderPath || "",
+            //       fileSize: 0,
+            //       fileType: "folder",
+            //     },
+            //   });
         }));
         // Delete the folder from the file system
         if (folder.folderPath) {
             try {
-                yield (0, promises_4.rm)(folder.folderPath, { recursive: true, force: true });
+                //  await checkRecursivePermissions(folder.folderPath);
+                yield (0, promises_1.rm)(folder.folderPath, { recursive: true, force: true });
             }
             catch (error) {
                 console.error("Error deleting folder from file system:", error);
@@ -280,7 +277,27 @@ const deleteFolderPermanently2 = (req, res, next) => __awaiter(void 0, void 0, v
         next(error);
     }
 });
-exports.deleteFolderPermanently2 = deleteFolderPermanently2;
+exports.deleteFolderPermanently = deleteFolderPermanently;
+function checkRecursivePermissions(folderPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield fs_1.promises.access(folderPath, promises_1.constants.W_OK);
+            const entries = yield fs_1.promises.readdir(folderPath, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = path_1.default.join(folderPath, entry.name);
+                if (entry.isDirectory()) {
+                    yield checkRecursivePermissions(fullPath);
+                }
+                else {
+                    yield fs_1.promises.access(fullPath, promises_1.constants.W_OK);
+                }
+            }
+        }
+        catch (error) {
+            throw new Error(`Permission denied for path: ${folderPath}`);
+        }
+    });
+}
 const restoreFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folderId } = req.params;
@@ -383,7 +400,7 @@ const renameFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const newLocation = (_b = folder.location) === null || _b === void 0 ? void 0 : _b.replace(folder.name, newName);
         // Ensure the user has write permissions
         try {
-            yield (0, promises_2.chmod)(oldPath, 0o755);
+            yield (0, promises_1.chmod)(oldPath, 0o755);
         }
         catch (chmodError) {
             console.error("Error changing permissions:", chmodError);
@@ -894,7 +911,7 @@ const copyFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             // Create the new folder in the file system
             yield (0, promises_1.mkdir)(newFolderPath, { recursive: true });
             // Set folder permissions (e.g., 0o755 for read, write, execute for owner, read and execute for others)
-            yield (0, promises_2.chmod)(newFolderPath, 0o755);
+            yield (0, promises_1.chmod)(newFolderPath, 0o755);
             // Create the new folder in the database
             const newFolder = yield database_1.default.folder.create({
                 data: {
@@ -912,7 +929,7 @@ const copyFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     const newFilePath = path_1.default.join(newFolderPath, file.name);
                     yield (0, promises_1.copyFile)(file.filePath, newFilePath);
                     // Set file permissions (e.g., 0o644 for read-write for owner, read for others)
-                    yield (0, promises_2.chmod)(newFilePath, 0o644);
+                    yield (0, promises_1.chmod)(newFilePath, 0o644);
                     yield database_1.default.file.create({
                         data: {
                             name: file.name,
