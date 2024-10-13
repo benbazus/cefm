@@ -34,9 +34,12 @@ const errorHandler_1 = require("./middleware/errorHandler");
 const settingRoutes_1 = require("./routes/settingRoutes");
 const activityRoutes_1 = require("./routes/activityRoutes");
 const url_1 = __importDefault(require("url"));
+console.log("Starting server initialization");
 dotenv_1.default.config();
+console.log("Environment variables loaded");
 const app = (0, express_1.default)();
 const isDevelopment = process.env.NODE_ENV !== "production";
+console.log(`Running in ${isDevelopment ? "development" : "production"} mode`);
 const PORT = 5002;
 // Define allowed origins
 const allowedOrigins = [
@@ -45,9 +48,10 @@ const allowedOrigins = [
     "http://localhost:5001",
     "http://localhost:5000",
     "https://benhost.net",
-    "https://www.benhost.net", // Add www subdomain if needed
+    "https://www.benhost.net",
 ];
 const server = (0, http_1.createServer)(app);
+console.log("HTTP server created");
 const io = new socket_io_1.Server(server, {
     cors: {
         origin: (origin, callback) => {
@@ -65,7 +69,9 @@ const io = new socket_io_1.Server(server, {
     },
     transports: ["websocket", "polling"], // Explicitly define transports
 });
+console.log("Socket.io server initialized");
 /* MIDDLEWARE */
+console.log("Setting up middleware");
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use((0, helmet_1.default)());
 app.use(helmet_1.default.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -89,6 +95,7 @@ const corsOptions = {
     optionsSuccessStatus: 200,
 };
 app.use((0, cors_1.default)(corsOptions));
+console.log("CORS configured");
 // Content Security Policy
 app.use(helmet_1.default.contentSecurityPolicy({
     directives: {
@@ -101,6 +108,7 @@ app.use(helmet_1.default.contentSecurityPolicy({
         upgradeInsecureRequests: [],
     },
 }));
+console.log("Content Security Policy configured");
 // Rate limiting
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 20 * 60 * 1000, // 20 minutes
@@ -109,7 +117,9 @@ const limiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
 });
 app.use(limiter);
+console.log("Rate limiting configured");
 /* ROUTES */
+console.log("Setting up routes");
 app.use("/api/auth", authRoutes_1.authRouter);
 app.use("/api/users", userRoutes_1.userRouter);
 app.use("/api/files", fileRoutes_1.fileRouter);
@@ -120,21 +130,26 @@ app.use("/api/settings", settingRoutes_1.settingsRouter);
 app.use("/api/activities", activityRoutes_1.activityRouter);
 // Serve static files in production
 if (!isDevelopment) {
+    console.log("Configuring static file serving for production");
     const clientBuildPath = path_1.default.join(__dirname, "../client/dist");
     app.use(express_1.default.static(clientBuildPath, { maxAge: "1d" }));
     app.get("*", (req, res) => res.sendFile(path_1.default.join(clientBuildPath, "index.html")));
 }
 else {
+    console.log("Setting up development route");
     app.get("/", (req, res) => {
         res.send("Server is running in development mode");
     });
 }
 // Error handling middleware
 app.use(errorHandler_1.errorHandler);
+console.log("Error handling middleware set up");
 // Setup Socket.io
 (0, socketController_1.setupSocketController)(io);
+console.log("Socket.io controller set up");
 // Start server
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Starting server...");
     try {
         yield new Promise((resolve, reject) => {
             server.listen(PORT, () => {
@@ -142,6 +157,7 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
                 resolve();
             });
         });
+        console.log("Server started successfully");
     }
     catch (error) {
         console.error("Failed to start server:", error);
@@ -164,6 +180,7 @@ const gracefulShutdown = () => {
 };
 process.on("SIGTERM", gracefulShutdown);
 process.on("SIGINT", gracefulShutdown);
+console.log("Graceful shutdown handlers set up");
 // Uncaught exception handler
 process.on("uncaughtException", (error) => {
     console.error("Uncaught Exception:", error);
@@ -174,4 +191,6 @@ process.on("unhandledRejection", (reason, promise) => {
     console.error("Unhandled Rejection at:", promise, "reason:", reason);
     gracefulShutdown();
 });
+console.log("Global error handlers set up");
+console.log("Server initialization complete");
 exports.default = app;

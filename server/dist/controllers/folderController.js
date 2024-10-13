@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFolderVersions = exports.moveFolder = exports.copyFolder = exports.lockFolder = exports.unlockFolder = exports.getFileCount = exports.getFolderDetails = exports.getRootChildren = exports.getRootFolder = exports.getChildrenFoldersByParentFolderId = exports.downloadFolder = exports.createNewFolder = exports.renameFolder = exports.moveFolderToTrash = exports.restoreFolder = exports.deleteFolderPermanently = exports.getFoldersTree = void 0;
+exports.moveFolder = exports.copyFolder = exports.lockFolder = exports.unlockFolder = exports.getFileCount = exports.getFolderDetails = exports.getRootChildren = exports.getRootFolder = exports.getChildrenFoldersByParentFolderId = exports.downloadFolder = exports.createNewFolder = exports.createNewFolder2 = exports.renameFolder = exports.moveFolderToTrash = exports.restoreFolder = exports.deleteFolderPermanently2 = exports.deleteFolderPermanently = exports.getFoldersTree = void 0;
 exports.getUserInfo = getUserInfo;
 const folderService = __importStar(require("../services/folderService"));
 const ua_parser_js_1 = __importDefault(require("ua-parser-js"));
@@ -46,8 +46,8 @@ const archiver_1 = __importDefault(require("archiver"));
 const fs_1 = require("fs");
 const promises_1 = require("fs/promises");
 const promises_2 = require("fs/promises");
-const uuid_1 = require("uuid");
 const promises_3 = require("fs/promises");
+const promises_4 = require("fs/promises");
 function getUserInfo(req) {
     const parser = new ua_parser_js_1.default(req.headers["user-agent"]);
     const result = parser.getResult();
@@ -97,86 +97,85 @@ const getFoldersTree = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getFoldersTree = getFoldersTree;
-const promises_4 = require("fs/promises");
 const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folderId } = req.params;
         const { userId } = req.user;
-        // Find the folder
-        const folder = yield database_1.default.folder.findUnique({
-            where: { id: folderId, userId },
-        });
-        if (!folder) {
-            return res.status(404).json({ error: "Folder not found" });
-        }
-        // Check if the user has write permissions on the folder
-        if (folder.folderPath) {
-            try {
-                yield (0, promises_4.access)(folder.folderPath, promises_4.constants.W_OK);
+        console.log(" 0000000000000000000000000000000000 ");
+        // Start a transaction
+        yield database_1.default.$transaction((prismaTransaction) => __awaiter(void 0, void 0, void 0, function* () {
+            // Find the folder
+            const folder = yield prismaTransaction.folder.findUnique({
+                where: { id: folderId, userId },
+            });
+            if (!folder) {
+                throw new Error("Folder not found");
             }
-            catch (error) {
-                return res.status(403).json({
-                    error: "Permission denied. You don't have write access to this folder.",
+            // Check if the user has write permissions on the folder
+            if (folder.folderPath) {
+                try {
+                    yield (0, promises_3.access)(folder.folderPath, promises_3.constants.W_OK);
+                }
+                catch (error) {
+                    throw new Error("Permission denied. You don't have write access to this folder.");
+                }
+            }
+            // Recursively delete all subfolders and files
+            const deleteRecursive = (currentFolderId) => __awaiter(void 0, void 0, void 0, function* () {
+                // Find all files in the current folder
+                const files = yield prismaTransaction.file.findMany({
+                    where: { folderId: currentFolderId },
                 });
-            }
-        }
-        // Recursively delete all subfolders and files
-        const deleteRecursive = (folderId) => __awaiter(void 0, void 0, void 0, function* () {
-            // Delete all file activities related to files in this folder
-            yield database_1.default.fileActivity.deleteMany({
-                where: { File: { folderId } },
+                // Delete all file activities related to files in this folder
+                yield prismaTransaction.fileActivity.deleteMany({
+                    where: { fileId: { in: files.map((file) => file.id) } },
+                });
+                // Delete all files in the folder
+                yield prismaTransaction.file.deleteMany({
+                    where: { folderId: currentFolderId },
+                });
+                // Delete all folder activities related to this folder
+                yield prismaTransaction.fileActivity.deleteMany({
+                    where: { folderId: currentFolderId },
+                });
+                // Find all subfolders
+                const subfolders = yield prismaTransaction.folder.findMany({
+                    where: { parentId: currentFolderId },
+                });
+                // Recursively delete subfolders and their contents
+                for (const subfolder of subfolders) {
+                    yield deleteRecursive(subfolder.id);
+                }
+                // Delete the folder itself
+                yield prismaTransaction.folder.delete({
+                    where: { id: currentFolderId },
+                });
+                // Delete the folder from the file system
+                if (folder.folderPath) {
+                    try {
+                        yield (0, promises_4.rm)(folder.folderPath, { recursive: true, force: true });
+                    }
+                    catch (error) {
+                        console.error("Error deleting folder from file system:", error);
+                        throw new Error("Failed to delete folder from file system");
+                    }
+                }
             });
-            // Delete all files in the folder
-            yield database_1.default.file.deleteMany({
-                where: { folderId },
+            // Start the recursive deletion
+            yield deleteRecursive(folderId);
+            // Log the activity
+            yield prismaTransaction.fileActivity.create({
+                data: {
+                    userId,
+                    folderId,
+                    activityType: "Folder",
+                    action: "DELETE_PERMANENT",
+                    filePath: folder.folderPath || "",
+                    fileSize: 0,
+                    fileType: "folder",
+                },
             });
-            // Delete all folder activities related to this folder
-            yield database_1.default.fileActivity.deleteMany({
-                where: { folderId },
-            });
-            // Delete all folder versions related to this folder
-            yield database_1.default.folderVersion.deleteMany({
-                where: { folderId },
-            });
-            // Find all subfolders
-            const subfolders = yield database_1.default.folder.findMany({
-                where: { parentId: folderId },
-            });
-            // Recursively delete subfolders
-            for (const subfolder of subfolders) {
-                yield deleteRecursive(subfolder.id);
-            }
-            // Delete the folder itself
-            yield database_1.default.folder.delete({
-                where: { id: folderId },
-            });
-        });
-        // Start the recursive deletion
-        yield deleteRecursive(folderId);
-        // Delete the folder from the file system
-        if (folder.folderPath) {
-            try {
-                yield (0, promises_3.rm)(folder.folderPath, { recursive: true, force: true });
-            }
-            catch (error) {
-                console.error("Error deleting folder from file system:", error);
-                return res
-                    .status(500)
-                    .json({ error: "Failed to delete folder from file system" });
-            }
-        }
-        // Log the activity
-        yield database_1.default.fileActivity.create({
-            data: {
-                userId,
-                folderId,
-                activityType: "Folder",
-                action: "DELETE_PERMANENT",
-                filePath: folder.folderPath || "",
-                fileSize: 0,
-                fileType: "folder",
-            },
-        });
+        }));
         res
             .status(200)
             .json({ message: "Folder and its contents permanently deleted" });
@@ -191,6 +190,97 @@ const deleteFolderPermanently = (req, res, next) => __awaiter(void 0, void 0, vo
     }
 });
 exports.deleteFolderPermanently = deleteFolderPermanently;
+const deleteFolderPermanently2 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { folderId } = req.params;
+        const { userId } = req.user;
+        let folder;
+        // Start a transaction
+        yield database_1.default.$transaction((prismaTransaction) => __awaiter(void 0, void 0, void 0, function* () {
+            // Find the folder
+            folder = yield prismaTransaction.folder.findUnique({
+                where: { id: folderId, userId },
+            });
+            if (!folder) {
+                throw new Error("Folder not found");
+            }
+            // Check if the user has write permissions on the folder
+            if (folder.folderPath) {
+                try {
+                    yield (0, promises_3.access)(folder.folderPath, promises_3.constants.W_OK);
+                }
+                catch (error) {
+                    throw new Error("Permission denied. You don't have write access to this folder.");
+                }
+            }
+            // Recursively delete all subfolders and files
+            const deleteRecursive = (folderId) => __awaiter(void 0, void 0, void 0, function* () {
+                // Delete all file activities related to files in this folder
+                yield prismaTransaction.fileActivity.deleteMany({
+                    where: { File: { folderId } },
+                });
+                // Delete all files in the folder
+                yield prismaTransaction.file.deleteMany({
+                    where: { folderId },
+                });
+                // Delete all folder activities related to this folder
+                yield prismaTransaction.fileActivity.deleteMany({
+                    where: { folderId },
+                });
+                // Find all subfolders
+                const subfolders = yield prismaTransaction.folder.findMany({
+                    where: { parentId: folderId },
+                });
+                // Recursively delete subfolders and their contents
+                for (const subfolder of subfolders) {
+                    yield deleteRecursive(subfolder.id);
+                }
+                // Delete the folder itself
+                yield prismaTransaction.folder.delete({
+                    where: { id: folderId },
+                });
+            });
+            // Start the recursive deletion
+            yield deleteRecursive(folderId);
+            // Log the activity
+            yield prismaTransaction.fileActivity.create({
+                data: {
+                    userId,
+                    folderId,
+                    activityType: "Folder",
+                    action: "DELETE_PERMANENT",
+                    filePath: folder.folderPath || "",
+                    fileSize: 0,
+                    fileType: "folder",
+                },
+            });
+        }));
+        // Delete the folder from the file system
+        if (folder.folderPath) {
+            try {
+                yield (0, promises_4.rm)(folder.folderPath, { recursive: true, force: true });
+            }
+            catch (error) {
+                console.error("Error deleting folder from file system:", error);
+                return res
+                    .status(500)
+                    .json({ error: "Failed to delete folder from file system" });
+            }
+        }
+        res
+            .status(200)
+            .json({ message: "Folder and its contents permanently deleted" });
+    }
+    catch (error) {
+        console.error("Error deleting folder permanently:", error);
+        res.status(500).json({
+            error: "Failed to delete folder permanently",
+            details: error instanceof Error ? error.message : String(error),
+        });
+        next(error);
+    }
+});
+exports.deleteFolderPermanently2 = deleteFolderPermanently2;
 const restoreFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folderId } = req.params;
@@ -317,25 +407,6 @@ const renameFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 error: `Failed to rename folder in the file system: ${fsError.message}`,
             });
         }
-        const latestVersion = yield database_1.default.folderVersion.findFirst({
-            where: { folderId: folder.id },
-            orderBy: { versionNumber: "desc" },
-        });
-        const newVersionNumber = ((latestVersion === null || latestVersion === void 0 ? void 0 : latestVersion.versionNumber) || 0) + 1;
-        // Create a folder version before updating
-        yield database_1.default.folderVersion.create({
-            data: {
-                id: (0, uuid_1.v4)(),
-                folderId: folder.id,
-                name: folder.name,
-                folderPath: folder.folderPath,
-                folderUrl: folder.folderUrl,
-                location: folder.location,
-                versionNumber: newVersionNumber,
-                userId: folder.userId,
-                createdAt: new Date(),
-            },
-        });
         // Update the folder in the database
         const updatedFolder = yield database_1.default.folder.update({
             where: { id: folderId },
@@ -344,9 +415,6 @@ const renameFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 folderPath: newPath,
                 folderUrl: newUrl,
                 location: newLocation,
-                versionNumber: {
-                    increment: 1,
-                },
             },
         });
         // Log the activity
@@ -379,6 +447,121 @@ const renameFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.renameFolder = renameFolder;
+const createNewFolder2 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { folderName, parentFolderId } = req.body;
+        const { userId } = req.user;
+        const user = yield database_1.default.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        if (!folderName ||
+            typeof folderName !== "string" ||
+            folderName.includes("/") ||
+            folderName.includes("\\")) {
+            return res.status(400).json({ error: "Invalid folder name" });
+        }
+        const email = user.email;
+        const baseFolder = (0, helpers_1.getBaseFolderPath)(email);
+        let newFolderPath;
+        let newFolderUrl;
+        let location;
+        let finalParentFolderId = parentFolderId;
+        let rootFolderUrl;
+        if (!finalParentFolderId) {
+            // Find or create the root folder
+            let rootFolder = yield database_1.default.folder.findFirst({
+                where: { name: email, userId: user.id },
+            });
+            if (process.env.NODE_ENV === "production") {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            else {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            if (!rootFolder) {
+                rootFolder = yield database_1.default.folder.create({
+                    data: {
+                        name: email,
+                        userId: user.id,
+                        folderPath: baseFolder,
+                        folderUrl: rootFolderUrl,
+                        location: "/",
+                    },
+                });
+            }
+            finalParentFolderId = rootFolder.id;
+            newFolderPath = path_1.default.join(baseFolder, folderName);
+            if (process.env.NODE_ENV === "production") {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            else {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            newFolderUrl = rootFolderUrl;
+            location = `/${folderName}`;
+        }
+        else {
+            // Find parent folder and construct path based on it
+            const parentFolder = yield database_1.default.folder.findUnique({
+                where: { id: finalParentFolderId },
+            });
+            if (!parentFolder) {
+                return res.status(404).json({ error: "Parent folder not found" });
+            }
+            newFolderPath = path_1.default.join(parentFolder.folderPath, folderName);
+            if (process.env.NODE_ENV === "production") {
+                newFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            else {
+                newFolderUrl = `${process.env.PUBLIC_APP_URL}/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            location = `${parentFolder.location}/${folderName}`;
+        }
+        // Check if the folder already exists in the database
+        const existingFolder = yield database_1.default.folder.findFirst({
+            where: {
+                name: folderName,
+                parentId: finalParentFolderId,
+                userId: user.id,
+            },
+        });
+        if (existingFolder) {
+            return res.status(409).json({ error: "Folder already exists" });
+        }
+        // Create the folder in the file system
+        try {
+            yield fs_1.promises.mkdir(newFolderPath, { recursive: true });
+            yield fs_1.promises.chmod(newFolderPath, 0o755);
+        }
+        catch (error) {
+            console.error("Error creating folder:", error);
+            return res
+                .status(500)
+                .json({ error: "Failed to create folder in file system" });
+        }
+        // Create the folder in the database
+        const newFolder = yield database_1.default.folder.create({
+            data: {
+                name: folderName,
+                folderPath: newFolderPath,
+                folderUrl: newFolderUrl,
+                location,
+                parentId: finalParentFolderId,
+                userId: user.id,
+            },
+        });
+        return res.status(201).json({
+            message: "Folder created successfully",
+            folder: newFolder,
+        });
+    }
+    catch (error) {
+        console.error("Error in createNewFolder:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+exports.createNewFolder2 = createNewFolder2;
 const createNewFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { folderName, parentFolderId } = req.body;
@@ -827,25 +1010,6 @@ const moveFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const newFolderPath = path_1.default.join(newParentFolder.folderPath, currentFolder.name);
         const newFolderUrl = `${newParentFolder.folderUrl}/${encodeURIComponent(currentFolder.name)}`;
         const newLocation = `${newParentFolder.location}/${currentFolder.name}`;
-        const latestVersion = yield database_1.default.folderVersion.findFirst({
-            where: { folderId: newParentFolder.id },
-            orderBy: { versionNumber: "desc" },
-        });
-        const newVersionNumber = ((latestVersion === null || latestVersion === void 0 ? void 0 : latestVersion.versionNumber) || 0) + 1;
-        // Create a folder version before updating
-        yield database_1.default.folderVersion.create({
-            data: {
-                id: (0, uuid_1.v4)(),
-                folderId: currentFolder.id,
-                name: currentFolder.name,
-                folderPath: currentFolder.folderPath,
-                folderUrl: currentFolder.folderUrl,
-                location: currentFolder.location,
-                versionNumber: newVersionNumber,
-                userId,
-                createdAt: new Date(),
-            },
-        });
         // Update the folder
         const updatedFolder = yield database_1.default.folder.update({
             where: { id, userId },
@@ -854,9 +1018,6 @@ const moveFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 folderPath: newFolderPath,
                 folderUrl: newFolderUrl,
                 location: newLocation,
-                versionNumber: {
-                    increment: 1,
-                },
             },
         });
         // Log the activity
@@ -880,21 +1041,3 @@ const moveFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.moveFolder = moveFolder;
-// New function to get folder versions
-const getFolderVersions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { folderId } = req.params;
-        const userId = req.user.id;
-        const folderVersions = yield database_1.default.folderVersion.findMany({
-            where: { folderId, userId },
-            orderBy: { versionNumber: "desc" },
-        });
-        res.json(folderVersions);
-    }
-    catch (error) {
-        console.error("Error getting folder versions:", error);
-        res.status(500).json({ error: "Error getting folder versions" });
-        next(error);
-    }
-});
-exports.getFolderVersions = getFolderVersions;

@@ -45,21 +45,14 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       const user = (await fetchUserData()) as UserResponse
       // const { email } = user
 
-      console.log(' ====fetchUser======== ')
-      console.log(user)
-      console.log(' ====fetchUser====== ')
-
       if (user) {
-        console.log(' 00000000000000000000000000')
         setCurrentUser(user)
       } else {
-        console.log(' 1111111111111111111111111111 ')
         setCurrentUser(null)
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
       }
     } catch (error) {
-      console.log(' 222222222222222222222222222222 ')
       handleError(error)
       setAuthToken(null)
       setCurrentUser(null)
@@ -83,10 +76,6 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true)
       try {
         const response = (await signIn(email, password, code)) as AuthResponse
-
-        // console.log(' =======useCallback============ ')
-        // console.log(response)
-        // console.log(' =======useCallback========== ')
 
         if (response?.accessToken && response?.user) {
           const { accessToken, refreshToken, user } = response

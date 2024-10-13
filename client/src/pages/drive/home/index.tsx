@@ -28,9 +28,6 @@ export default function HomePage() {
 
       const rootFolders: DriveItemsResponse = await getRootChildren()
       if (rootFolders) {
-        // console.log(' ================================= ')
-        // console.log('rootFolders', rootFolders)
-        // console.log(' ================================= ')
         const fetchedFiles = (rootFolders.files || []).map((file) => ({
           id: file.id,
           name: file.name,

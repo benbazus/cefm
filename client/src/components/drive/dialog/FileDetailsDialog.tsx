@@ -19,10 +19,6 @@ export const FileDetailsSheet: React.FC<FileDetailsSheetProps> = ({
   isOpen,
   onClose,
 }) => {
-  console.log(' ++++++++++++++++ ')
-  console.log(fileDetails)
-  console.log(' ++++++++++++++++ ')
-
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent>

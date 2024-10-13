@@ -94,9 +94,7 @@ const uploadStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         })
             .catch((err) => {
             console.error("failed to read file", err);
-            res
-                .status(400)
-                .json({
+            res.status(400).json({
                 message: "No file with such credentials",
                 credentials: req.query,
             });
@@ -113,20 +111,9 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     if (!match) {
         res.status(400).json({ message: 'Invalid "Content-Range" format' });
     }
-    // const [_, rangeStartStr, rangeEndStr, fileSizeStr] = match;
-    // const rangeStart = Number(rangeStartStr);
-    // const rangeEnd = Number(rangeEndStr);
-    // const fileSize = Number(fileSizeStr);
-    // if (rangeStart >= fileSize || rangeStart >= rangeEnd || rangeEnd > fileSize) {
-    //     res.status(400).json({ message: 'Invalid "Content-Range" provided' });
-    // }
-    //============================================================
     const bb = (0, busboy_1.default)({ headers: req.headers });
     const uploadPromises = [];
     const { userId } = req.user;
-    console.log(" ++++++++++++ fileUpload +++++++++++++++++++ ");
-    console.log({ userId });
-    console.log(" +++++++++++ fileUpload ++++++++++++++++++++ ");
     let folderId = null;
     let baseFolderPath = "";
     let fileRelativePath = "";

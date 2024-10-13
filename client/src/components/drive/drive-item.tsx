@@ -22,6 +22,7 @@ import {
   getFolderDetails,
   copyFolder,
   restoreFolder,
+  deleteFolderPermanently,
 } from '@/services/api'
 import PreviewDialog from './dialog/PreviewDialog'
 
@@ -74,9 +75,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const isTrashPage = window.location.pathname === '/drive/trash'
   const isSharePage = window.location.pathname === '/drive/share'
   const isDocumentPage = location.pathname.startsWith('/drive/document')
-
-  // Add this state variable at the component level
-  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleFileClick = (id: string) => {
     setSelectedFile(id === selectedFile ? null : id)
@@ -248,7 +246,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
 
   const handleMoveToTrash = (file: FileItem) => {
     setConfirmTrashFile(file)
-    console.log(' =========handleMoveToTrash=========== ')
+
     //triggerRefresh()
   }
 
@@ -278,9 +276,11 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const handleDeletePermanently = async (file: FileItem) => {
     try {
       if (file.type === 'file') {
+        console.log(' ++++++FILE+++++++++++ ')
         await deletePermanently(true, file.id)
       } else {
-        await deletePermanently(false, file.id)
+        console.log(' ++++++++FOLDER++++++++++++ ')
+        await deleteFolderPermanently(file.id)
       }
 
       toast({
@@ -288,8 +288,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
         description: `Permanently deleted ${file.name}`,
       })
       triggerRefresh()
-      // Force a re-render by updating a state variable
-      setRefreshKey((prevKey) => prevKey + 1)
     } catch (error) {
       console.error('Delete permanently error:', error)
       toast({

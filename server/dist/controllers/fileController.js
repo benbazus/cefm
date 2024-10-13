@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.unlockFile = exports.lockFile = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.copyFile = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.versionsFile = exports.versionRestoreFile = exports.uploadFile = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.moveFile = exports.moveFileItem = exports.fileUpload = exports.handleFileUpload = void 0;
+exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.unlockFile = exports.lockFile = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.copyFile = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.uploadFile = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.moveFile = exports.moveFileItem = exports.fileUpload = exports.handleFileUpload = void 0;
 exports.getUserInfo = getUserInfo;
 const fileService = __importStar(require("./../services/fileService"));
 const folderService = __importStar(require("../services/folderService"));
@@ -55,10 +55,11 @@ const mime_types_1 = __importDefault(require("mime-types"));
 const sharp_1 = __importDefault(require("sharp"));
 const pdf2pic_1 = require("pdf2pic");
 const fs_extra_1 = __importDefault(require("fs-extra"));
-const util_1 = require("util");
-const child_process_1 = require("child_process");
-const fs_1 = require("fs");
-const stream_1 = require("stream");
+const getBaseFolderPath = (email) => {
+    return process.env.NODE_ENV === "production"
+        ? path_1.default.join("/var/www/cefmdrive/storage", email)
+        : path_1.default.join(process.cwd(), "public", "File Manager", email);
+};
 function getUserInfo(req) {
     const parser = new ua_parser_js_1.default(req.headers["user-agent"]);
     const result = parser.getResult();
@@ -353,11 +354,6 @@ const uploadFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.uploadFiles = uploadFiles;
-const getBaseFolderPath = (email) => {
-    return process.env.NODE_ENV === "production"
-        ? path_1.default.join("/var/www/cefmdrive/storage", email)
-        : path_1.default.join(process.cwd(), "public", "File Manager", email);
-};
 const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const bb = (0, busboy_1.default)({ headers: req.headers });
@@ -392,9 +388,6 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             if (!baseFolderPath) {
                 baseFolderPath = getBaseFolderPath(user === null || user === void 0 ? void 0 : user.email);
             }
-            console.log(` ++++++++++++++++++++++++++++++ `);
-            console.log(baseFolderPath);
-            console.log(` ++++++++++++++++++++++++++++++ `);
             const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
             const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(filename)}`;
             const writeStream = fs_extra_1.default.createWriteStream(fullPath);
@@ -494,21 +487,6 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                                 notificationSent: storageUsagePercentage > 90,
                             },
                         });
-                        // Handle file versioning
-                        const latestVersion = yield database_1.default.fileVersion.findFirst({
-                            where: { fileId: fileData.id },
-                            orderBy: { versionNumber: "desc" },
-                        });
-                        const newVersionNumber = ((latestVersion === null || latestVersion === void 0 ? void 0 : latestVersion.versionNumber) || 0) + 1;
-                        yield database_1.default.fileVersion.create({
-                            data: {
-                                userId: userId,
-                                fileId: fileData.id,
-                                versionNumber: newVersionNumber,
-                                url: fileUrl,
-                                folderId: folderId,
-                            },
-                        });
                         resolve(fileData);
                     }
                     catch (error) {
@@ -541,39 +519,6 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.uploadFile = uploadFile;
-const versionRestoreFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const version = yield database_1.default.fileVersion.findUnique({
-            where: { id: req.params.versionId, file: { userId: req.user.id } },
-        });
-        if (!version) {
-            return res.status(404).json({ message: "Version not found" });
-        }
-        const file = yield database_1.default.file.update({
-            where: { id: req.params.id, userId: req.user.id },
-            data: { fileUrl: version.url },
-        });
-        res.json(file);
-    }
-    catch (error) {
-        res.status(500).json({ error: "Error restoring file version" });
-    }
-});
-exports.versionRestoreFile = versionRestoreFile;
-const versionsFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const versions = yield database_1.default.fileVersion.findMany({
-            where: { fileId: req.params.id, file: { userId: req.user.id } },
-            orderBy: { createdAt: "desc" },
-        });
-        res.json(versions);
-    }
-    catch (error) {
-        res.status(500).json({ message: "Error fetching file versions" });
-        next(error);
-    }
-});
-exports.versionsFile = versionsFile;
 const downloadFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         logger_1.default.info("Starting file download process", {
@@ -786,71 +731,56 @@ const deletePermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     const { userId } = req.user;
     const { fileType, fileId } = req.params;
     try {
-        const document = yield database_1.default.document.findUnique({
-            where: { id: fileId },
-        });
-        if (document) {
-            if (!document) {
-                return res
-                    .status(404)
-                    .json({ error: `File with ID ${fileId} not found.` });
+        yield database_1.default.$transaction((prismaClient) => __awaiter(void 0, void 0, void 0, function* () {
+            if (fileType === "Document") {
+                const document = yield prismaClient.document.findUnique({
+                    where: { id: fileId },
+                });
+                if (!document) {
+                    throw new Error(`Document with ID ${fileId} not found.`);
+                }
+                yield prismaClient.document.delete({
+                    where: { id: fileId },
+                });
             }
-            yield database_1.default.document.delete({
-                where: { id: fileId },
-            });
-            return res
-                .status(404)
-                .json({ success: `File with ID ${fileId} deleted permanently.` });
-        }
-        if (fileType === "Folder") {
-            // console.log(' +++++++++++++++type FOLDER+++++++++++++++++++++++ ')
-            //  console.log({ id, type })
-            // console.log(' +++++++++++++++++type+++++++++++++++++++++ ')
-            const folder = yield database_1.default.folder.findUnique({
-                where: { id: fileId },
-            });
-            if (!folder) {
-                return res
-                    .status(404)
-                    .json({ error: `Folder with ID ${fileId} not found.` });
+            else if (fileType === "Folder") {
+                const folder = yield prismaClient.folder.findUnique({
+                    where: { id: fileId },
+                });
+                if (!folder) {
+                    throw new Error(`Folder with ID ${fileId} not found.`);
+                }
+                const folderPath = path_1.default.join(folder.folderPath);
+                yield fs_extra_1.default.rm(folderPath, { recursive: true, force: true });
+                yield prismaClient.folder.delete({ where: { id: fileId } });
             }
-            // Define folder path
-            const folderPath = path_1.default.join(folder.folderPath);
-            // Delete folder from the file system
-            yield fs_extra_1.default.rm(folderPath, { recursive: true, force: true });
-            // Delete folder from database
-            yield database_1.default.folder.delete({ where: { id: fileId } });
-            return res
-                .status(201)
-                .json({ success: `Folder with ID ${fileId} deleted permanently.` });
-        }
-        if (fileType === "File") {
-            const file = yield database_1.default.file.findUnique({ where: { id: fileId } });
-            if (!file) {
-                return res
-                    .status(404)
-                    .json({ error: `File with ID ${fileId} not found.` });
+            else if (fileType === "File") {
+                const file = yield prismaClient.file.findUnique({
+                    where: { id: fileId },
+                });
+                if (!file) {
+                    throw new Error(`File with ID ${fileId} not found.`);
+                }
+                const filePath = path_1.default.join(file.filePath);
+                yield fs_extra_1.default.unlink(filePath);
+                yield prismaClient.file.delete({
+                    where: { id: fileId },
+                });
             }
-            // Define file path
-            const filePath = path_1.default.join(file.filePath);
-            // Delete all related FileVersion records
-            yield database_1.default.fileVersion.deleteMany({
-                where: { fileId: fileId },
-            });
-            // Delete file from the file system
-            yield fs_extra_1.default.unlink(filePath);
-            // Delete file from database
-            yield database_1.default.file.delete({
-                where: { id: fileId },
-            });
-            return res
-                .status(200)
-                .json({ success: `File with ID ${fileId} deleted permanently.` });
-        }
+            else {
+                throw new Error(`Invalid file type: ${fileType}`);
+            }
+        }));
+        return res
+            .status(200)
+            .json({ success: `${fileType} with ID ${fileId} deleted permanently.` });
     }
     catch (error) {
-        logger_1.default.error("An error occurred while deleting the file", { error });
-        next(error);
+        logger_1.default.error("An error occurred while deleting the item", { error });
+        if (error instanceof Error) {
+            return res.status(400).json({ error: error.message });
+        }
+        return res.status(500).json({ error: "An unexpected error occurred" });
     }
 });
 exports.deletePermanently = deletePermanently;
@@ -941,168 +871,8 @@ const generatePreview = (filePath, mimeType, email) => __awaiter(void 0, void 0,
         return null;
     }
 });
-const generatePreview4 = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
-    const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
-    if (!fs_extra_1.default.existsSync(previewDir)) {
-        fs_extra_1.default.mkdirSync(previewDir, { recursive: true });
-    }
-    const previewFileName = `${path_1.default.basename(filePath, path_1.default.extname(filePath))}_preview.png`;
-    const previewPath = path_1.default.join(previewDir, previewFileName);
-    try {
-        if (mimeType.startsWith("image/")) {
-            // Create a readable stream from the original file and a writable stream to the preview file
-            const readStream = (0, fs_1.createReadStream)(filePath);
-            const writeStream = (0, fs_1.createWriteStream)(previewPath);
-            // Pipe the original image to the preview image
-            yield (0, util_1.promisify)(stream_1.pipeline)(readStream, writeStream);
-        }
-        else if (mimeType === "application/pdf") {
-            // For PDF files, directly copy the first page as the preview
-            const readStream = (0, fs_1.createReadStream)(filePath);
-            const writeStream = (0, fs_1.createWriteStream)(previewPath);
-            yield (0, util_1.promisify)(stream_1.pipeline)(readStream, writeStream);
-        }
-        else {
-            return null; // No preview for unsupported file types
-        }
-        console.log(" ============generate R E T U R N Preview================= ");
-        console.log(previewFileName);
-        console.log(previewPath);
-        console.log(`/previews/${previewFileName}`);
-        console.log(" ============generate R E T U R N Preview================= ");
-        const route = `/File Manager/${email}/previews/${previewFileName}`;
-        return route;
-        // return `/${previewDir}/${previewFileName}`;
-    }
-    catch (error) {
-        console.error("Error generating preview:", error);
-        return null;
-    }
-});
-const execAsync = (0, util_1.promisify)(child_process_1.exec);
-const generatePreview2 = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
-    const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
-    yield fs_extra_1.default.ensureDir(previewDir);
-    const previewFileName = `${path_1.default.basename(filePath, path_1.default.extname(filePath))}_preview.png`;
-    const previewPath = path_1.default.join(previewDir, previewFileName);
-    console.log(" ============generatePreview================= ");
-    console.log(previewFileName);
-    console.log(previewPath);
-    console.log(" ===========generatePreview================== ");
-    try {
-        if (mimeType.startsWith("image/")) {
-            yield generateImagePreview(filePath, previewPath);
-        }
-        else if (mimeType === "application/pdf") {
-            yield generatePdfPreview(filePath, previewPath);
-        }
-        else {
-            return null; // No preview for unsupported file types
-        }
-        return `/previews/${previewFileName}`;
-    }
-    catch (error) {
-        console.error("Error generating preview:", error);
-        return null;
-    }
-});
-const generateImagePreview = (filePath, previewPath) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, sharp_1.default)(filePath)
-        .resize(200, 200, { fit: "inside", withoutEnlargement: true })
-        .toFile(previewPath);
-});
-const generatePdfPreview = (filePath, previewPath) => __awaiter(void 0, void 0, void 0, function* () {
-    const tempOutputPath = `${previewPath}.temp.png`;
-    try {
-        // Use ImageMagick to convert PDF to PNG
-        yield execAsync(`magick convert -density 150 -quality 90 -background white -alpha remove "${filePath}[0]" -resize 200x200 "${tempOutputPath}"`);
-        // Use sharp to ensure the output is in PNG format and to apply any additional processing if needed
-        yield (0, sharp_1.default)(tempOutputPath).png().toFile(previewPath);
-    }
-    finally {
-        // Clean up the temporary file
-        yield fs_extra_1.default.remove(tempOutputPath);
-    }
-});
-const generatePreview1 = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
-    const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
-    if (!fs_extra_1.default.existsSync(previewDir)) {
-        fs_extra_1.default.mkdirSync(previewDir, { recursive: true });
-    }
-    const previewFileName = `${path_1.default.basename(filePath, path_1.default.extname(filePath))}_preview.png`;
-    const previewPath = path_1.default.join(previewDir, previewFileName);
-    console.log(" ============generatePreview================= ");
-    console.log(previewFileName);
-    console.log(previewPath);
-    console.log(" ===========generatePreview================== ");
-    try {
-        if (mimeType.startsWith("image/")) {
-            yield (0, sharp_1.default)(filePath)
-                .resize(200, 200, { fit: "inside" })
-                .toFile(previewPath);
-        }
-        else if (mimeType === "application/pdf") {
-            const options = {
-                density: 100,
-                saveFilename: path_1.default.basename(filePath, path_1.default.extname(filePath)),
-                savePath: previewDir,
-                format: "png",
-                width: 200,
-                height: 200,
-            };
-            const convert = (0, pdf2pic_1.fromPath)(filePath, options);
-            const pageToConvertAsImage = 1;
-            yield convert(pageToConvertAsImage);
-            // Rename the generated file to match our naming convention
-            const generatedFileName = `${options.saveFilename}.1.png`;
-            const generatedFilePath = path_1.default.join(previewDir, generatedFileName);
-            fs_extra_1.default.renameSync(generatedFilePath, previewPath);
-        }
-        else {
-            return null; // No preview for unsupported file types
-        }
-        return `/previews/${previewFileName}`;
-    }
-    catch (error) {
-        console.error("Error generating preview:", error);
-        return null;
-    }
-});
-// const generatePreview = async (filePath: string, mimeType: string): Promise<string | null> => {
-//     const previewDir = path.join(process.cwd(), 'public', 'previews');
-//     if (!fs.existsSync(previewDir)) {
-//         fs.mkdirSync(previewDir, { recursive: true });
-//     }
-//     const previewFileName = `${path.basename(filePath, path.extname(filePath))}_preview.png`;
-//     const previewPath = path.join(previewDir, previewFileName);
-//     try {
-//         if (mimeType.startsWith('image/')) {
-//             await sharp(filePath)
-//                 .resize(200, 200, { fit: 'inside' })
-//                 .toFile(previewPath);
-//         } else if (mimeType === 'application/pdf') {
-//             const pdfBytes = await fs.promises.readFile(filePath);
-//             const pdfDoc = await PDFDocument.load(pdfBytes);
-//             const firstPage = pdfDoc.getPages()[0];
-//             const pngImage = await firstPage.exportAsPNG({ scale: 0.5 });
-//             await sharp(pngImage)
-//                 .resize(200, 200, { fit: 'inside' })
-//                 .toFile(previewPath);
-//         } else {
-//             return null; // No preview for unsupported file types
-//         }
-//         return `/previews/${previewFileName}`;
-//     } catch (error) {
-//         console.error('Error generating preview:', error);
-//         return null;
-//     }
-// };
 const previewFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        //   const file = await prisma.file.findUnique({ where: { id: req.params.fileId }, });
-        // if (!file) {
-        //     return res.status(404).json({ error: 'File not found' });
-        // }
         const file = yield database_1.default.file.findUnique({
             where: { id: String(req.params.fileId) },
             include: { user: true },

@@ -159,7 +159,6 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
     }
 });
 exports.createNewFolder = createNewFolder;
-//=================================================================================
 const getRootFolder = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const folder = yield database_1.default.folder.findFirst({
         where: { parentId: null, userId },

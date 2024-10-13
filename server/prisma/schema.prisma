@@ -91,7 +91,6 @@ model User {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   Activity              Activity[]
-  FolderVersion         FolderVersion[]
 
   @@map("users")
 }
@@ -176,6 +175,7 @@ model PasswordResetToken {
   expires DateTime
 
   @@unique([email, token])
+  @@map("passwordResetTokens")
 }
 
 model TwoFactorToken {
@@ -233,32 +233,8 @@ model Activity {
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
-}
 
-model FileVersion {
-  id            String   @id @default(uuid())
-  fileId        String
-  file          File     @relation(fields: [fileId], references: [id])
-  versionNumber Int
-  url           String
-  createdAt     DateTime @default(now())
-  Folder        Folder?  @relation(fields: [folderId], references: [id])
-  folderId      String?
-  userId        String?
-}
-
-model FolderVersion {
-  id            String   @id @default(uuid())
-  folderId      String
-  folder        Folder   @relation(fields: [folderId], references: [id])
-  name          String?
-  folderPath    String?
-  folderUrl     String?
-  location      String?
-  versionNumber Int?
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  createdAt     DateTime @default(now())
+  @@map("activities")
 }
 
 model File {
@@ -283,8 +259,7 @@ model File {
   SharedFile SharedFile[]
   activities FileActivity[]
 
-  locked   Boolean       @default(false)
-  versions FileVersion[]
+  locked Boolean @default(false)
 
   @@map("files")
 }
@@ -309,10 +284,6 @@ model Folder {
   updatedAt    DateTime       @updatedAt
   FileActivity FileActivity[]
   locked       Boolean        @default(false)
-
-  versionNumber Int             @default(1)
-  versions      FolderVersion[]
-  FileVersion   FileVersion[]
 
   @@map("folders")
 }

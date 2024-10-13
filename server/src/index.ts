@@ -21,10 +21,14 @@ import { settingsRouter } from "./routes/settingRoutes";
 import { activityRouter } from "./routes/activityRoutes";
 import url from "url";
 
+console.log("Starting server initialization");
+
 dotenv.config();
+console.log("Environment variables loaded");
 
 const app = express();
 const isDevelopment = process.env.NODE_ENV !== "production";
+console.log(`Running in ${isDevelopment ? "development" : "production"} mode`);
 
 const PORT = 5002;
 
@@ -35,10 +39,11 @@ const allowedOrigins = [
   "http://localhost:5001",
   "http://localhost:5000",
   "https://benhost.net",
-  "https://www.benhost.net", // Add www subdomain if needed
+  "https://www.benhost.net",
 ];
 
 const server = createServer(app);
+console.log("HTTP server created");
 
 const io = new Server(server, {
   cors: {
@@ -61,8 +66,10 @@ const io = new Server(server, {
   },
   transports: ["websocket", "polling"], // Explicitly define transports
 });
+console.log("Socket.io server initialized");
 
 /* MIDDLEWARE */
+console.log("Setting up middleware");
 app.use(express.json({ limit: "100mb" }));
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -91,6 +98,7 @@ const corsOptions: cors.CorsOptions = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
+console.log("CORS configured");
 
 // Content Security Policy
 app.use(
@@ -106,6 +114,7 @@ app.use(
     },
   })
 );
+console.log("Content Security Policy configured");
 
 // Rate limiting
 const limiter = rateLimit({
@@ -115,8 +124,10 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(limiter);
+console.log("Rate limiting configured");
 
 /* ROUTES */
+console.log("Setting up routes");
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/files", fileRouter);
@@ -128,6 +139,7 @@ app.use("/api/activities", activityRouter);
 
 // Serve static files in production
 if (!isDevelopment) {
+  console.log("Configuring static file serving for production");
   const clientBuildPath = path.join(__dirname, "../client/dist");
   app.use(express.static(clientBuildPath, { maxAge: "1d" }));
 
@@ -135,6 +147,7 @@ if (!isDevelopment) {
     res.sendFile(path.join(clientBuildPath, "index.html"))
   );
 } else {
+  console.log("Setting up development route");
   app.get("/", (req, res) => {
     res.send("Server is running in development mode");
   });
@@ -142,12 +155,15 @@ if (!isDevelopment) {
 
 // Error handling middleware
 app.use(errorHandler);
+console.log("Error handling middleware set up");
 
 // Setup Socket.io
 setupSocketController(io);
+console.log("Socket.io controller set up");
 
 // Start server
 const startServer = async () => {
+  console.log("Starting server...");
   try {
     await new Promise<void>((resolve, reject) => {
       server.listen(PORT, () => {
@@ -157,6 +173,7 @@ const startServer = async () => {
         resolve();
       });
     });
+    console.log("Server started successfully");
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
@@ -184,6 +201,7 @@ const gracefulShutdown = () => {
 
 process.on("SIGTERM", gracefulShutdown);
 process.on("SIGINT", gracefulShutdown);
+console.log("Graceful shutdown handlers set up");
 
 // Uncaught exception handler
 process.on("uncaughtException", (error) => {
@@ -196,5 +214,8 @@ process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
   gracefulShutdown();
 });
+console.log("Global error handlers set up");
+
+console.log("Server initialization complete");
 
 export default app;

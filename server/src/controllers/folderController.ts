@@ -8,7 +8,7 @@ import archiver from "archiver";
 import { createReadStream, createWriteStream, promises as fs } from "fs";
 import { copyFile, mkdir } from "fs/promises";
 import { chmod } from "fs/promises";
-import { v4 as uuidv4 } from "uuid";
+import { access, constants } from "fs/promises";
 import { rm } from "fs/promises";
 
 interface UserInfo {
@@ -81,8 +81,6 @@ export const getFoldersTree = async (
   }
 };
 
-import { access, constants } from "fs/promises";
-
 export const deleteFolderPermanently = async (
   req: Request,
   res: Response,
@@ -92,67 +90,190 @@ export const deleteFolderPermanently = async (
     const { folderId } = req.params;
     const { userId } = req.user as { userId: string };
 
-    // Find the folder
-    const folder = await prisma.folder.findUnique({
-      where: { id: folderId, userId },
+    console.log(" 0000000000000000000000000000000000 ");
+
+    // Start a transaction
+    await prisma.$transaction(async (prismaTransaction) => {
+      // Find the folder
+      const folder = await prismaTransaction.folder.findUnique({
+        where: { id: folderId, userId },
+      });
+
+      if (!folder) {
+        throw new Error("Folder not found");
+      }
+
+      // Check if the user has write permissions on the folder
+      if (folder.folderPath) {
+        try {
+          await access(folder.folderPath, constants.W_OK);
+        } catch (error) {
+          throw new Error(
+            "Permission denied. You don't have write access to this folder."
+          );
+        }
+      }
+
+      // Recursively delete all subfolders and files
+      const deleteRecursive = async (currentFolderId: string) => {
+        // Find all files in the current folder
+        const files = await prismaTransaction.file.findMany({
+          where: { folderId: currentFolderId },
+        });
+
+        // Delete all file activities related to files in this folder
+        await prismaTransaction.fileActivity.deleteMany({
+          where: { fileId: { in: files.map((file) => file.id) } },
+        });
+
+        // Delete all files in the folder
+        await prismaTransaction.file.deleteMany({
+          where: { folderId: currentFolderId },
+        });
+
+        // Delete all folder activities related to this folder
+        await prismaTransaction.fileActivity.deleteMany({
+          where: { folderId: currentFolderId },
+        });
+
+        // Find all subfolders
+        const subfolders = await prismaTransaction.folder.findMany({
+          where: { parentId: currentFolderId },
+        });
+
+        // Recursively delete subfolders and their contents
+        for (const subfolder of subfolders) {
+          await deleteRecursive(subfolder.id);
+        }
+
+        // Delete the folder itself
+        await prismaTransaction.folder.delete({
+          where: { id: currentFolderId },
+        });
+
+        // Delete the folder from the file system
+        if (folder.folderPath) {
+          try {
+            await rm(folder.folderPath, { recursive: true, force: true });
+          } catch (error) {
+            console.error("Error deleting folder from file system:", error);
+            throw new Error("Failed to delete folder from file system");
+          }
+        }
+      };
+
+      // Start the recursive deletion
+      await deleteRecursive(folderId);
+
+      // Log the activity
+      await prismaTransaction.fileActivity.create({
+        data: {
+          userId,
+          folderId,
+          activityType: "Folder",
+          action: "DELETE_PERMANENT",
+          filePath: folder.folderPath || "",
+          fileSize: 0,
+          fileType: "folder",
+        },
+      });
     });
 
-    if (!folder) {
-      return res.status(404).json({ error: "Folder not found" });
-    }
+    res
+      .status(200)
+      .json({ message: "Folder and its contents permanently deleted" });
+  } catch (error) {
+    console.error("Error deleting folder permanently:", error);
+    res.status(500).json({
+      error: "Failed to delete folder permanently",
+      details: error instanceof Error ? error.message : String(error),
+    });
+    next(error);
+  }
+};
 
-    // Check if the user has write permissions on the folder
-    if (folder.folderPath) {
-      try {
-        await access(folder.folderPath, constants.W_OK);
-      } catch (error) {
-        return res.status(403).json({
-          error:
-            "Permission denied. You don't have write access to this folder.",
+export const deleteFolderPermanently2 = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { folderId } = req.params;
+    const { userId } = req.user as { userId: string };
+
+    let folder: any;
+
+    // Start a transaction
+    await prisma.$transaction(async (prismaTransaction) => {
+      // Find the folder
+      folder = await prismaTransaction.folder.findUnique({
+        where: { id: folderId, userId },
+      });
+
+      if (!folder) {
+        throw new Error("Folder not found");
+      }
+
+      // Check if the user has write permissions on the folder
+      if (folder.folderPath) {
+        try {
+          await access(folder.folderPath, constants.W_OK);
+        } catch (error) {
+          throw new Error(
+            "Permission denied. You don't have write access to this folder."
+          );
+        }
+      }
+
+      // Recursively delete all subfolders and files
+      const deleteRecursive = async (folderId: string) => {
+        // Delete all file activities related to files in this folder
+        await prismaTransaction.fileActivity.deleteMany({
+          where: { File: { folderId } },
         });
-      }
-    }
 
-    // Recursively delete all subfolders and files
-    const deleteRecursive = async (folderId: string) => {
-      // Delete all file activities related to files in this folder
-      await prisma.fileActivity.deleteMany({
-        where: { File: { folderId } },
+        // Delete all files in the folder
+        await prismaTransaction.file.deleteMany({
+          where: { folderId },
+        });
+
+        // Delete all folder activities related to this folder
+        await prismaTransaction.fileActivity.deleteMany({
+          where: { folderId },
+        });
+
+        // Find all subfolders
+        const subfolders = await prismaTransaction.folder.findMany({
+          where: { parentId: folderId },
+        });
+
+        // Recursively delete subfolders and their contents
+        for (const subfolder of subfolders) {
+          await deleteRecursive(subfolder.id);
+        }
+
+        // Delete the folder itself
+        await prismaTransaction.folder.delete({
+          where: { id: folderId },
+        });
+      };
+
+      // Start the recursive deletion
+      await deleteRecursive(folderId);
+
+      // Log the activity
+      await prismaTransaction.fileActivity.create({
+        data: {
+          userId,
+          folderId,
+          activityType: "Folder",
+          action: "DELETE_PERMANENT",
+          filePath: folder.folderPath || "",
+          fileSize: 0,
+          fileType: "folder",
+        },
       });
-
-      // Delete all files in the folder
-      await prisma.file.deleteMany({
-        where: { folderId },
-      });
-
-      // Delete all folder activities related to this folder
-      await prisma.fileActivity.deleteMany({
-        where: { folderId },
-      });
-
-      // Delete all folder versions related to this folder
-      await prisma.folderVersion.deleteMany({
-        where: { folderId },
-      });
-
-      // Find all subfolders
-      const subfolders = await prisma.folder.findMany({
-        where: { parentId: folderId },
-      });
-
-      // Recursively delete subfolders
-      for (const subfolder of subfolders) {
-        await deleteRecursive(subfolder.id);
-      }
-
-      // Delete the folder itself
-      await prisma.folder.delete({
-        where: { id: folderId },
-      });
-    };
-
-    // Start the recursive deletion
-    await deleteRecursive(folderId);
+    });
 
     // Delete the folder from the file system
     if (folder.folderPath) {
@@ -165,19 +286,6 @@ export const deleteFolderPermanently = async (
           .json({ error: "Failed to delete folder from file system" });
       }
     }
-
-    // Log the activity
-    await prisma.fileActivity.create({
-      data: {
-        userId,
-        folderId,
-        activityType: "Folder",
-        action: "DELETE_PERMANENT",
-        filePath: folder.folderPath || "",
-        fileSize: 0,
-        fileType: "folder",
-      },
-    });
 
     res
       .status(200)
@@ -348,27 +456,6 @@ export const renameFolder = async (
       });
     }
 
-    const latestVersion = await prisma.folderVersion.findFirst({
-      where: { folderId: folder.id },
-      orderBy: { versionNumber: "desc" },
-    });
-    const newVersionNumber = (latestVersion?.versionNumber || 0) + 1;
-
-    // Create a folder version before updating
-    await prisma.folderVersion.create({
-      data: {
-        id: uuidv4(),
-        folderId: folder.id,
-        name: folder.name,
-        folderPath: folder.folderPath,
-        folderUrl: folder.folderUrl,
-        location: folder.location,
-        versionNumber: newVersionNumber,
-        userId: folder.userId,
-        createdAt: new Date(),
-      },
-    });
-
     // Update the folder in the database
     const updatedFolder = await prisma.folder.update({
       where: { id: folderId },
@@ -377,9 +464,6 @@ export const renameFolder = async (
         folderPath: newPath,
         folderUrl: newUrl,
         location: newLocation,
-        versionNumber: {
-          increment: 1,
-        },
       },
     });
 
@@ -413,6 +497,161 @@ export const renameFolder = async (
       }`,
       details: error instanceof Error ? error.stack : undefined,
     });
+  }
+};
+
+export const createNewFolder2 = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { folderName, parentFolderId } = req.body;
+    const { userId } = req.user as { userId: string };
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (
+      !folderName ||
+      typeof folderName !== "string" ||
+      folderName.includes("/") ||
+      folderName.includes("\\")
+    ) {
+      return res.status(400).json({ error: "Invalid folder name" });
+    }
+
+    const email = user.email as string;
+    const baseFolder = getBaseFolderPath(email);
+
+    let newFolderPath: string;
+    let newFolderUrl: string;
+    let location: string;
+    let finalParentFolderId = parentFolderId;
+    let rootFolderUrl: string;
+
+    if (!finalParentFolderId) {
+      // Find or create the root folder
+      let rootFolder = await prisma.folder.findFirst({
+        where: { name: email, userId: user.id },
+      });
+
+      if (process.env.NODE_ENV === "production") {
+        rootFolderUrl = `${
+          process.env.PUBLIC_APP_URL
+        }/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(
+          folderName
+        )}`;
+      } else {
+        rootFolderUrl = `${
+          process.env.PUBLIC_APP_URL
+        }/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(
+          folderName
+        )}`;
+      }
+
+      if (!rootFolder) {
+        rootFolder = await prisma.folder.create({
+          data: {
+            name: email,
+            userId: user.id,
+            folderPath: baseFolder,
+            folderUrl: rootFolderUrl,
+            location: "/",
+          },
+        });
+      }
+
+      finalParentFolderId = rootFolder.id;
+      newFolderPath = path.join(baseFolder, folderName);
+      if (process.env.NODE_ENV === "production") {
+        rootFolderUrl = `${
+          process.env.PUBLIC_APP_URL
+        }/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(
+          folderName
+        )}`;
+      } else {
+        rootFolderUrl = `${
+          process.env.PUBLIC_APP_URL
+        }/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(
+          folderName
+        )}`;
+      }
+      newFolderUrl = rootFolderUrl;
+      location = `/${folderName}`;
+    } else {
+      // Find parent folder and construct path based on it
+      const parentFolder = await prisma.folder.findUnique({
+        where: { id: finalParentFolderId },
+      });
+
+      if (!parentFolder) {
+        return res.status(404).json({ error: "Parent folder not found" });
+      }
+
+      newFolderPath = path.join(parentFolder.folderPath as string, folderName);
+      if (process.env.NODE_ENV === "production") {
+        newFolderUrl = `${
+          process.env.PUBLIC_APP_URL
+        }/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(
+          folderName
+        )}`;
+      } else {
+        newFolderUrl = `${
+          process.env.PUBLIC_APP_URL
+        }/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(
+          folderName
+        )}`;
+      }
+      location = `${parentFolder.location}/${folderName}`;
+    }
+
+    // Check if the folder already exists in the database
+    const existingFolder = await prisma.folder.findFirst({
+      where: {
+        name: folderName,
+        parentId: finalParentFolderId,
+        userId: user.id,
+      },
+    });
+
+    if (existingFolder) {
+      return res.status(409).json({ error: "Folder already exists" });
+    }
+
+    // Create the folder in the file system
+    try {
+      await fs.mkdir(newFolderPath, { recursive: true });
+      await fs.chmod(newFolderPath, 0o755);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      return res
+        .status(500)
+        .json({ error: "Failed to create folder in file system" });
+    }
+
+    // Create the folder in the database
+    const newFolder = await prisma.folder.create({
+      data: {
+        name: folderName,
+        folderPath: newFolderPath,
+        folderUrl: newFolderUrl,
+        location,
+        parentId: finalParentFolderId,
+        userId: user.id,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Folder created successfully",
+      folder: newFolder,
+    });
+  } catch (error) {
+    console.error("Error in createNewFolder:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -1025,27 +1264,6 @@ export const moveFolder = async (
     )}`;
     const newLocation = `${newParentFolder.location}/${currentFolder.name}`;
 
-    const latestVersion = await prisma.folderVersion.findFirst({
-      where: { folderId: newParentFolder.id },
-      orderBy: { versionNumber: "desc" },
-    });
-    const newVersionNumber = (latestVersion?.versionNumber || 0) + 1;
-
-    // Create a folder version before updating
-    await prisma.folderVersion.create({
-      data: {
-        id: uuidv4(),
-        folderId: currentFolder.id,
-        name: currentFolder.name,
-        folderPath: currentFolder.folderPath,
-        folderUrl: currentFolder.folderUrl,
-        location: currentFolder.location,
-        versionNumber: newVersionNumber,
-        userId,
-        createdAt: new Date(),
-      },
-    });
-
     // Update the folder
     const updatedFolder = await prisma.folder.update({
       where: { id, userId },
@@ -1054,9 +1272,6 @@ export const moveFolder = async (
         folderPath: newFolderPath,
         folderUrl: newFolderUrl,
         location: newLocation,
-        versionNumber: {
-          increment: 1,
-        },
       },
     });
 
@@ -1077,29 +1292,6 @@ export const moveFolder = async (
   } catch (error) {
     console.error("Error moving folder:", error);
     res.status(500).json({ error: "Error moving folder" });
-    next(error);
-  }
-};
-
-// New function to get folder versions
-export const getFolderVersions = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { folderId } = req.params;
-    const userId = req.user!.id;
-
-    const folderVersions = await prisma.folderVersion.findMany({
-      where: { folderId, userId },
-      orderBy: { versionNumber: "desc" },
-    });
-
-    res.json(folderVersions);
-  } catch (error) {
-    console.error("Error getting folder versions:", error);
-    res.status(500).json({ error: "Error getting folder versions" });
     next(error);
   }
 };

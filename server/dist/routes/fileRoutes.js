@@ -37,8 +37,6 @@ const upload = (0, multer_1.default)();
 router.post("/:fileId/move", auth_1.auth, fileController.moveFileItem);
 router.post("/:id/unlock", auth_1.auth, fileController.unlockFile);
 router.post("/:id/lock", auth_1.auth, fileController.lockFile);
-router.post("/:id/versions/:versionId/restore", auth_1.auth, fileController.versionRestoreFile);
-router.get("/:versionId/versions", auth_1.auth, fileController.versionsFile);
 router.post("/:id/copy", auth_1.auth, fileController.copyFile);
 router.put("/:id/move", auth_1.auth, fileController.moveFile);
 router.post("/file-upload-v1", auth_1.auth, fileController.uploadFile);

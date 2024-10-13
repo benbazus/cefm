@@ -24,7 +24,7 @@ const recentActivity = (userId) => __awaiter(void 0, void 0, void 0, function* (
         const recentActivities = yield database_1.default.fileActivity.findMany({
             take: 10,
             where: { userId },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             include: {
                 File: {
                     select: {
@@ -38,28 +38,25 @@ const recentActivity = (userId) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
-        // console.log(" ++++++++++++++++++recentActivity++++++++++++++++++ ")
-        // console.log(recentActivities)
-        // console.log(" +++++++++++++++recentActivity+++++++++++++++++++++ ")
         // Ensure that we return an array of RecentActivity
         return recentActivities.map((activity) => {
             var _a, _b;
             return ({
                 id: activity.id,
-                fileName: ((_a = activity.File) === null || _a === void 0 ? void 0 : _a.name) || ((_b = activity.Folder) === null || _b === void 0 ? void 0 : _b.name) || 'Unknown File',
+                fileName: ((_a = activity.File) === null || _a === void 0 ? void 0 : _a.name) || ((_b = activity.Folder) === null || _b === void 0 ? void 0 : _b.name) || "Unknown File",
                 action: activity.action,
                 timestamp: activity.createdAt, // Keep as Date type
             });
         });
     }
     catch (error) {
-        console.error('Error fetching recent activity:', error);
-        throw new Error('Failed to fetch recent activity');
+        console.error("Error fetching recent activity:", error);
+        throw new Error("Failed to fetch recent activity");
     }
 });
 exports.recentActivity = recentActivity;
 const storageInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield database_1.default.user.findFirst({ where: { id: userId }, });
+    const user = yield database_1.default.user.findFirst({ where: { id: userId } });
     if (user) {
         const maxStorageSize = user.maxStorageSize;
         const totalUsed = yield database_1.default.file.aggregate({
@@ -79,7 +76,7 @@ const storageInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                 userId: userId,
                 trashed: false,
                 mimeType: {
-                    startsWith: 'application/',
+                    startsWith: "application/",
                 },
             },
         });
@@ -91,7 +88,7 @@ const storageInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                 userId: userId,
                 trashed: false,
                 mimeType: {
-                    startsWith: 'image/',
+                    startsWith: "image/",
                 },
             },
         });
@@ -103,14 +100,14 @@ const storageInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                 userId: userId,
                 trashed: false,
                 mimeType: {
-                    startsWith: 'video/',
+                    startsWith: "video/",
                 },
             },
         });
         return {
             used: totalUsed._sum.size || 0,
             total: maxStorageSize || 0,
-            date: '',
+            date: "",
             documentUsage: documentUsage._sum.size || 0,
             imageUsage: imageUsage._sum.size || 0,
             mediaUsage: mediaUsage._sum.size || 0,
@@ -136,14 +133,14 @@ exports.userStats = userStats;
 const getStorageUsageHistory = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const history = yield database_1.default.storageHistory.findMany({
         where: { userId },
-        orderBy: { timestamp: 'asc' },
+        orderBy: { timestamp: "asc" },
     });
     if (history.length === 0) {
         return null;
     }
     return history.map((entry) => ({
         used: entry.usedStorage,
-        date: entry.timestamp.toISOString().split('T')[0],
+        date: entry.timestamp.toISOString().split("T")[0],
         total: entry.totalStorage,
         documentUsage: 0,
         imageUsage: 0,
@@ -153,7 +150,7 @@ const getStorageUsageHistory = (userId) => __awaiter(void 0, void 0, void 0, fun
 exports.getStorageUsageHistory = getStorageUsageHistory;
 const getFileTypeDistribution = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const distribution = yield database_1.default.file.groupBy({
-        by: ['fileType'],
+        by: ["fileType"],
         _count: { id: true },
         where: { userId },
     });
@@ -166,8 +163,22 @@ const getFileTypeDistribution = (userId) => __awaiter(void 0, void 0, void 0, fu
         datasets: [
             {
                 data,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
-                borderColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                backgroundColor: [
+                    "#FF6384",
+                    "#36A2EB",
+                    "#FFCE56",
+                    "#4BC0C0",
+                    "#9966FF",
+                    "#FF9F40",
+                ],
+                borderColor: [
+                    "#FF6384",
+                    "#36A2EB",
+                    "#FFCE56",
+                    "#4BC0C0",
+                    "#9966FF",
+                    "#FF9F40",
+                ],
                 borderWidth: 1,
             },
         ],
@@ -191,9 +202,9 @@ const getFileUploadsPerDay = (userId) => __awaiter(void 0, void 0, void 0, funct
         labels,
         datasets: [
             {
-                label: 'File Uploads',
+                label: "File Uploads",
                 data,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                backgroundColor: "rgba(75, 192, 192, 0.6)",
             },
         ],
     };

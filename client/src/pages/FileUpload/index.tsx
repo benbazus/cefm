@@ -24,10 +24,6 @@ export default function FileList({ files }: FileListProps) {
 
       const data = await getPdf()
 
-      console.log(' ================================ ')
-      console.log(data)
-      console.log(' ================================ ')
-
       if (data) {
         const fetchedFiles = (data.files || []).map((file: any) => ({
           id: file.id,

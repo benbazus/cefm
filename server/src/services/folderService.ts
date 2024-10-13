@@ -177,7 +177,6 @@ export const createNewFolder = async (
   }
 };
 
-//=================================================================================
 export const getRootFolder = async (userId: string): Promise<Folder> => {
   const folder = await prisma.folder.findFirst({
     where: { parentId: null, userId },

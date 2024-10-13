@@ -10,13 +10,7 @@ import { File, Prisma, User } from "@prisma/client";
 import { config } from "../config/config";
 import { zipFolder as createZipFolder } from "./../utils/zipFolder";
 import { sendSharedLinkEmail } from "../utils/email";
-import {
-  checkFileSignature,
-  decodeFolder,
-  formatSize,
-  isValidFile,
-  scanFileWithClamAV,
-} from "../utils/helpers";
+import { decodeFolder } from "../utils/helpers";
 import logger from "../utils/logger";
 import { getFileById } from "./../services/fileService";
 import UAParser from "ua-parser-js";
@@ -28,11 +22,13 @@ import { fromPath } from "pdf2pic";
 
 import fs from "fs-extra";
 
-import { promisify } from "util";
-import { exec } from "child_process";
-import { createReadStream, createWriteStream } from "fs";
-import { pipeline as streamPipeline } from "stream";
 import { UserInfo } from "../types/express";
+
+const getBaseFolderPath = (email: string): string => {
+  return process.env.NODE_ENV === "production"
+    ? path.join("/var/www/cefmdrive/storage", email)
+    : path.join(process.cwd(), "public", "File Manager", email);
+};
 
 export function getUserInfo(req: Request): UserInfo {
   const parser = new UAParser(req.headers["user-agent"]);
@@ -421,12 +417,6 @@ export const uploadFiles = async (
   }
 };
 
-const getBaseFolderPath = (email: string): string => {
-  return process.env.NODE_ENV === "production"
-    ? path.join("/var/www/cefmdrive/storage", email)
-    : path.join(process.cwd(), "public", "File Manager", email);
-};
-
 export const uploadFile = async (
   req: Request,
   res: Response,
@@ -478,10 +468,6 @@ export const uploadFile = async (
       if (!baseFolderPath) {
         baseFolderPath = getBaseFolderPath(user?.email as string);
       }
-
-      console.log(` ++++++++++++++++++++++++++++++ `);
-      console.log(baseFolderPath);
-      console.log(` ++++++++++++++++++++++++++++++ `);
 
       const fullPath = path.join(baseFolderPath, ...relativePath, filename);
       const fileUrl = `${
@@ -606,23 +592,6 @@ export const uploadFile = async (
                 },
               });
 
-              // Handle file versioning
-              const latestVersion = await prisma.fileVersion.findFirst({
-                where: { fileId: fileData.id },
-                orderBy: { versionNumber: "desc" },
-              });
-              const newVersionNumber = (latestVersion?.versionNumber || 0) + 1;
-
-              await prisma.fileVersion.create({
-                data: {
-                  userId: userId,
-                  fileId: fileData.id,
-                  versionNumber: newVersionNumber,
-                  url: fileUrl,
-                  folderId: folderId,
-                },
-              });
-
               resolve(fileData);
             } catch (error) {
               reject(error);
@@ -651,48 +620,6 @@ export const uploadFile = async (
 
     req.pipe(bb);
   } catch (error) {
-    next(error);
-  }
-};
-
-export const versionRestoreFile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const version = await prisma.fileVersion.findUnique({
-      where: { id: req.params.versionId, file: { userId: req.user!.id } },
-    });
-
-    if (!version) {
-      return res.status(404).json({ message: "Version not found" });
-    }
-
-    const file = await prisma.file.update({
-      where: { id: req.params.id, userId: req.user!.id },
-      data: { fileUrl: version.url },
-    });
-
-    res.json(file);
-  } catch (error) {
-    res.status(500).json({ error: "Error restoring file version" });
-  }
-};
-
-export const versionsFile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const versions = await prisma.fileVersion.findMany({
-      where: { fileId: req.params.id, file: { userId: req.user!.id } },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json(versions);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching file versions" });
     next(error);
   }
 };
@@ -971,86 +898,53 @@ export const deletePermanently = async (
   const { fileType, fileId } = req.params;
 
   try {
-    const document = await prisma.document.findUnique({
-      where: { id: fileId },
+    await prisma.$transaction(async (prismaClient) => {
+      if (fileType === "Document") {
+        const document = await prismaClient.document.findUnique({
+          where: { id: fileId },
+        });
+        if (!document) {
+          throw new Error(`Document with ID ${fileId} not found.`);
+        }
+        await prismaClient.document.delete({
+          where: { id: fileId },
+        });
+      } else if (fileType === "Folder") {
+        const folder = await prismaClient.folder.findUnique({
+          where: { id: fileId },
+        });
+        if (!folder) {
+          throw new Error(`Folder with ID ${fileId} not found.`);
+        }
+        const folderPath = path.join(folder.folderPath as string);
+        await fs.rm(folderPath, { recursive: true, force: true });
+        await prismaClient.folder.delete({ where: { id: fileId } });
+      } else if (fileType === "File") {
+        const file = await prismaClient.file.findUnique({
+          where: { id: fileId },
+        });
+        if (!file) {
+          throw new Error(`File with ID ${fileId} not found.`);
+        }
+        const filePath = path.join(file.filePath as string);
+        await fs.unlink(filePath);
+        await prismaClient.file.delete({
+          where: { id: fileId },
+        });
+      } else {
+        throw new Error(`Invalid file type: ${fileType}`);
+      }
     });
-    if (document) {
-      if (!document) {
-        return res
-          .status(404)
-          .json({ error: `File with ID ${fileId} not found.` });
-      }
 
-      await prisma.document.delete({
-        where: { id: fileId },
-      });
-
-      return res
-        .status(404)
-        .json({ success: `File with ID ${fileId} deleted permanently.` });
-    }
-
-    if (fileType === "Folder") {
-      // console.log(' +++++++++++++++type FOLDER+++++++++++++++++++++++ ')
-      //  console.log({ id, type })
-      // console.log(' +++++++++++++++++type+++++++++++++++++++++ ')
-
-      const folder = await prisma.folder.findUnique({
-        where: { id: fileId },
-      });
-
-      if (!folder) {
-        return res
-          .status(404)
-          .json({ error: `Folder with ID ${fileId} not found.` });
-      }
-
-      // Define folder path
-      const folderPath = path.join(folder.folderPath as string);
-
-      // Delete folder from the file system
-      await fs.rm(folderPath, { recursive: true, force: true });
-
-      // Delete folder from database
-      await prisma.folder.delete({ where: { id: fileId } });
-
-      return res
-        .status(201)
-        .json({ success: `Folder with ID ${fileId} deleted permanently.` });
-    }
-
-    if (fileType === "File") {
-      const file = await prisma.file.findUnique({ where: { id: fileId } });
-
-      if (!file) {
-        return res
-          .status(404)
-          .json({ error: `File with ID ${fileId} not found.` });
-      }
-
-      // Define file path
-      const filePath = path.join(file.filePath as string);
-
-      // Delete all related FileVersion records
-      await prisma.fileVersion.deleteMany({
-        where: { fileId: fileId },
-      });
-
-      // Delete file from the file system
-      await fs.unlink(filePath);
-
-      // Delete file from database
-      await prisma.file.delete({
-        where: { id: fileId },
-      });
-
-      return res
-        .status(200)
-        .json({ success: `File with ID ${fileId} deleted permanently.` });
-    }
+    return res
+      .status(200)
+      .json({ success: `${fileType} with ID ${fileId} deleted permanently.` });
   } catch (error) {
-    logger.error("An error occurred while deleting the file", { error });
-    next(error);
+    logger.error("An error occurred while deleting the item", { error });
+    if (error instanceof Error) {
+      return res.status(400).json({ error: error.message });
+    }
+    return res.status(500).json({ error: "An unexpected error occurred" });
   }
 };
 
@@ -1168,238 +1062,12 @@ const generatePreview = async (
   }
 };
 
-const generatePreview4 = async (
-  filePath: string,
-  mimeType: string,
-  email: string
-): Promise<string | null> => {
-  const previewDir = path.join(
-    process.cwd(),
-    "public",
-    "File Manager",
-    email,
-    "previews"
-  );
-  if (!fs.existsSync(previewDir)) {
-    fs.mkdirSync(previewDir, { recursive: true });
-  }
-
-  const previewFileName = `${path.basename(
-    filePath,
-    path.extname(filePath)
-  )}_preview.png`;
-  const previewPath = path.join(previewDir, previewFileName);
-
-  try {
-    if (mimeType.startsWith("image/")) {
-      // Create a readable stream from the original file and a writable stream to the preview file
-      const readStream = createReadStream(filePath);
-      const writeStream = createWriteStream(previewPath);
-
-      // Pipe the original image to the preview image
-      await promisify(streamPipeline)(readStream, writeStream);
-    } else if (mimeType === "application/pdf") {
-      // For PDF files, directly copy the first page as the preview
-      const readStream = createReadStream(filePath);
-      const writeStream = createWriteStream(previewPath);
-
-      await promisify(streamPipeline)(readStream, writeStream);
-    } else {
-      return null; // No preview for unsupported file types
-    }
-
-    console.log(" ============generate R E T U R N Preview================= ");
-    console.log(previewFileName);
-    console.log(previewPath);
-    console.log(`/previews/${previewFileName}`);
-    console.log(" ============generate R E T U R N Preview================= ");
-
-    const route = `/File Manager/${email}/previews/${previewFileName}`;
-    return route;
-    // return `/${previewDir}/${previewFileName}`;
-  } catch (error) {
-    console.error("Error generating preview:", error);
-    return null;
-  }
-};
-
-const execAsync = promisify(exec);
-
-const generatePreview2 = async (
-  filePath: string,
-  mimeType: string,
-  email: string
-): Promise<string | null> => {
-  const previewDir = path.join(
-    process.cwd(),
-    "public",
-    "File Manager",
-    email,
-    "previews"
-  );
-  await fs.ensureDir(previewDir);
-
-  const previewFileName = `${path.basename(
-    filePath,
-    path.extname(filePath)
-  )}_preview.png`;
-  const previewPath = path.join(previewDir, previewFileName);
-
-  console.log(" ============generatePreview================= ");
-  console.log(previewFileName);
-  console.log(previewPath);
-  console.log(" ===========generatePreview================== ");
-
-  try {
-    if (mimeType.startsWith("image/")) {
-      await generateImagePreview(filePath, previewPath);
-    } else if (mimeType === "application/pdf") {
-      await generatePdfPreview(filePath, previewPath);
-    } else {
-      return null; // No preview for unsupported file types
-    }
-
-    return `/previews/${previewFileName}`;
-  } catch (error) {
-    console.error("Error generating preview:", error);
-    return null;
-  }
-};
-
-const generateImagePreview = async (
-  filePath: string,
-  previewPath: string
-): Promise<void> => {
-  await sharp(filePath)
-    .resize(200, 200, { fit: "inside", withoutEnlargement: true })
-    .toFile(previewPath);
-};
-
-const generatePdfPreview = async (
-  filePath: string,
-  previewPath: string
-): Promise<void> => {
-  const tempOutputPath = `${previewPath}.temp.png`;
-
-  try {
-    // Use ImageMagick to convert PDF to PNG
-    await execAsync(
-      `magick convert -density 150 -quality 90 -background white -alpha remove "${filePath}[0]" -resize 200x200 "${tempOutputPath}"`
-    );
-
-    // Use sharp to ensure the output is in PNG format and to apply any additional processing if needed
-    await sharp(tempOutputPath).png().toFile(previewPath);
-  } finally {
-    // Clean up the temporary file
-    await fs.remove(tempOutputPath);
-  }
-};
-
-const generatePreview1 = async (
-  filePath: string,
-  mimeType: string,
-  email: string
-): Promise<string | null> => {
-  const previewDir = path.join(
-    process.cwd(),
-    "public",
-    "File Manager",
-    email,
-    "previews"
-  );
-  if (!fs.existsSync(previewDir)) {
-    fs.mkdirSync(previewDir, { recursive: true });
-  }
-
-  const previewFileName = `${path.basename(
-    filePath,
-    path.extname(filePath)
-  )}_preview.png`;
-  const previewPath = path.join(previewDir, previewFileName);
-
-  console.log(" ============generatePreview================= ");
-  console.log(previewFileName);
-  console.log(previewPath);
-  console.log(" ===========generatePreview================== ");
-
-  try {
-    if (mimeType.startsWith("image/")) {
-      await sharp(filePath)
-        .resize(200, 200, { fit: "inside" })
-        .toFile(previewPath);
-    } else if (mimeType === "application/pdf") {
-      const options = {
-        density: 100,
-        saveFilename: path.basename(filePath, path.extname(filePath)),
-        savePath: previewDir,
-        format: "png",
-        width: 200,
-        height: 200,
-      };
-      const convert = fromPath(filePath, options);
-      const pageToConvertAsImage = 1;
-      await convert(pageToConvertAsImage);
-
-      // Rename the generated file to match our naming convention
-      const generatedFileName = `${options.saveFilename}.1.png`;
-      const generatedFilePath = path.join(previewDir, generatedFileName);
-      fs.renameSync(generatedFilePath, previewPath);
-    } else {
-      return null; // No preview for unsupported file types
-    }
-
-    return `/previews/${previewFileName}`;
-  } catch (error) {
-    console.error("Error generating preview:", error);
-    return null;
-  }
-};
-
-// const generatePreview = async (filePath: string, mimeType: string): Promise<string | null> => {
-//     const previewDir = path.join(process.cwd(), 'public', 'previews');
-//     if (!fs.existsSync(previewDir)) {
-//         fs.mkdirSync(previewDir, { recursive: true });
-//     }
-
-//     const previewFileName = `${path.basename(filePath, path.extname(filePath))}_preview.png`;
-//     const previewPath = path.join(previewDir, previewFileName);
-
-//     try {
-//         if (mimeType.startsWith('image/')) {
-//             await sharp(filePath)
-//                 .resize(200, 200, { fit: 'inside' })
-//                 .toFile(previewPath);
-//         } else if (mimeType === 'application/pdf') {
-//             const pdfBytes = await fs.promises.readFile(filePath);
-//             const pdfDoc = await PDFDocument.load(pdfBytes);
-//             const firstPage = pdfDoc.getPages()[0];
-//             const pngImage = await firstPage.exportAsPNG({ scale: 0.5 });
-//             await sharp(pngImage)
-//                 .resize(200, 200, { fit: 'inside' })
-//                 .toFile(previewPath);
-//         } else {
-//             return null; // No preview for unsupported file types
-//         }
-
-//         return `/previews/${previewFileName}`;
-//     } catch (error) {
-//         console.error('Error generating preview:', error);
-//         return null;
-//     }
-// };
-
 export const previewFile = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    //   const file = await prisma.file.findUnique({ where: { id: req.params.fileId }, });
-
-    // if (!file) {
-    //     return res.status(404).json({ error: 'File not found' });
-    // }
-
     const file = await prisma.file.findUnique({
       where: { id: String(req.params.fileId) },
       include: { user: true },

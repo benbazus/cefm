@@ -200,12 +200,10 @@ export const register = async (
     const { name, email, password } = req.body;
     await authService.register(name, email, password);
 
-    res
-      .status(201)
-      .json({
-        message:
-          "User registered. Please check your email to confirm your account.",
-      });
+    res.status(201).json({
+      message:
+        "User registered. Please check your email to confirm your account.",
+    });
   } catch (error) {
     next(error);
   }

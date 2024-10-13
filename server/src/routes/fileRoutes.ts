@@ -12,12 +12,6 @@ router.post("/:fileId/move", auth, fileController.moveFileItem);
 router.post("/:id/unlock", auth, fileController.unlockFile);
 router.post("/:id/lock", auth, fileController.lockFile);
 
-router.post(
-  "/:id/versions/:versionId/restore",
-  auth,
-  fileController.versionRestoreFile
-);
-router.get("/:versionId/versions", auth, fileController.versionsFile);
 router.post("/:id/copy", auth, fileController.copyFile);
 router.put("/:id/move", auth, fileController.moveFile);
 router.post("/file-upload-v1", auth, fileController.uploadFile);

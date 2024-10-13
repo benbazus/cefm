@@ -187,9 +187,7 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { name, email, password } = req.body;
         yield authService.register(name, email, password);
-        res
-            .status(201)
-            .json({
+        res.status(201).json({
             message: "User registered. Please check your email to confirm your account.",
         });
     }
