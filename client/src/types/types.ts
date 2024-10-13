@@ -1,4 +1,9 @@
-import { ComponentType } from "react";
+import { ComponentType } from 'react'
+
+export interface DecodedToken {
+  exp: number
+  userId: string
+}
 
 export interface SharedFile {
   id: string
@@ -42,12 +47,12 @@ export interface SharedLink {
 }
 
 export interface UserResponse extends User {
-  token?: string;
+  token?: string
   accessToken?: string
   success?: boolean
   error?: string
   twoFactor?: boolean
-  isOAuth: boolean;
+  isOAuth: boolean
   // user?: {
   //   id: string
   //   name: string;
@@ -67,9 +72,9 @@ export interface AuthResponse {
   isTwoFactorEnabled: boolean
   user?: {
     id: string
-    name: string;
-    email: string;
-    image?: string;
+    name: string
+    email: string
+    image?: string
     role: UserRole
     isTwoFactorEnabled: boolean
     createdAt: Date
@@ -93,12 +98,11 @@ export interface AuthResponse {
   }
 }
 
-
 export interface User {
   id: string
-  name: string;
-  email: string;
-  image?: string;
+  name: string
+  email: string
+  image?: string
   role: UserRole
   isTwoFactorEnabled: boolean
   createdAt: Date
@@ -119,7 +123,6 @@ export interface User {
   sharedFilesWithLink: SharedFile[]
   sharedLinksWithLink: SharedLink[]
   sharedFoldersWithLinkCount: number
-
 }
 export interface UserRole {
   id: string
@@ -128,7 +131,6 @@ export interface UserRole {
   permissions: string[]
 }
 
-
 export interface Permissions {
   id: string
   name: string
@@ -136,25 +138,21 @@ export interface Permissions {
   permissions: string[]
 }
 
-
 export interface FileWithProgress extends File {
-  progress: number;
+  progress: number
 }
 
-
 export interface GetFoldersResponse {
-  folders: FolderItem[];
-  files: FileItem[];
+  folders: FolderItem[]
+  files: FileItem[]
 }
 
 export interface GetFileCountResponse {
-  count: number;
+  count: number
 }
 
-
-
 export interface SharedLinkResponse {
-  link: string;
+  link: string
 }
 
 export interface FileActivity {
@@ -211,15 +209,10 @@ export interface StorageInfo {
   mediaUsage: number
 }
 
-
-
-
-
 export interface VerificationResponse {
   success?: string
   error?: string
 }
-
 
 export interface FileItemResponse {
   id: string
@@ -238,7 +231,6 @@ export interface DriveItemsResponse {
   documents: FileItemResponse[]
 }
 
-
 export interface FilesResponse {
   files: FileItemResponse[]
 }
@@ -247,43 +239,37 @@ export interface FoldersResponse {
   folders: FileItemResponse[]
 }
 
-
 export interface AudioFile {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  size: number;
-  userId: string;
-  mimeType: string;
+  id: string
+  name: string
+  createdAt: string
+  updatedAt: string
+  size: number
+  userId: string
+  mimeType: string
 }
 
 export interface GetAudioResponse {
-  files: FileItemResponse[];
+  files: FileItemResponse[]
 }
 
 export interface GetVideoResponse {
-  files: FileItemResponse[];
+  files: FileItemResponse[]
 }
 
 export interface AudioResponse {
-  files: AudioFile[];
+  files: AudioFile[]
 }
 
 export interface GetPdfResponse {
   files: FileItemResponse[]
 }
 
-// export interface AuthResponse {
-//   accessToken?: string
-//   success?: boolean
-//   twoFactor?: boolean
-//   error?: string
-//   user?: {
-//     isTwoFactorEnabled: boolean
-//   }
-// }
-
+export interface FileVersion {
+  id: string
+  versionNumber: number
+  createdAt: string
+}
 export interface FileItemResponse {
   id: string
   name: string
@@ -296,21 +282,19 @@ export interface FileItemResponse {
   owner: string
 }
 
-
-
 export interface TranslateResponse {
-  code: string;
+  code: string
 }
 
 export interface PageMeta {
-  title: string;
-  description: string;
-  cardImage: string;
+  title: string
+  description: string
+  cardImage: string
 }
 
 export interface DriveItems {
-  FileItems: string[];
-  FolderItem: FolderItem[];
+  FileItems: string[]
+  FolderItem: FolderItem[]
 }
 
 export interface FileItem {
@@ -325,11 +309,13 @@ export interface FileItem {
   sharedWith?: string[]
   owner: string
   userId?: string
+  locked?: boolean
+  parentId?: string
 }
 
 export interface FolderItem {
   id: string
-  name: string
+  name?: string
   type: 'folder'
   mimeType: string
   size: number
@@ -342,22 +328,19 @@ export interface FolderItem {
 }
 
 export interface AccountFormValues {
-  id: string /* primary key */;
-  active?: boolean;
-  name?: string;
-  description?: string;
-  image?: string;
+  id: string /* primary key */
+  active?: boolean
+  name?: string
+  description?: string
+  image?: string
 }
 export interface ProfileFormValues {
-  id: string /* primary key */;
-  active?: boolean;
-  name?: string;
-  description?: string;
-  image?: string;
+  id: string /* primary key */
+  active?: boolean
+  name?: string
+  description?: string
+  image?: string
 }
-
-
-
 
 // export interface UserDetails {
 //   id: string
@@ -367,22 +350,17 @@ export interface ProfileFormValues {
 //   avatar_url?: string;
 // }
 
-
-
 export interface IRoute {
-  path: string;
-  name: string;
-  layout?: string;
-  exact?: boolean;
-  component?: ComponentType;
-  disabled?: boolean;
-  icon?: JSX.Element;
-  secondary?: boolean;
-  collapse?: boolean;
-  items?: IRoute[];
-  rightElement?: boolean;
-  invisible?: boolean;
+  path: string
+  name: string
+  layout?: string
+  exact?: boolean
+  component?: ComponentType
+  disabled?: boolean
+  icon?: JSX.Element
+  secondary?: boolean
+  collapse?: boolean
+  items?: IRoute[]
+  rightElement?: boolean
+  invisible?: boolean
 }
-
-
-

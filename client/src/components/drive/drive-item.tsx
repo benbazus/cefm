@@ -46,7 +46,7 @@ import { Button } from '../custom/button'
 import { useFolder } from '@/contexts/FolderContext'
 import { ShareDialog } from './dialog/ShareDialog'
 import { RenameDialog } from './dialog/RenameDialog'
-import { FileDetailsDialog } from './dialog/FileDetailsDialog'
+import { FileDetailsSheet } from './dialog/FileDetailsDialog'
 import { FileActionMenu } from './drive-button'
 import { ConfirmTrashDialog } from './dialog/ConfirmTrashDialog'
 import { useFolderFile } from '@/contexts/FileFolderContext'
@@ -59,9 +59,13 @@ import {
   shareAFile,
   deletePermanently,
   restoreFile,
+  copyFile,
 } from '@/services/api'
 import PreviewDialog from './dialog/PreviewDialog'
 import { IconFileText, IconFileZip } from '@tabler/icons-react'
+import LockDialog from './dialog/LockDialog'
+import MoveItemDialog from './dialog/MoveitemDialog'
+import VersionsDialog from './dialog/VersionsDialog'
 
 interface GridContainerProps {
   fileItems: FileItem[]
@@ -81,6 +85,12 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const [confirmTrashFile, setConfirmTrashFile] = useState<FileItem | null>(
     null
   )
+  const [selectedItem, setSelectedItem] = useState<FileItem | null>(null)
+  const [isVersionsDialogOpen, setIsVersionsDialogOpen] = useState(false)
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
+
+  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false)
+
   const location = useLocation()
   const [shareWithMessage, setShareWithMessage] = useState('')
   const [sharedWith, setSharedWith] = useState('')
@@ -248,6 +258,48 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const handleShare = (file: FileItem) => {
     setShareFile(file)
     resetShareDialog()
+  }
+
+  const handleMakeCopy = async (file: FileItem) => {
+    console.log('Make copy:', file)
+
+    if (file.type === 'file') {
+      await copyFile(file?.id)
+
+      triggerRefresh()
+    }
+  }
+
+  const handleLockItem = (file: FileItem) => {
+    console.log('Lock item:', file)
+    if (file.type === 'file') {
+      setSelectedItem(file)
+      setIsLockDialogOpen(true)
+    }
+  }
+
+  const handleVersionItem = (file: FileItem) => {
+    console.log('Version item:', file)
+
+    if (file.type === 'file') {
+      setSelectedItem(file)
+      setIsVersionsDialogOpen(true)
+    }
+  }
+
+  // Handler when a version is restored
+  const handleVersionRestored = () => {
+    // Close the dialog and refresh the files list or trigger any additional logic
+    setIsVersionsDialogOpen(false)
+    triggerRefresh()
+  }
+
+  const handleMoveItem = (file: FileItem) => {
+    console.log('Move item:', file)
+    // if (file.type === 'file') {
+    setSelectedItem(file)
+    setIsMoveDialogOpen(true)
+    // }
   }
 
   const resetShareDialog = () => {
@@ -519,6 +571,10 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
             file={item}
             onPreview={handlePreview}
             onCopyLink={handleCopyLink}
+            onMakeCopy={handleMakeCopy}
+            onLockItem={handleLockItem}
+            onVersionItem={handleVersionItem}
+            onMoveItem={handleMoveItem}
             onDownload={handleDownload}
             onShare={handleShare}
             onRename={handleRename}
@@ -670,6 +726,10 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
                   file={file}
                   onPreview={handlePreview}
                   onCopyLink={handleCopyLink}
+                  onMakeCopy={handleMakeCopy}
+                  onLockItem={handleLockItem}
+                  onVersionItem={handleVersionItem}
+                  onMoveItem={handleMoveItem}
                   onDownload={handleDownload}
                   onShare={handleShare}
                   onRename={handleRename}
@@ -774,9 +834,48 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
         onConfirm={confirmRename}
         setNewFileName={setNewFileName}
       />
-      <FileDetailsDialog
+
+      <FileDetailsSheet
         fileDetails={fileDetails}
         onCancel={() => setFileDetails(null)}
+      />
+
+      <MoveItemDialog
+        isOpen={isMoveDialogOpen}
+        onClose={() => {
+          setIsMoveDialogOpen(false)
+          triggerRefresh()
+        }}
+        item={selectedItem}
+        onMove={() => {
+          // Implement move logic
+          setIsMoveDialogOpen(false)
+          triggerRefresh()
+        }}
+      />
+
+      <VersionsDialog
+        isOpen={isVersionsDialogOpen}
+        onClose={() => {
+          setIsVersionsDialogOpen(false)
+          triggerRefresh()
+        }}
+        file={selectedItem}
+        onVersionRestored={handleVersionRestored}
+      />
+
+      <LockDialog
+        isOpen={isLockDialogOpen}
+        onClose={() => {
+          setIsLockDialogOpen(false)
+          triggerRefresh()
+        }}
+        item={selectedItem}
+        onLockStatusChanged={() => {
+          // Implement lock status change logic
+          setIsLockDialogOpen(false)
+          triggerRefresh()
+        }}
       />
     </>
   )

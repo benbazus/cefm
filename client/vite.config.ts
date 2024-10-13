@@ -13,7 +13,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            return 'vendor';
+            return 'vendor'
           }
         },
       },
@@ -21,7 +21,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:5000',
+      '/api': 'http://localhost:5002',
     },
   },
   resolve: {

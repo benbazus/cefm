@@ -90,6 +90,7 @@ model User {
   networkDrives         NetworkDrive[]
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+  Activity              Activity[]
 
   @@map("users")
 }
@@ -223,6 +224,28 @@ model FileActivity {
   @@map("file_activities")
 }
 
+model Activity {
+  id           String   @id @default(uuid())
+  itemId       String
+  activityType String
+  details      String
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model FileVersion {
+  id            String   @id @default(uuid())
+  fileId        String
+  file          File     @relation(fields: [fileId], references: [id])
+  versionNumber Int
+  url           String
+  createdAt     DateTime @default(now())
+  Folder        Folder?  @relation(fields: [folderId], references: [id])
+  folderId      String?
+  userId        String?
+}
+
 model File {
   id         String   @id @default(cuid())
   name       String
@@ -244,6 +267,9 @@ model File {
   user       User           @relation(fields: [userId], references: [id])
   SharedFile SharedFile[]
   activities FileActivity[]
+
+  locked   Boolean       @default(false)
+  versions FileVersion[]
 
   @@map("files")
 }
@@ -267,6 +293,8 @@ model Folder {
   SharedFile   SharedFile[]
   updatedAt    DateTime       @updatedAt
   FileActivity FileActivity[]
+  locked       Boolean        @default(false)
+  versions     FileVersion[]
 
   @@map("folders")
 }
@@ -296,16 +324,15 @@ model SharedFile {
 }
 
 model Setting {
-  id       String @id @default(uuid())
-  key      String @unique
-  value    String
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
 }
 
 enum UserRole {
   ADMIN
   USER
 }
-
 
 enum DocumentAccess {
   RESTRICTED

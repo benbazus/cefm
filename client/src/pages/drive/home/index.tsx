@@ -20,10 +20,10 @@ export default function HomePage() {
     try {
       setLoading(true)
 
-      const rootFolder = await getRootFolder()
+      const rootFolder = (await getRootFolder()) as FileItem
       if (rootFolder) {
-        setFolderId(rootFolder.id)
-        setFolderName(rootFolder.name)
+        setFolderId(rootFolder?.id)
+        setFolderName(rootFolder?.name)
       }
 
       const rootFolders: DriveItemsResponse = await getRootChildren()

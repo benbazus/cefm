@@ -2,6 +2,52 @@ import { toast } from '@/components/ui/use-toast'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
+// export const getValidToken = async () => {
+//   let token = localStorage.getItem('token')
+
+//   if (!token) {
+//     throw new Error('No token available')
+//   }
+
+//   const decodedToken = jwt_decode<DecodedToken>(token)
+//   const currentTime = Date.now() / 1000
+
+//   if (decodedToken.exp < currentTime) {
+//     token = await refreshToken()
+//   }
+
+//   return token
+// }
+
+export const refreshToken = async () => {
+  const refreshToken = localStorage.getItem('refreshToken')
+  if (!refreshToken) {
+    throw new Error('No refresh token available')
+  }
+
+  try {
+    const response = await fetch('/api/auth/refresh-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to refresh token')
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } = await response.json()
+    localStorage.setItem('token', accessToken)
+    localStorage.setItem('refreshToken', newRefreshToken)
+
+    return accessToken
+  } catch (error) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    throw error
+  }
+}
+
 export const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
     await navigator.clipboard.writeText(text)
@@ -191,26 +237,6 @@ export const handleError = (error: unknown) => {
       ),
     })
   }
-}
-
-// Get the base URL for API calls
-export const getURL = (path?: string) => {
-  let url =
-    process.env.NEXT_PUBLIC_SITE_URL ?? // Set this to your site URL in production env.
-    process.env.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
-    'http://localhost:3000/'
-
-  // Ensure the URL starts with https:// when not localhost.
-  url = url.includes('http') ? url : `https://${url}`
-  // Ensure the URL has a trailing slash.
-  url = url.charAt(url.length - 1) === '/' ? url : `${url}/`
-
-  if (path) {
-    path = path.replace(/^\/+/, '') // Remove leading slashes
-    return path ? `${url}${path}` : url // Concatenate the URL and the path.
-  }
-
-  return url
 }
 
 // Convert seconds to DateTime

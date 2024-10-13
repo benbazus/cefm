@@ -19,17 +19,17 @@ exports.sendPasswordResetEmail = sendPasswordResetEmail;
 const nodemailer_1 = require("nodemailer");
 const logger_1 = __importDefault(require("./logger"));
 const transporterLocalhost = (0, nodemailer_1.createTransport)({
-    host: 'localhost',
-    port: parseInt('25'),
+    host: "localhost",
+    port: parseInt("25"),
     secure: false,
     auth: {
-        user: '',
-        pass: '',
+        user: "",
+        pass: "",
     },
 });
 const transporter = (0, nodemailer_1.createTransport)({
     host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || '587'),
+    port: parseInt(process.env.EMAIL_PORT || "587"),
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -47,7 +47,7 @@ const transporterGmail = (0, nodemailer_1.createTransport)({
 function sendMail(to, subject, html) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield transporterLocalhost.sendMail({
+            yield transporterGmail.sendMail({
                 from: process.env.SMTP_FROM_EMAIL,
                 to,
                 subject,
@@ -55,22 +55,22 @@ function sendMail(to, subject, html) {
             });
         }
         catch (e) {
-            console.log((e));
+            console.log(e);
         }
     });
 }
 const sendDocumentShareEmail = (name, senderEmail, recipientEmail, emailMessage, documentUrl, permission, documentName) => __awaiter(void 0, void 0, void 0, function* () {
     let documentPermission;
-    if (permission == 'READ') {
-        documentPermission = 'view';
+    if (permission == "READ") {
+        documentPermission = "view";
     }
-    else if (permission == 'WRITE') {
-        documentPermission = 'edit';
+    else if (permission == "WRITE") {
+        documentPermission = "edit";
     }
     const mailOptions = {
         from: senderEmail,
         to: recipientEmail,
-        subject: 'You’ve been invited to view a shared document',
+        subject: "You’ve been invited to view a shared document",
         html: `
       <!DOCTYPE html>
       <html lang="en">
@@ -145,12 +145,12 @@ const sendDocumentShareEmail = (name, senderEmail, recipientEmail, emailMessage,
     `,
     };
     try {
-        yield transporterLocalhost.sendMail(mailOptions);
+        yield transporterGmail.sendMail(mailOptions);
         console.log(`Email sent successfully to ${recipientEmail}`);
     }
     catch (error) {
         console.error(`Failed to send email to ${recipientEmail}:`, error);
-        throw new Error('Unable to send document share email.');
+        throw new Error("Unable to send document share email.");
     }
 });
 exports.sendDocumentShareEmail = sendDocumentShareEmail;
@@ -172,7 +172,9 @@ const sendShareDocumentEmail = (from, to, message, title, password, date, permis
       To view the document, please click the link below:
       ${currentUrl}
 
-      ${password ? `This document is protected by a password: ${password}` : "No password is required to access this document."}
+      ${password
+            ? `This document is protected by a password: ${password}`
+            : "No password is required to access this document."}
 
       Please note, access to this document will expire on ${expiryDate.toDateString()}.
 
@@ -189,13 +191,15 @@ const sendShareDocumentEmail = (from, to, message, title, password, date, permis
       </ul>
       <p>To view the document, please click the link below:</p>
       <a href="${currentUrl}" style="color: #1a73e8; text-decoration: none;">Open Document</a>
-      <p>${password ? `This document is protected by a password: <strong>${password}</strong>` : "No password is required to access this document."}</p>
+      <p>${password
+            ? `This document is protected by a password: <strong>${password}</strong>`
+            : "No password is required to access this document."}</p>
       <p><em>Please note, access to this document will expire on ${expiryDate.toDateString()}.</em></p>
       <br/>
       <p>Best regards,<br/>Cloud Share</p>
     `,
     };
-    yield transporterLocalhost.sendMail(mailOptions);
+    yield transporterGmail.sendMail(mailOptions);
 });
 exports.sendShareDocumentEmail = sendShareDocumentEmail;
 const sendShareDocumentEmail1 = (from, to, message, title, password, date, permission, currentUrl) => __awaiter(void 0, void 0, void 0, function* () {
@@ -217,7 +221,7 @@ const sendShareDocumentEmail1 = (from, to, message, title, password, date, permi
     `,
     };
     // Send the email
-    yield transporterLocalhost.sendMail(mailOptions);
+    yield transporterGmail.sendMail(mailOptions);
 });
 exports.sendShareDocumentEmail1 = sendShareDocumentEmail1;
 const sendShareDocumentEmail2 = (from, to, message, title, password, date, permission, currentUrl) => __awaiter(void 0, void 0, void 0, function* () {
@@ -241,7 +245,7 @@ const sendShareDocumentEmail2 = (from, to, message, title, password, date, permi
     `,
     };
     // Send the email
-    yield transporterLocalhost.sendMail(mailOptions);
+    yield transporterGmail.sendMail(mailOptions);
 });
 exports.sendShareDocumentEmail2 = sendShareDocumentEmail2;
 const sendConfirmationEmail = (to, token) => __awaiter(void 0, void 0, void 0, function* () {
@@ -249,14 +253,18 @@ const sendConfirmationEmail = (to, token) => __awaiter(void 0, void 0, void 0, f
     yield transporter.sendMail({
         from: process.env.EMAIL_FROM,
         to,
-        subject: 'Confirm Your Email',
+        subject: "Confirm Your Email",
         html: `Please click <a href="${confirmationLink}">here</a> to confirm your email.`,
     });
 });
 exports.sendConfirmationEmail = sendConfirmationEmail;
-const sendSharedLinkEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, message = '', fromEmail, shareableLink }) {
+const sendSharedLinkEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({ toEmail, message = "", fromEmail, shareableLink, }) {
     try {
-        logger_1.default.info('Sending shareable link email', { toEmail, fromEmail, shareableLink });
+        logger_1.default.info("Sending shareable link email", {
+            toEmail,
+            fromEmail,
+            shareableLink,
+        });
         const renderedEmail = `
       <!DOCTYPE html>
       <html lang="en">
@@ -273,7 +281,9 @@ const sendSharedLinkEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({
           <div style="margin-top: 20px;">
             <p style="font-size: 16px; line-height: 1.6; color: #555555;">Hello,</p>
             <p style="font-size: 16px; line-height: 1.6; color: #555555;"><strong>${fromEmail}</strong> has shared an item with you:</p>
-            ${message ? `<p style="font-size: 16px; line-height: 1.6; color: #555555; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #1a73e8; margin-left: 0;">${message}</p>` : ''}
+            ${message
+            ? `<p style="font-size: 16px; line-height: 1.6; color: #555555; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #1a73e8; margin-left: 0;">${message}</p>`
+            : ""}
             <div style="margin: 30px 0; text-align: center;">
               <a href="${shareableLink}" style="background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block;">View Shared Content</a>
             </div>
@@ -288,11 +298,18 @@ const sendSharedLinkEmail = (_a) => __awaiter(void 0, [_a], void 0, function* ({
       </html>
     `;
         yield sendMail(toEmail, `${fromEmail} shared an item with you`, renderedEmail);
-        logger_1.default.info('Shareable link email sent successfully', { toEmail, fromEmail });
+        logger_1.default.info("Shareable link email sent successfully", {
+            toEmail,
+            fromEmail,
+        });
     }
     catch (error) {
-        logger_1.default.error('Error sending shareable link email', { error, toEmail, fromEmail });
-        throw new Error('Failed to send shareable link email');
+        logger_1.default.error("Error sending shareable link email", {
+            error,
+            toEmail,
+            fromEmail,
+        });
+        throw new Error("Failed to send shareable link email");
     }
 });
 exports.sendSharedLinkEmail = sendSharedLinkEmail;
@@ -456,7 +473,7 @@ const sendVerificationEmail = (email, name, token) => __awaiter(void 0, void 0, 
         </body>
         </html>
     `;
-    yield sendMail(email, 'Verify Your Email Address', renderedEmail);
+    yield sendMail(email, "Verify Your Email Address", renderedEmail);
 });
 exports.sendVerificationEmail = sendVerificationEmail;
 const sendVerificationEmail1 = (email, name, token) => __awaiter(void 0, void 0, void 0, function* () {
@@ -532,7 +549,7 @@ const sendVerificationEmail1 = (email, name, token) => __awaiter(void 0, void 0,
             </body>
             </html>
         `;
-    yield sendMail(email, 'Verify Your Email Address', renderedEmail);
+    yield sendMail(email, "Verify Your Email Address", renderedEmail);
 });
 exports.sendVerificationEmail1 = sendVerificationEmail1;
 const sendTwoFactorTokenEmail = (email, name, verificationCode) => __awaiter(void 0, void 0, void 0, function* () {
@@ -604,7 +621,7 @@ const sendTwoFactorTokenEmail = (email, name, verificationCode) => __awaiter(voi
             </body>
             </html>
         `;
-    yield sendMail(email, 'Two factor authentication', renderedEmail);
+    yield sendMail(email, "Two factor authentication", renderedEmail);
 });
 exports.sendTwoFactorTokenEmail = sendTwoFactorTokenEmail;
 function sendOtpEmail(email, otp) {
@@ -682,7 +699,7 @@ function sendOtpEmail(email, otp) {
         </html>
     `;
         try {
-            yield sendMail(email, 'Your OTP Code', renderedEmail);
+            yield sendMail(email, "Your OTP Code", renderedEmail);
         }
         catch (error) {
             console.error("Failed to send OTP email:", error);
@@ -762,7 +779,7 @@ function sendOtpEmail1(email, otp) {
             </body>
             </html>
        `;
-        yield sendMail(email, 'Your OTP Code', renderedEmail);
+        yield sendMail(email, "Your OTP Code", renderedEmail);
     });
 }
 function sendPasswordResetEmail(email, token) {
@@ -839,6 +856,6 @@ function sendPasswordResetEmail(email, token) {
             </body>
             </html>
        `;
-        yield sendMail(email, 'Reset your password', renderedEmail);
+        yield sendMail(email, "Reset your password", renderedEmail);
     });
 }

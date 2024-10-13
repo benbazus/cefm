@@ -56,10 +56,9 @@ import {
 } from '@/services/api'
 import { FileActionMenu } from './drive/drive-button'
 import { ShareDialog } from './drive/dialog/ShareDialog'
-
 import { ConfirmTrashDialog } from './drive/dialog/ConfirmTrashDialog'
 import { RenameDialog } from './drive/dialog/RenameDialog'
-import { FileDetailsDialog } from './drive/dialog/FileDetailsDialog'
+import { FileDetailsSheet } from './drive/dialog/FileDetailsDialog'
 import { Button } from './custom/button'
 
 import PreviewWithUrlDialog from './drive/dialog/PreviewWithUrlDialog'
@@ -209,6 +208,14 @@ const DocumentItemContainer: React.FC<GridContainerProps> = ({
       })
     }
   }
+
+  const handleMakeCopy = (file: FileItem) => {}
+
+  const handleLockItem = (file: FileItem) => {}
+
+  const handleVersionItem = (file: FileItem) => {}
+
+  const handleMoveItem = (file: FileItem) => {}
 
   const handleDownload = async (file: FileItem) => {
     try {
@@ -493,6 +500,10 @@ const DocumentItemContainer: React.FC<GridContainerProps> = ({
             file={item}
             onPreview={handlePreview}
             onCopyLink={handleCopyLink}
+            onMakeCopy={handleMakeCopy}
+            onLockItem={handleLockItem}
+            onVersionItem={handleVersionItem}
+            onMoveItem={handleMoveItem}
             onDownload={handleDownload}
             onShare={handleShare}
             onRename={handleRename}
@@ -643,6 +654,10 @@ const DocumentItemContainer: React.FC<GridContainerProps> = ({
                 file={file}
                 onPreview={handlePreview}
                 onCopyLink={handleCopyLink}
+                onMakeCopy={handleMakeCopy}
+                onLockItem={handleLockItem}
+                onVersionItem={handleVersionItem}
+                onMoveItem={handleMoveItem}
                 onDownload={handleDownload}
                 onShare={handleShare}
                 onRename={handleRename}
@@ -741,7 +756,7 @@ const DocumentItemContainer: React.FC<GridContainerProps> = ({
         onConfirm={confirmRename}
         setNewFileName={setNewFileName}
       />
-      <FileDetailsDialog
+      <FileDetailsSheet
         fileDetails={fileDetails}
         onCancel={() => setFileDetails(null)}
       />

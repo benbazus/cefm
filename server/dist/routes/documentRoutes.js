@@ -32,11 +32,7 @@ const documentController = __importStar(require("../controllers/documentControll
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 exports.documentRouter = router;
-//const response = await fetch(`/api/documents/${documentId}/users`)
-//const response = await fetch(`/api/documents/${documentId}/share`, {
-//  url: `/documents/${documentId}/change-fileShare-permission`,
-//router.post('/share-document', auth, documentController.shareDocument)
-router.post('/share-document', auth_1.auth, documentController.shareDocument);
-router.get('/fetch-users/:documentId', auth_1.auth, documentController.fetchDocumentUsers);
-router.post('/:documentId/share', auth_1.auth, documentController.shareDocumentToUser);
-router.post('/:documentId/change-fileShare-permission', auth_1.auth, documentController.changeFileSharePermissionToUser);
+router.post("/share-document", auth_1.auth, documentController.shareDocument);
+router.get("/fetch-users/:documentId", auth_1.auth, documentController.fetchDocumentUsers);
+router.post("/:documentId/share", auth_1.auth, documentController.shareDocumentToUser);
+router.post("/:documentId/change-fileShare-permission", auth_1.auth, documentController.changeFileSharePermissionToUser);

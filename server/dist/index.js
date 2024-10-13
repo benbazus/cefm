@@ -31,44 +31,53 @@ const socketController_1 = require("./controllers/socketController");
 const path_1 = __importDefault(require("path"));
 const compression_1 = __importDefault(require("compression"));
 const errorHandler_1 = require("./middleware/errorHandler");
-const fs_1 = __importDefault(require("fs"));
-const https_1 = __importDefault(require("https"));
 const settingRoutes_1 = require("./routes/settingRoutes");
-/* CONFIGURATIONS */
+const activityRoutes_1 = require("./routes/activityRoutes");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const isDevelopment = process.env.NODE_ENV !== "production";
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";
-const PORT = Number(process.env.PORT) || 5000;
-let server;
-if (isDevelopment) {
-    server = (0, http_1.createServer)(app);
-}
-else {
-    // In production, use HTTPS
-    const privateKey = fs_1.default.readFileSync('/path/to/private-key.pem', 'utf8');
-    const certificate = fs_1.default.readFileSync('/path/to/certificate.pem', 'utf8');
-    const credentials = { key: privateKey, cert: certificate };
-    server = https_1.default.createServer(credentials, app);
-}
+const PORT = 5002;
+// Define allowed origins
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5002",
+    "http://localhost:5001",
+    "http://localhost:5000",
+    "https://benhost.net",
+];
+const server = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: CLIENT_ORIGIN,
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
         methods: ["GET", "POST"],
         credentials: true,
     },
 });
 /* MIDDLEWARE */
-app.use(express_1.default.json({ limit: '100mb' }));
+app.use(express_1.default.json({ limit: "100mb" }));
 app.use((0, helmet_1.default)());
 app.use(helmet_1.default.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use((0, morgan_1.default)(isDevelopment ? "dev" : "combined"));
-app.use(body_parser_1.default.json({ limit: '100mb' }));
-app.use(body_parser_1.default.urlencoded({ extended: false, limit: '100mb' }));
+app.use(body_parser_1.default.json({ limit: "100mb" }));
+app.use(body_parser_1.default.urlencoded({ extended: false, limit: "100mb" }));
 app.use((0, compression_1.default)());
 // CORS configuration
 const corsOptions = {
-    origin: CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200,
 };
@@ -80,7 +89,7 @@ app.use(helmet_1.default.contentSecurityPolicy({
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", "data:", "blob:"],
-        connectSrc: ["'self'", CLIENT_ORIGIN],
+        connectSrc: ["'self'", "ws:", "wss:", ...allowedOrigins],
         frameSrc: ["'self'"],
         upgradeInsecureRequests: [],
     },
@@ -94,21 +103,22 @@ const limiter = (0, express_rate_limit_1.default)({
 });
 app.use(limiter);
 /* ROUTES */
-app.use('/api/auth', authRoutes_1.authRouter);
-app.use('/api/users', userRoutes_1.userRouter);
-app.use('/api/files', fileRoutes_1.fileRouter);
-app.use('/api/folders', folderRoutes_1.folderRouter);
-app.use('/api/dashboard', dashboardRoute_1.dashBoardRouter);
-app.use('/api/documents', documentRoutes_1.documentRouter);
-app.use('/api/settings', settingRoutes_1.settingsRouter);
+app.use("/api/auth", authRoutes_1.authRouter);
+app.use("/api/users", userRoutes_1.userRouter);
+app.use("/api/files", fileRoutes_1.fileRouter);
+app.use("/api/folders", folderRoutes_1.folderRouter);
+app.use("/api/dashboard", dashboardRoute_1.dashBoardRouter);
+app.use("/api/documents", documentRoutes_1.documentRouter);
+app.use("/api/settings", settingRoutes_1.settingsRouter);
+app.use("/api/activities", activityRoutes_1.activityRouter);
 // Serve static files in production
 if (!isDevelopment) {
-    const clientBuildPath = path_1.default.join(__dirname, '../client/dist');
-    app.use(express_1.default.static(clientBuildPath, { maxAge: '1d' }));
-    app.get('*', (req, res) => res.sendFile(path_1.default.join(clientBuildPath, 'index.html')));
+    const clientBuildPath = path_1.default.join(__dirname, "../client/dist");
+    app.use(express_1.default.static(clientBuildPath, { maxAge: "1d" }));
+    app.get("*", (req, res) => res.sendFile(path_1.default.join(clientBuildPath, "index.html")));
 }
 else {
-    app.get('/', (req, res) => {
+    app.get("/", (req, res) => {
         res.send("Server is running in development mode");
     });
 }
@@ -127,34 +137,34 @@ const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (error) {
-        console.error('Failed to start server:', error);
+        console.error("Failed to start server:", error);
         process.exit(1);
     }
 });
 startServer();
 // Graceful shutdown
 const gracefulShutdown = () => {
-    console.log('Received kill signal, shutting down gracefully');
+    console.log("Received kill signal, shutting down gracefully");
     server.close(() => {
-        console.log('Closed out remaining connections');
+        console.log("Closed out remaining connections");
         process.exit(0);
     });
     // If server hasn't finished in 10 seconds, shut down forcefully
     setTimeout(() => {
-        console.error('Could not close connections in time, forcefully shutting down');
+        console.error("Could not close connections in time, forcefully shutting down");
         process.exit(1);
     }, 10000);
 };
-process.on('SIGTERM', gracefulShutdown);
-process.on('SIGINT', gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
 // Uncaught exception handler
-process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught Exception:", error);
     gracefulShutdown();
 });
 // Unhandled rejection handler
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
     gracefulShutdown();
 });
 exports.default = app;

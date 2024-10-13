@@ -30,7 +30,7 @@ const LoginPage = () => {
 
   return (
     <div className='flex min-h-screen flex-col bg-gray-100'>
-      <header className='flex items-center justify-between bg-white p-2'>
+      <header className=' hidden items-center justify-between bg-white p-2'>
         <Link to='/' target='_blank' rel='noopener noreferrer nofollow'>
           <DropFileLogo />
         </Link>
@@ -46,7 +46,6 @@ const LoginPage = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem>English</DropdownMenuItem>
-              {/* Add more language options here */}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -54,7 +53,7 @@ const LoginPage = () => {
 
       <LoginForm />
 
-      <footer className='bg-white p-4 text-center'>
+      <footer className='hidden bg-white p-4 text-center '>
         <p>DropFile . Privacy by default.</p>
         <div className='mt-4'>
           <Link

@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFileCount = exports.getFolderDetails = exports.getRootChildren = exports.getRootFolder = exports.getChildrenFoldersByParentFolderId = exports.downloadFolder = exports.createNewFolder = void 0;
+exports.moveFolder = exports.copyFolder = exports.lockFolder = exports.unlockFolder = exports.getFileCount = exports.getFolderDetails = exports.getRootChildren = exports.getRootFolder = exports.getChildrenFoldersByParentFolderId = exports.downloadFolder = exports.createNewFolder = void 0;
 exports.getUserInfo = getUserInfo;
 const folderService = __importStar(require("../services/folderService"));
 const ua_parser_js_1 = __importDefault(require("ua-parser-js"));
@@ -44,17 +44,17 @@ const fs_1 = __importDefault(require("fs"));
 const database_1 = __importDefault(require("../config/database"));
 const archiver_1 = __importDefault(require("archiver"));
 function getUserInfo(req) {
-    const parser = new ua_parser_js_1.default(req.headers['user-agent']);
+    const parser = new ua_parser_js_1.default(req.headers["user-agent"]);
     const result = parser.getResult();
     return {
         ipAddress: req.ip || req.connection.remoteAddress,
-        userAgent: req.headers['user-agent'] || '',
-        operatingSystem: result.os.name || 'Unknown',
-        browser: result.browser.name || 'Unknown',
-        deviceType: result.device.type || 'unknown',
-        deviceModel: result.device.model || 'unknown',
-        deviceVendor: result.device.vendor || 'unknown',
-        os: result.os.name || 'unknown',
+        userAgent: req.headers["user-agent"] || "",
+        operatingSystem: result.os.name || "Unknown",
+        browser: result.browser.name || "Unknown",
+        deviceType: result.device.type || "unknown",
+        deviceModel: result.device.model || "unknown",
+        deviceVendor: result.device.vendor || "unknown",
+        os: result.os.name || "unknown",
         //browser: result.browser.name || 'unknown'
     };
 }
@@ -66,8 +66,11 @@ const createNewFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         const user = yield database_1.default.user.findUnique({
             where: { id: userId },
         });
-        if (!folderName || typeof folderName !== 'string' || folderName.includes('/') || folderName.includes('\\')) {
-            return res.status(400).json({ error: 'Invalid folder name' });
+        if (!folderName ||
+            typeof folderName !== "string" ||
+            folderName.includes("/") ||
+            folderName.includes("\\")) {
+            return res.status(400).json({ error: "Invalid folder name" });
         }
         const folder = yield folderService.createNewFolder(userId, folderName, parentFolderId, userInfo.ipAddress, userInfo.userAgent, userInfo.operatingSystem, userInfo.browser, userInfo.deviceType);
         res.status(201).json(`${folderName} created successfully`);
@@ -84,18 +87,18 @@ const downloadFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             where: { id: folderId },
         });
         if (!folder) {
-            return res.status(404).json('Folder not found');
+            return res.status(404).json("Folder not found");
         }
         const folderPath = path_1.default.join(folder.folderPath);
         // Create a zip file
         const zipFileName = `${folder.name}.zip`;
         const zipFilePath = path_1.default.join(process.cwd(), zipFileName);
         const output = fs_1.default.createWriteStream(zipFilePath);
-        const archive = (0, archiver_1.default)('zip');
-        output.on('close', () => {
+        const archive = (0, archiver_1.default)("zip");
+        output.on("close", () => {
             console.log(`Zipped ${archive.pointer()} total bytes.`);
         });
-        archive.on('error', (err) => {
+        archive.on("error", (err) => {
             throw err;
         });
         // Pipe the zip stream to the output file
@@ -106,8 +109,8 @@ const downloadFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         // Send the zip file as a response
         const zipFileStream = fs_1.default.createReadStream(zipFilePath);
         // const contentDisposition = file.mimeType.startsWith('image/') ? 'inline' : 'attachment';
-        res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`);
-        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader("Content-Disposition", `attachment; filename="${zipFileName}"`);
+        res.setHeader("Content-Type", "application/zip");
         res.send(zipFileStream);
     }
     catch (error) {
@@ -171,3 +174,91 @@ const getFileCount = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getFileCount = getFileCount;
+const unlockFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const folder = yield database_1.default.folder.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { locked: false },
+        });
+        res.json(folder);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Error unlocking folder" });
+        next(error);
+    }
+});
+exports.unlockFolder = unlockFolder;
+const lockFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const folder = yield database_1.default.folder.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { locked: true },
+        });
+        res.json(folder);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Error locking folder" });
+        next(error);
+    }
+});
+exports.lockFolder = lockFolder;
+const copyFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { newParentId } = req.body;
+        const sourceFolder = yield database_1.default.folder.findUnique({
+            where: { id: req.params.id, userId: req.user.id },
+            include: { files: true, children: true },
+        });
+        if (!sourceFolder) {
+            return res.status(404).json({ error: "Folder not found" });
+        }
+        const copyFolder = (folder, parentId) => __awaiter(void 0, void 0, void 0, function* () {
+            const newFolder = yield database_1.default.folder.create({
+                data: {
+                    name: folder.name,
+                    parentId,
+                    userId: req.user.id,
+                },
+            });
+            for (const file of folder.files) {
+                yield database_1.default.file.create({
+                    data: {
+                        name: file.name,
+                        fileType: file.type,
+                        size: file.size,
+                        fileUrl: file.url,
+                        folderId: newFolder.id,
+                        userId: req.user.id,
+                        mimeType: file.mimeType,
+                    },
+                });
+            }
+            for (const child of folder.children) {
+                yield copyFolder(child, newFolder.id);
+            }
+            return newFolder;
+        });
+        const copiedFolder = yield copyFolder(sourceFolder, newParentId);
+        res.status(201).json(copiedFolder);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Error copying folder" });
+        next(error);
+    }
+});
+exports.copyFolder = copyFolder;
+const moveFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { newParentId } = req.body;
+        const folder = yield database_1.default.folder.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { parentId: newParentId },
+        });
+        res.json(folder);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Error moving folder" });
+        next(error);
+    }
+});
+exports.moveFolder = moveFolder;

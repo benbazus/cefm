@@ -124,7 +124,7 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         lazy: async () => ({
-          Component: (await import('./pages/drive/home')).default,
+          Component: (await import('./pages/dashboard')).default,
         }),
       },
       {

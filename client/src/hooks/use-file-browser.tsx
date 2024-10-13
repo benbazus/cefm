@@ -19,8 +19,6 @@ export function useFileBrowser() {
       try {
         await createNewFolder(name, folderId)
 
-        // setFiles((prev: ViewState) => [...prev, newFolder])
-
         toast({
           title: 'Folder created',
           description: `Folder has been created successfully.`,
@@ -52,7 +50,7 @@ export function useFileBrowser() {
         setFiles((prev) => [...prev, uploadedFile])
         toast({
           title: 'File uploaded',
-          description: `File "${uploadedFile.name}" has been uploaded successfully.`,
+          description: `File has been uploaded successfully.`,
         })
         triggerRefresh()
       } catch (error) {

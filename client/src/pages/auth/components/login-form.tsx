@@ -1,11 +1,6 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import {
-  Link,
-  useSearchParams,
-  useNavigate,
-  useLocation,
-} from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -40,7 +35,6 @@ const loginSchema = z.object({
 export function LoginForm({ className, ...props }: UserAuthFormProps) {
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [searchParams] = useSearchParams()
   const { logInUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -194,7 +188,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
             </Form>
           </div>
 
-          <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
+          <p className='mt-4  px-8 text-center text-sm text-muted-foreground'>
             Don't have an account?{' '}
             <Link
               to='/register'
@@ -205,7 +199,7 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
             .
           </p>
 
-          <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
+          <p className='mt-4 hidden px-8 text-center text-sm text-muted-foreground'>
             By clicking login, you agree to our{' '}
             <button
               onClick={() => openInNewTab('./tos/terms')}

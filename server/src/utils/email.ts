@@ -1,82 +1,80 @@
-
-import { createTransport } from 'nodemailer';
-import logger from './logger';
-
+import { createTransport } from "nodemailer";
+import logger from "./logger";
 
 interface ShareableLinkEmailParams {
-    toEmail: string;
-    message?: string;
-    fromEmail: string;
-    shareableLink: string;
+  toEmail: string;
+  message?: string;
+  fromEmail: string;
+  shareableLink: string;
 }
 
 const transporterLocalhost = createTransport({
-    host: 'localhost',
-    port: parseInt('25'),
-    secure: false,
-    auth: {
-        user: '',
-        pass: '',
-    },
+  host: "localhost",
+  port: parseInt("25"),
+  secure: false,
+  auth: {
+    user: "",
+    pass: "",
+  },
 });
-
 
 const transporter = createTransport({
-
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
+  host: process.env.EMAIL_HOST,
+  port: parseInt(process.env.EMAIL_PORT || "587"),
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
-
 
 const transporterGmail = createTransport({
-    host: process.env.GMAIL_SERVER_HOST,
-    port: Number(process.env.GMAIL_SERVER_PORT),
-    secure: Boolean(Number(process.env.GMAIL_SERVER_SECURE)),
-    auth: {
-        user: process.env.GMAIL_SERVER_USER,
-        pass: process.env.GMAIL_SERVER_PASSWORD,
-    },
+  host: process.env.GMAIL_SERVER_HOST,
+  port: Number(process.env.GMAIL_SERVER_PORT),
+  secure: Boolean(Number(process.env.GMAIL_SERVER_SECURE)),
+  auth: {
+    user: process.env.GMAIL_SERVER_USER,
+    pass: process.env.GMAIL_SERVER_PASSWORD,
+  },
 });
 
-async function sendMail(to: string, subject: string, html: string): Promise<void> {
-
-    try {
-        await transporterLocalhost.sendMail({
-            from: process.env.SMTP_FROM_EMAIL,
-            to,
-            subject,
-            html,
-        });
-    } catch (e) {
-        console.log((e))
-
-    }
+async function sendMail(
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> {
+  try {
+    await transporterGmail.sendMail({
+      from: process.env.SMTP_FROM_EMAIL,
+      to,
+      subject,
+      html,
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }
 
-
-export const sendDocumentShareEmail = async (name: string,
-    senderEmail: string,
-    recipientEmail: string,
-    emailMessage: string,
-    documentUrl: string, permission: string, documentName: string
+export const sendDocumentShareEmail = async (
+  name: string,
+  senderEmail: string,
+  recipientEmail: string,
+  emailMessage: string,
+  documentUrl: string,
+  permission: string,
+  documentName: string
 ): Promise<void> => {
+  let documentPermission;
+  if (permission == "READ") {
+    documentPermission = "view";
+  } else if (permission == "WRITE") {
+    documentPermission = "edit";
+  }
 
-    let documentPermission;
-    if (permission == 'READ') {
-        documentPermission = 'view'
-    } else if (permission == 'WRITE') {
-        documentPermission = 'edit'
-    }
-
-    const mailOptions = {
-        from: senderEmail,
-        to: recipientEmail,
-        subject: 'You’ve been invited to view a shared document',
-        html: `
+  const mailOptions = {
+    from: senderEmail,
+    to: recipientEmail,
+    subject: "You’ve been invited to view a shared document",
+    html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -148,36 +146,34 @@ export const sendDocumentShareEmail = async (name: string,
       </body>
       </html>
     `,
-    };
+  };
 
-    try {
-        await transporterLocalhost.sendMail(mailOptions);
-        console.log(`Email sent successfully to ${recipientEmail}`);
-    } catch (error) {
-        console.error(`Failed to send email to ${recipientEmail}:`, error);
-        throw new Error('Unable to send document share email.');
-    }
+  try {
+    await transporterGmail.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${recipientEmail}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${recipientEmail}:`, error);
+    throw new Error("Unable to send document share email.");
+  }
 };
 
-
 export const sendShareDocumentEmail = async (
-    from: string,
-    to: string,
-    message: string,
-    title: string,
-    password: string,
-    date: Date,
-    permission: string,
-    currentUrl: string,
+  from: string,
+  to: string,
+  message: string,
+  title: string,
+  password: string,
+  date: Date,
+  permission: string,
+  currentUrl: string
 ) => {
+  const expiryDate = new Date(date);
 
-    const expiryDate = new Date(date);
-
-    const mailOptions = {
-        from: from,
-        to: to,
-        subject: `You've been invited by ${from} to view: "${title}"`,
-        text: `
+  const mailOptions = {
+    from: from,
+    to: to,
+    subject: `You've been invited by ${from} to view: "${title}"`,
+    text: `
       Hello ${to},
 
       You have been granted access to the following document by ${from}:
@@ -189,40 +185,58 @@ export const sendShareDocumentEmail = async (
       To view the document, please click the link below:
       ${currentUrl}
 
-      ${password ? `This document is protected by a password: ${password}` : "No password is required to access this document."}
+      ${
+        password
+          ? `This document is protected by a password: ${password}`
+          : "No password is required to access this document."
+      }
 
       Please note, access to this document will expire on ${expiryDate.toDateString()}.
 
       Best regards,
       The Document Sharing Team
     `,
-        html: `
+    html: `
       <p>Hello ${to},</p>
       <p>You have been granted access to the following document by ${from}:</p>
       <ul>
         <li><strong>Document Title:</strong> ${title}</li>
         ${message ? `<li><strong>Message:</strong> ${message}</li>` : ""}
-        <li><strong>Access Level:</strong> ${permission.charAt(0).toUpperCase() + permission.slice(1)}</li>
+        <li><strong>Access Level:</strong> ${
+          permission.charAt(0).toUpperCase() + permission.slice(1)
+        }</li>
       </ul>
       <p>To view the document, please click the link below:</p>
       <a href="${currentUrl}" style="color: #1a73e8; text-decoration: none;">Open Document</a>
-      <p>${password ? `This document is protected by a password: <strong>${password}</strong>` : "No password is required to access this document."}</p>
+      <p>${
+        password
+          ? `This document is protected by a password: <strong>${password}</strong>`
+          : "No password is required to access this document."
+      }</p>
       <p><em>Please note, access to this document will expire on ${expiryDate.toDateString()}.</em></p>
       <br/>
       <p>Best regards,<br/>Cloud Share</p>
     `,
-    };
+  };
 
-    await transporterLocalhost.sendMail(mailOptions);
+  await transporterGmail.sendMail(mailOptions);
 };
 
-export const sendShareDocumentEmail1 = async (from: string, to: string, message: string,
-    title: string, password: string, date: Date, permission: string, currentUrl: string,) => {
-    const mailOptions = {
-        from: from,
-        to: to,
-        subject: `Document Share: ${title}`,
-        text: `
+export const sendShareDocumentEmail1 = async (
+  from: string,
+  to: string,
+  message: string,
+  title: string,
+  password: string,
+  date: Date,
+  permission: string,
+  currentUrl: string
+) => {
+  const mailOptions = {
+    from: from,
+    to: to,
+    subject: `Document Share: ${title}`,
+    text: `
       You have been shared a document:
 
       Title: ${title}
@@ -234,18 +248,26 @@ export const sendShareDocumentEmail1 = async (from: string, to: string, message:
 
           Password: ${password ? password : "No password required"}
     `,
-    };
-    // Send the email
-    await transporterLocalhost.sendMail(mailOptions);
-}
+  };
+  // Send the email
+  await transporterGmail.sendMail(mailOptions);
+};
 
-export const sendShareDocumentEmail2 = async (from: string, to: string, message: string,
-    title: string, password: string, date: Date, permission: string, currentUrl: string,) => {
-    const mailOptions = {
-        from: from,
-        to: to,
-        subject: `Document Share: ${title}`,
-        html: `
+export const sendShareDocumentEmail2 = async (
+  from: string,
+  to: string,
+  message: string,
+  title: string,
+  password: string,
+  date: Date,
+  permission: string,
+  currentUrl: string
+) => {
+  const mailOptions = {
+    from: from,
+    to: to,
+    subject: `Document Share: ${title}`,
+    html: `
       <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;">
         <h2>Document Share: ${title}</h2>
         <p>You have been shared a document:</p>
@@ -255,35 +277,41 @@ export const sendShareDocumentEmail2 = async (from: string, to: string, message:
           <li><strong>Permission:</strong> ${permission}</li>
           <li><strong>URL:</strong> <a href="${currentUrl}" style="color: blue; text-decoration: underline;">${currentUrl}</a></li>
           <li><strong>Expiry Date:</strong> ${date}</li>
-          <li><strong>Password:</strong> ${password ? password : "No password required"}</li>
+          <li><strong>Password:</strong> ${
+            password ? password : "No password required"
+          }</li>
         </ul>
       </div>
     `,
-    };
-    // Send the email
-    await transporterLocalhost.sendMail(mailOptions);
-}
+  };
+  // Send the email
+  await transporterGmail.sendMail(mailOptions);
+};
 
 export const sendConfirmationEmail = async (to: string, token: string) => {
-    const confirmationLink = `${process.env.APP_URL}/confirm-email/${token}`;
-    await transporter.sendMail({
-        from: process.env.EMAIL_FROM,
-        to,
-        subject: 'Confirm Your Email',
-        html: `Please click <a href="${confirmationLink}">here</a> to confirm your email.`,
-    });
+  const confirmationLink = `${process.env.APP_URL}/confirm-email/${token}`;
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: "Confirm Your Email",
+    html: `Please click <a href="${confirmationLink}">here</a> to confirm your email.`,
+  });
 };
 
 export const sendSharedLinkEmail = async ({
-    toEmail,
-    message = '',
-    fromEmail,
-    shareableLink
+  toEmail,
+  message = "",
+  fromEmail,
+  shareableLink,
 }: ShareableLinkEmailParams): Promise<void> => {
-    try {
-        logger.info('Sending shareable link email', { toEmail, fromEmail, shareableLink });
+  try {
+    logger.info("Sending shareable link email", {
+      toEmail,
+      fromEmail,
+      shareableLink,
+    });
 
-        const renderedEmail = `
+    const renderedEmail = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -299,7 +327,11 @@ export const sendSharedLinkEmail = async ({
           <div style="margin-top: 20px;">
             <p style="font-size: 16px; line-height: 1.6; color: #555555;">Hello,</p>
             <p style="font-size: 16px; line-height: 1.6; color: #555555;"><strong>${fromEmail}</strong> has shared an item with you:</p>
-            ${message ? `<p style="font-size: 16px; line-height: 1.6; color: #555555; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #1a73e8; margin-left: 0;">${message}</p>` : ''}
+            ${
+              message
+                ? `<p style="font-size: 16px; line-height: 1.6; color: #555555; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #1a73e8; margin-left: 0;">${message}</p>`
+                : ""
+            }
             <div style="margin: 30px 0; text-align: center;">
               <a href="${shareableLink}" style="background-color: #1a73e8; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block;">View Shared Content</a>
             </div>
@@ -314,19 +346,33 @@ export const sendSharedLinkEmail = async ({
       </html>
     `;
 
-        await sendMail(toEmail, `${fromEmail} shared an item with you`, renderedEmail);
+    await sendMail(
+      toEmail,
+      `${fromEmail} shared an item with you`,
+      renderedEmail
+    );
 
-
-        logger.info('Shareable link email sent successfully', { toEmail, fromEmail });
-    } catch (error) {
-        logger.error('Error sending shareable link email', { error, toEmail, fromEmail });
-        throw new Error('Failed to send shareable link email');
-    }
+    logger.info("Shareable link email sent successfully", {
+      toEmail,
+      fromEmail,
+    });
+  } catch (error) {
+    logger.error("Error sending shareable link email", {
+      error,
+      toEmail,
+      fromEmail,
+    });
+    throw new Error("Failed to send shareable link email");
+  }
 };
 
-export const sendSharedLinkEmail1 = async (toEmail: string, message?: string, fromEmail?: string, shareableLink?: string) => {
-
-    const renderedEmail = `
+export const sendSharedLinkEmail1 = async (
+  toEmail: string,
+  message?: string,
+  fromEmail?: string,
+  shareableLink?: string
+) => {
+  const renderedEmail = `
            <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -402,15 +448,23 @@ export const sendSharedLinkEmail1 = async (toEmail: string, message?: string, fr
   </div>
 </body>
 </html>
-        `
+        `;
 
-    await sendMail(toEmail, `${fromEmail} Shared an item with you`, renderedEmail);
+  await sendMail(
+    toEmail,
+    `${fromEmail} Shared an item with you`,
+    renderedEmail
+  );
 };
 
-export const sendVerificationEmail = async (email: string, name?: string, token?: string) => {
-    const verificationLink = `${process.env.PUBLIC_APP_URL}/email-verification/${token}`;
+export const sendVerificationEmail = async (
+  email: string,
+  name?: string,
+  token?: string
+) => {
+  const verificationLink = `${process.env.PUBLIC_APP_URL}/email-verification/${token}`;
 
-    const renderedEmail = `
+  const renderedEmail = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -488,13 +542,17 @@ export const sendVerificationEmail = async (email: string, name?: string, token?
         </html>
     `;
 
-    await sendMail(email, 'Verify Your Email Address', renderedEmail);
+  await sendMail(email, "Verify Your Email Address", renderedEmail);
 };
 
-export const sendVerificationEmail1 = async (email: string, name?: string, token?: string) => {
-    const verificationLink = `${process.env.PUBLIC_APP_URL}/email-verification/${token}`;
+export const sendVerificationEmail1 = async (
+  email: string,
+  name?: string,
+  token?: string
+) => {
+  const verificationLink = `${process.env.PUBLIC_APP_URL}/email-verification/${token}`;
 
-    const renderedEmail = `
+  const renderedEmail = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -564,14 +622,17 @@ export const sendVerificationEmail1 = async (email: string, name?: string, token
                 </div>
             </body>
             </html>
-        `
+        `;
 
-    await sendMail(email, 'Verify Your Email Address', renderedEmail);
+  await sendMail(email, "Verify Your Email Address", renderedEmail);
 };
 
-export const sendTwoFactorTokenEmail = async (email: string, name: string, verificationCode: string) => {
-
-    const renderedEmail = `
+export const sendTwoFactorTokenEmail = async (
+  email: string,
+  name: string,
+  verificationCode: string
+) => {
+  const renderedEmail = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -638,13 +699,13 @@ export const sendTwoFactorTokenEmail = async (email: string, name: string, verif
                 </div>
             </body>
             </html>
-        `
+        `;
 
-    await sendMail(email, 'Two factor authentication', renderedEmail);
+  await sendMail(email, "Two factor authentication", renderedEmail);
 };
 
 export async function sendOtpEmail(email: string, otp: string): Promise<void> {
-    const renderedEmail = `
+  const renderedEmail = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -717,16 +778,16 @@ export async function sendOtpEmail(email: string, otp: string): Promise<void> {
         </html>
     `;
 
-    try {
-        await sendMail(email, 'Your OTP Code', renderedEmail);
-    } catch (error) {
-        console.error("Failed to send OTP email:", error);
-        throw new Error("Email sending failed.");
-    }
+  try {
+    await sendMail(email, "Your OTP Code", renderedEmail);
+  } catch (error) {
+    console.error("Failed to send OTP email:", error);
+    throw new Error("Email sending failed.");
+  }
 }
 
 export async function sendOtpEmail1(email: string, otp: string): Promise<void> {
-    const renderedEmail = `
+  const renderedEmail = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -797,13 +858,16 @@ export async function sendOtpEmail1(email: string, otp: string): Promise<void> {
             </html>
        `;
 
-    await sendMail(email, 'Your OTP Code', renderedEmail);
+  await sendMail(email, "Your OTP Code", renderedEmail);
 }
 
-export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
-    const resetLink = `${process.env.PUBLIC_APP_URL}/reset-password/${token}`;
+export async function sendPasswordResetEmail(
+  email: string,
+  token: string
+): Promise<void> {
+  const resetLink = `${process.env.PUBLIC_APP_URL}/reset-password/${token}`;
 
-    const renderedEmail = `
+  const renderedEmail = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -873,8 +937,7 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
                 </div>
             </body>
             </html>
-       `
+       `;
 
-    await sendMail(email, 'Reset your password', renderedEmail);
+  await sendMail(email, "Reset your password", renderedEmail);
 }
-

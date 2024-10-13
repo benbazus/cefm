@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/use-toast'
 import { getCustomDocuments } from '@/services/api'
 
-import { FileItem } from '@/types/types'
+import { DriveItemsResponse, FileItem } from '@/types/types'
 
 import DriveTopMenu from '@/components/drive-menu'
 import FileContainer from '@/components/drive/FileContainer'
@@ -15,11 +15,11 @@ export default function CustomDocumentPage() {
     try {
       setLoading(true)
 
-      const data = await getCustomDocuments()
+      const data = (await getCustomDocuments()) as DriveItemsResponse
 
       if (data) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fetchedFiles = (data.documents || []).map((file: any) => ({
+        const fetchedFiles = (data?.documents || []).map((file: any) => ({
           id: file.id,
           name: file.title,
           createdAt: new Date(file.createdAt),

@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFolderDetails = exports.getFolderFileCount1 = exports.getFolderFileCount = exports.shareFolder = exports.getFolderById = exports.renameFolder = exports.findOrCreateFolder = exports.createFolder = exports.getRootChildren = exports.getFoldersAndFilesByFolderId = exports.getRootFolder = exports.createNewFolder1 = exports.createNewFolder = void 0;
+exports.getFolderDetails = exports.getFolderFileCount1 = exports.getFolderFileCount = exports.shareFolder = exports.getFolderById = exports.renameFolder = exports.findOrCreateFolder = exports.createFolder = exports.getRootChildren = exports.getFoldersAndFilesByFolderId = exports.getRootFolder = exports.createNewFolder = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const userService = __importStar(require("../services/userService"));
 const path_1 = __importDefault(require("path"));
@@ -44,16 +44,16 @@ const helpers_1 = require("../utils/helpers");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 // Helper function to determine the base folder path
 const getBaseFolderPath = (email) => {
-    return process.env.NODE_ENV === 'production'
-        ? path_1.default.join('/var/www/cefmdrive/storage', email)
-        : path_1.default.join(process.cwd(), 'public', 'File Manager', email);
+    return process.env.NODE_ENV === "production"
+        ? path_1.default.join("/var/www/cefmdrive/storage", email)
+        : path_1.default.join(process.cwd(), "public", "File Manager", email);
 };
 // Create new folder function
 const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgent, operatingSystem, browser, device) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield userService.getUserById(userId);
         if (!user) {
-            return { success: false, message: 'User not found' };
+            return { success: false, message: "User not found" };
         }
         const email = user === null || user === void 0 ? void 0 : user.email;
         const baseFolder = getBaseFolderPath(email);
@@ -61,17 +61,24 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
         let newFolderUrl;
         let location;
         let finalParentFolderId = parentFolderId;
+        let rootFolderUrl;
         if (!finalParentFolderId) {
             // Find the root folder
             const rootFolder = yield database_1.default.folder.findFirst({
                 where: { name: email, userId: user.id },
             });
             if (!rootFolder) {
-                return { success: false, message: 'Root folder not found' };
+                return { success: false, message: "Root folder not found" };
+            }
+            if (process.env.NODE_ENV === "production") {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            else {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
             }
             finalParentFolderId = rootFolder.id;
             newFolderPath = path_1.default.join(baseFolder, folderName);
-            newFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            newFolderUrl = rootFolderUrl;
             location = `/${folderName}`;
         }
         else {
@@ -80,14 +87,20 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
                 where: { id: finalParentFolderId },
             });
             if (!parentFolder) {
-                return { success: false, message: 'Parent folder not found' };
+                return { success: false, message: "Parent folder not found" };
             }
             newFolderPath = parentFolder.folderPath
                 ? path_1.default.join(parentFolder.folderPath, folderName)
                 : path_1.default.join(baseFolder, folderName);
+            if (process.env.NODE_ENV === "production") {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
+            else {
+                rootFolderUrl = `${process.env.PUBLIC_APP_URL}/Public/File Manager/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+            }
             newFolderUrl = parentFolder.folderUrl
                 ? `${parentFolder.folderUrl}/${encodeURIComponent(folderName)}`
-                : `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(email)}/${encodeURIComponent(folderName)}`;
+                : rootFolderUrl;
             location = parentFolder.location
                 ? `${parentFolder.location}/${folderName}`
                 : `/${folderName}`;
@@ -95,7 +108,7 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
         // Check if the folder already exists
         try {
             yield fs_1.promises.access(newFolderPath);
-            return { success: false, message: 'Folder already exists' };
+            return { success: false, message: "Folder already exists" };
         }
         catch (error) {
             // Folder doesn't exist, so create it
@@ -119,8 +132,8 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
             data: {
                 userId,
                 folderId: newFolder.id,
-                activityType: 'Folder',
-                action: 'CREATE',
+                activityType: "Folder",
+                action: "CREATE",
                 ipAddress,
                 userAgent,
                 device,
@@ -128,101 +141,29 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
                 browser,
                 filePath: newFolderPath,
                 fileSize: 0, // Folders don't have a size
-                fileType: 'folder',
+                fileType: "folder",
             },
         });
-        return { success: true, message: 'Folder created successfully', folder: newFolder };
+        return {
+            success: true,
+            message: "Folder created successfully",
+            folder: newFolder,
+        };
     }
     catch (error) {
-        console.error('Error creating folder:', error);
-        return { success: false, message: 'An error occurred while creating the folder' };
+        console.error("Error creating folder:", error);
+        return {
+            success: false,
+            message: "An error occurred while creating the folder",
+        };
     }
 });
 exports.createNewFolder = createNewFolder;
-const createNewFolder1 = (userId, folderName, parentFolderId, ipAddress, userAgent, operatingSystem, browser, device) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const user = yield userService.getUserById(userId);
-        if (!user) {
-            return { success: false, message: 'User not found' };
-        }
-        const baseFolder = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
-        let newFolderPath;
-        let newFolderUrl;
-        let location;
-        let finalParentFolderId = parentFolderId;
-        if (!finalParentFolderId) {
-            const rootFolder = yield database_1.default.folder.findFirst({
-                where: { name: user.email, userId: user.id },
-            });
-            if (!rootFolder) {
-                return { success: false, message: 'Root folder not found' };
-            }
-            finalParentFolderId = rootFolder.id;
-            newFolderPath = path_1.default.join(baseFolder, folderName);
-            newFolderUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(folderName)}`;
-            location = `/${folderName}`;
-        }
-        else {
-            const parentFolder = yield database_1.default.folder.findUnique({
-                where: { id: finalParentFolderId },
-            });
-            if (!parentFolder) {
-                return { success: false, message: 'Parent folder not found' };
-            }
-            newFolderPath = parentFolder.folderPath
-                ? path_1.default.join(parentFolder.folderPath, folderName)
-                : path_1.default.join(baseFolder, folderName);
-            newFolderUrl = parentFolder.folderUrl
-                ? `${parentFolder.folderUrl}/${encodeURIComponent(folderName)}`
-                : `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(folderName)}`;
-            location = parentFolder.location
-                ? `${parentFolder.location}/${folderName}`
-                : `/${folderName}`;
-        }
-        try {
-            yield fs_1.promises.access(newFolderPath, fs_1.promises.constants.F_OK);
-            return { success: false, message: 'Folder already exists' };
-        }
-        catch (error) {
-            yield fs_1.promises.mkdir(newFolderPath, { recursive: true });
-        }
-        const newFolder = yield database_1.default.folder.create({
-            data: {
-                name: folderName,
-                parentId: finalParentFolderId,
-                folderPath: newFolderPath,
-                folderUrl: newFolderUrl,
-                location,
-                userId: user.id,
-            },
-        });
-        yield database_1.default.fileActivity.create({
-            data: {
-                userId,
-                folderId: newFolder.id,
-                activityType: 'Folder',
-                action: 'CREATE',
-                ipAddress,
-                userAgent,
-                device,
-                operatingSystem,
-                browser,
-                filePath: `${newFolderPath}`,
-                fileSize: 0, // Folders don't have a size
-                fileType: 'folder',
-            },
-        });
-        return { success: true, message: 'Folder created successfully', folder: newFolder };
-    }
-    catch (error) {
-        console.error('Error creating folder:', error);
-        return { success: false, message: 'An error occurred while creating the folder' };
-    }
-});
-exports.createNewFolder1 = createNewFolder1;
 //=================================================================================
 const getRootFolder = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const folder = yield database_1.default.folder.findFirst({ where: { parentId: null, userId }, });
+    const folder = yield database_1.default.folder.findFirst({
+        where: { parentId: null, userId },
+    });
     return folder;
 });
 exports.getRootFolder = getRootFolder;
@@ -230,18 +171,21 @@ const getFoldersAndFilesByFolderId = (userId, parentId) => __awaiter(void 0, voi
     try {
         const user = yield userService.getUserById(userId);
         if (!user) {
-            throw new Error('User not found');
+            throw new Error("User not found");
         }
         const folders = yield database_1.default.folder.findMany({
             where: {
-                parentId, userId, trashed: false,
+                parentId,
+                userId,
+                trashed: false,
             },
             include: { files: true },
         });
         const files = yield database_1.default.file.findMany({
             where: {
                 folderId: parentId,
-                userId, trashed: false,
+                userId,
+                trashed: false,
             },
         });
         const documents = yield database_1.default.document.findMany({
@@ -250,9 +194,6 @@ const getFoldersAndFilesByFolderId = (userId, parentId) => __awaiter(void 0, voi
                 trashed: false,
             },
         });
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@documents@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        console.log(documents);
-        console.log("@@@@@@@@@@@@@@@@@@@@@@documents@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         return { folders, files, documents };
     }
     catch (error) {
@@ -265,10 +206,15 @@ const getRootChildren = (userId) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const user = yield userService.getUserById(userId);
         if (!user) {
-            throw new Error('User not found');
+            throw new Error("User not found");
         }
         const rootFolder = yield database_1.default.folder.findFirst({
-            where: { name: user === null || user === void 0 ? void 0 : user.email, userId, parentId: null, trashed: false, }
+            where: {
+                name: user === null || user === void 0 ? void 0 : user.email,
+                userId,
+                parentId: null,
+                trashed: false,
+            },
         });
         if (!rootFolder) {
             throw new Error("Root folder not found for the specified user");
@@ -277,10 +223,10 @@ const getRootChildren = (userId) => __awaiter(void 0, void 0, void 0, function* 
             where: { parentId: rootFolder.id, userId, trashed: false },
         });
         const files = yield database_1.default.file.findMany({
-            where: { folderId: rootFolder.id, trashed: false }
+            where: { folderId: rootFolder.id, trashed: false },
         });
         const documents = yield database_1.default.document.findMany({
-            where: { trashed: false }
+            where: { trashed: false },
         });
         return { folders, files, documents };
     }
@@ -342,7 +288,7 @@ const renameFolder = (id, userId, newName) => __awaiter(void 0, void 0, void 0, 
             folderUrl: (_a = folder === null || folder === void 0 ? void 0 : folder.folderUrl) === null || _a === void 0 ? void 0 : _a.replace(folder.name, newName),
         },
     });
-    return (`Folder  renamed to ${newName}`);
+    return `Folder  renamed to ${newName}`;
 });
 exports.renameFolder = renameFolder;
 const getFolderById = (id) => __awaiter(void 0, void 0, void 0, function* () {
@@ -354,14 +300,14 @@ exports.getFolderById = getFolderById;
 const shareFolder = (userId, folderId, password, sharedWith, shareWithMessage, isPasswordEnabled, expirationDate, isExpirationEnabled) => __awaiter(void 0, void 0, void 0, function* () {
     // Validate the input
     if (!folderId || !sharedWith) {
-        throw new Error('Missing required fields');
+        throw new Error("Missing required fields");
     }
     // Validate expirationDate if isExpirationEnabled is true
     let validExpirationDate = null;
     if (isExpirationEnabled && expirationDate) {
         validExpirationDate = new Date(expirationDate);
         if (isNaN(validExpirationDate.getTime())) {
-            throw new Error('Invalid expiration date format');
+            throw new Error("Invalid expiration date format");
         }
     }
     // Check if the file exists
@@ -387,7 +333,7 @@ const shareFolder = (userId, folderId, password, sharedWith, shareWithMessage, i
             isExpirationEnabled,
             password: hashedPassword,
             userId: userId,
-        }
+        },
     });
     // Update the file to mark it as shared
     yield database_1.default.folder.update({
@@ -398,18 +344,18 @@ const shareFolder = (userId, folderId, password, sharedWith, shareWithMessage, i
     yield database_1.default.fileActivity.create({
         data: {
             fileId: existingFolder.id,
-            action: 'shared Folder',
+            action: "shared Folder",
             userId,
-        }
+        },
     });
     // Get the base URL from environment variables
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
     const encodedFileId = encodeURIComponent(uniqueId);
     // Create the full shared file URL
     const sharedFileUrl = `${baseUrl}/shared/${encodedFileId}`;
     return {
         url: sharedFileUrl,
-        message: "FOlder shared successfully"
+        message: "FOlder shared successfully",
     };
 });
 exports.shareFolder = shareFolder;
@@ -434,7 +380,7 @@ const getFolderFileCount = (folderId) => __awaiter(void 0, void 0, void 0, funct
         return { count, totalSize };
     }
     catch (error) {
-        console.error('Error getting folder file info:', error);
+        console.error("Error getting folder file info:", error);
         throw error;
     }
 });
@@ -453,7 +399,7 @@ const getFolderFileCount1 = (folderId) => __awaiter(void 0, void 0, void 0, func
         return count;
     }
     catch (error) {
-        console.error('Error counting files in folder:', error);
+        console.error("Error counting files in folder:", error);
         throw error;
     }
 });
@@ -475,7 +421,9 @@ const getFolderDetails = (folderId) => __awaiter(void 0, void 0, void 0, functio
         throw new Error(`Folder   not found.`);
     }
     const totalFileSize = folder.files.reduce((acc, file) => acc + file.size, 0);
-    const checkUser = yield database_1.default.user.findUnique({ where: { id: folder.userId }, });
+    const checkUser = yield database_1.default.user.findUnique({
+        where: { id: folder.userId },
+    });
     return {
         success: `Folder with ID ${folderId} details retrieved.`,
         folder: {

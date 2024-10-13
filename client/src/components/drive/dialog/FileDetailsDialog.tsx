@@ -1,48 +1,63 @@
-import { Button } from '@/components/custom/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 
 import { FileItem } from '@/types/types'
-interface FileDetailsDialogProps {
+
+interface FileDetailsSheetProps {
   fileDetails: FileItem | null
   onCancel: () => void
 }
 
-export const FileDetailsDialog: React.FC<FileDetailsDialogProps> = ({
+export const FileDetailsSheet: React.FC<FileDetailsSheetProps> = ({
   fileDetails,
   onCancel,
 }) => {
   return (
-    <Dialog open={!!fileDetails} onOpenChange={onCancel}>
-      <DialogContent>
-        <DialogHeader>
+    <Sheet open={!!fileDetails} onOpenChange={onCancel}>
+      <SheetContent>
+        <SheetHeader>
           <div className='flex items-center justify-between'>
-            <DialogTitle>File Details</DialogTitle>
+            <SheetTitle>File Details</SheetTitle>
           </div>
-        </DialogHeader>
+        </SheetHeader>
         {fileDetails && (
-          <div>
-            <p>Name: {fileDetails.name}</p>
-            <p>Uploaded by: {fileDetails.type || 'N/A'}</p>
-            <p>Location: {fileDetails.type || 'N/A'}</p>
-            <p>Type: {fileDetails.type}</p>
-            <p>Size: {fileDetails.size} bytes</p>
-            <p>Uploaded: {new Date(fileDetails.createdAt).toLocaleString()}</p>
-            <p>Modified: {new Date(fileDetails.updatedAt).toLocaleString()}</p>
-            <p>MIME type: {fileDetails.mimeType || 'N/A'}</p>
-            <p>Shared: {fileDetails.sharedWith || 'N/A'}</p>
+          <div className='mt-4 space-y-2'>
+            <p>
+              <strong>Name:</strong> {fileDetails.name}
+            </p>
+            <p>
+              <strong>Uploaded by:</strong> {fileDetails.type || 'N/A'}
+            </p>
+            <p>
+              <strong>Location:</strong> {fileDetails.type || 'N/A'}
+            </p>
+            <p>
+              <strong>Type:</strong> {fileDetails.type}
+            </p>
+            <p>
+              <strong>Size:</strong> {fileDetails.size} bytes
+            </p>
+            <p>
+              <strong>Uploaded:</strong>{' '}
+              {new Date(fileDetails.createdAt).toLocaleString()}
+            </p>
+            <p>
+              <strong>Modified:</strong>{' '}
+              {new Date(fileDetails.updatedAt).toLocaleString()}
+            </p>
+            <p>
+              <strong>MIME type:</strong> {fileDetails.mimeType || 'N/A'}
+            </p>
+            <p>
+              <strong>Shared:</strong> {fileDetails.sharedWith || 'N/A'}
+            </p>
           </div>
         )}
-
-        <DialogFooter>
-          <Button onClick={onCancel}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }

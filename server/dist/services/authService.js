@@ -32,7 +32,7 @@ const refreshToken = (refreshToken) => __awaiter(void 0, void 0, void 0, functio
         return accessToken;
     }
     catch (error) {
-        console.error('Error refreshing access token:', error);
+        console.error("Error refreshing access token:", error);
         return null;
     }
 });
@@ -41,18 +41,20 @@ const login = (email, password, code) => __awaiter(void 0, void 0, void 0, funct
     var _a;
     const user = yield database_1.default.user.findUnique({ where: { email } });
     if (!user)
-        throw new Error('Invalid credentials');
+        throw new Error("Invalid credentials");
     const isMatch = yield bcrypt_1.default.compare(password, user.password);
     if (!isMatch)
-        throw new Error('Invalid credentials');
+        throw new Error("Invalid credentials");
     if (!user.emailVerified) {
         const verificationToken = yield (0, userService_1.generateVerificationToken)(user.email);
-        yield (0, email_1.sendVerificationEmail)(user.email, (_a = user.name) !== null && _a !== void 0 ? _a : '', verificationToken.token);
+        yield (0, email_1.sendVerificationEmail)(user.email, (_a = user.name) !== null && _a !== void 0 ? _a : "", verificationToken.token);
         return { success: "Verification email sent!" };
     }
     if (user.isTwoFactorEnabled && user.email) {
         if (code) {
-            const twoFactorToken = yield database_1.default.twoFactorToken.findFirst({ where: { email } });
+            const twoFactorToken = yield database_1.default.twoFactorToken.findFirst({
+                where: { email },
+            });
             if (!twoFactorToken || twoFactorToken.token !== code)
                 return { error: "Invalid code!" };
             if (new Date(twoFactorToken.expires) < new Date())
@@ -65,7 +67,9 @@ const login = (email, password, code) => __awaiter(void 0, void 0, void 0, funct
                 where: { id: user.id },
                 data: { lastActive: new Date(), otpToken: otp, otpExpires },
             });
-            const existingToken = yield database_1.default.twoFactorToken.findFirst({ where: { email } });
+            const existingToken = yield database_1.default.twoFactorToken.findFirst({
+                where: { email },
+            });
             if (existingToken) {
                 yield database_1.default.twoFactorToken.delete({ where: { id: existingToken.id } });
             }
@@ -87,17 +91,17 @@ const login = (email, password, code) => __awaiter(void 0, void 0, void 0, funct
     return Object.assign(Object.assign({}, accessToken), { refreshToken, user: {
             id: user.id,
             name: user.name,
-            email: user.email
+            email: user.email,
         } });
 });
 exports.login = login;
 // Determine storage path based on environment
 const getStoragePath = (email) => {
-    if (process.env.NODE_ENV === 'production') {
-        return path_1.default.join('/var/www/cefmdrive/storage', email);
+    if (process.env.NODE_ENV === "production") {
+        return path_1.default.join("/var/www/cefmdrive/storage", email);
     }
     else {
-        return path_1.default.join(__dirname, 'public', 'storage', email); // Development path
+        return path_1.default.join(process.cwd(), "public", "File Manager", email); // Development path
     }
 };
 // Register new user
@@ -151,7 +155,7 @@ const register1 = (name, email, password) => __awaiter(void 0, void 0, void 0, f
             password: hashedPassword,
         },
     });
-    const folderPath = path_1.default.join(__dirname, 'Storage', 'File Manager', email);
+    const folderPath = path_1.default.join(__dirname, "Storage", "File Manager", email);
     yield fs_1.promises.mkdir(folderPath, { recursive: true });
     yield database_1.default.folder.create({
         data: { name: email, userId: createdUser.id },
@@ -173,7 +177,7 @@ const signIn = (name, email, password) => __awaiter(void 0, void 0, void 0, func
         // Check if user already exists
         const existingUser = yield database_1.default.user.findUnique({ where: { email } });
         if (existingUser)
-            throw new Error('User email already exists.');
+            throw new Error("User email already exists.");
         // Hash password
         const hashedPassword = yield bcrypt_1.default.hash(password, SALT_ROUNDS);
         // Create user in the database
@@ -185,7 +189,7 @@ const signIn = (name, email, password) => __awaiter(void 0, void 0, void 0, func
             },
         });
         // Create user folder for file storage
-        const folderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', email);
+        const folderPath = path_1.default.join(process.cwd(), "public", "File Manager", email);
         yield fs_1.promises.mkdir(folderPath, { recursive: true });
         // Create root folder in the database for the user
         yield database_1.default.folder.create({
@@ -206,12 +210,12 @@ const signIn = (name, email, password) => __awaiter(void 0, void 0, void 0, func
         const verificationToken = yield (0, userService_1.generateVerificationToken)(email);
         // Send verification email
         yield (0, email_1.sendVerificationEmail)(email, name, verificationToken.token);
-        return 'Successfully registered. Verify your email!';
+        return "Successfully registered. Verify your email!";
     }
     catch (error) {
         if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
             // Handle known Prisma errors, e.g., unique constraint violations
-            throw new Error('An error occurred while interacting with the database.');
+            throw new Error("An error occurred while interacting with the database.");
         }
         else {
             throw new Error(`Error: ${error}`);
@@ -272,7 +276,7 @@ const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* (
         },
     });
     if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
     }
     return user;
 });
@@ -280,11 +284,11 @@ exports.getUserProfile = getUserProfile;
 const confirmEmail = (token) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = yield (0, jwt_1.verifyRefreshToken)(token);
     if (!userId) {
-        throw new Error('Invalid refresh token');
+        throw new Error("Invalid refresh token");
     }
     const user = yield database_1.default.user.findUnique({ where: { id: userId } });
     if (!user || user.confirmationToken !== token) {
-        throw new Error('Invalid confirmation token');
+        throw new Error("Invalid confirmation token");
     }
     yield database_1.default.user.update({
         where: { id: userId },
@@ -293,12 +297,12 @@ const confirmEmail = (token) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.confirmEmail = confirmEmail;
 const generateResetToken = () => __awaiter(void 0, void 0, void 0, function* () {
-    return crypto_1.default.randomBytes(32).toString('hex');
+    return crypto_1.default.randomBytes(32).toString("hex");
 });
 const createPasswordResetToken = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield database_1.default.user.findUnique({ where: { email } });
     if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
     }
     const resetToken = yield generateResetToken();
     const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour from now
@@ -317,7 +321,7 @@ const resetPassword = (token, newPassword) => __awaiter(void 0, void 0, void 0, 
         },
     });
     if (!user) {
-        throw new Error('Invalid or expired reset token');
+        throw new Error("Invalid or expired reset token");
     }
     const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
     yield database_1.default.user.update({
@@ -333,11 +337,11 @@ exports.resetPassword = resetPassword;
 const validateRefreshToken = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = yield (0, jwt_1.verifyRefreshToken)(refreshToken);
     if (!userId) {
-        throw new Error('Invalid refresh token');
+        throw new Error("Invalid refresh token");
     }
     const user = yield database_1.default.user.findUnique({ where: { id: userId } });
     if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
     }
     return userId;
 });

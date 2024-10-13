@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.downloadFolders1 = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.uploadFile1 = exports.uploadFile11 = exports.uploadFile = exports.uploadFilee = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.fileUpload11 = exports.fileUpload = exports.handleFileUpload = void 0;
+exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.unlockFile = exports.lockFile = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.copyFile = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.versionsFile = exports.versionRestoreFile = exports.uploadFile = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.moveFile = exports.fileUpload = exports.handleFileUpload = void 0;
 exports.getUserInfo = getUserInfo;
 const fileService = __importStar(require("./../services/fileService"));
 const folderService = __importStar(require("../services/folderService"));
@@ -60,17 +60,17 @@ const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const stream_1 = require("stream");
 function getUserInfo(req) {
-    const parser = new ua_parser_js_1.default(req.headers['user-agent']);
+    const parser = new ua_parser_js_1.default(req.headers["user-agent"]);
     const result = parser.getResult();
     return {
         ipAddress: req.ip || req.connection.remoteAddress,
-        userAgent: req.headers['user-agent'] || '',
-        operatingSystem: result.os.name || 'Unknown',
-        browser: result.browser.name || 'Unknown',
-        deviceType: result.device.type || 'unknown',
-        deviceModel: result.device.model || 'unknown',
-        deviceVendor: result.device.vendor || 'unknown',
-        os: result.os.name || 'unknown',
+        userAgent: req.headers["user-agent"] || "",
+        operatingSystem: result.os.name || "Unknown",
+        browser: result.browser.name || "Unknown",
+        deviceType: result.device.type || "unknown",
+        deviceModel: result.device.model || "unknown",
+        deviceVendor: result.device.vendor || "unknown",
+        os: result.os.name || "unknown",
         //browser: result.browser.name || 'unknown'
     };
 }
@@ -79,13 +79,15 @@ const handleFileUpload = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const files = req.files;
         const parentId = req.body.parentId;
         if (!files || files.length === 0) {
-            return res.status(400).json({ message: 'No files uploaded' });
+            return res.status(400).json({ message: "No files uploaded" });
         }
-        const uploadedFiles = files.map(file => {
-            const filePath = file.path.replace(config_1.config.uploadDir, '').replace(/\\/g, '/');
+        const uploadedFiles = files.map((file) => {
+            const filePath = file.path
+                .replace(config_1.config.uploadDir, "")
+                .replace(/\\/g, "/");
             const dirPath = path_1.default.dirname(filePath);
             // Create directories if they don't exist
-            if (dirPath !== '/') {
+            if (dirPath !== "/") {
                 fs_extra_1.default.mkdirSync(path_1.default.join(config_1.config.uploadDir, dirPath), { recursive: true });
             }
             return {
@@ -94,17 +96,20 @@ const handleFileUpload = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 path: filePath,
                 size: file.size,
                 mimeType: file.mimetype,
-                parentId: parentId
+                parentId: parentId,
             };
         });
         res.status(200).json({
-            message: 'Files uploaded successfully',
-            files: uploadedFiles
+            message: "Files uploaded successfully",
+            files: uploadedFiles,
         });
     }
     catch (error) {
-        console.error('Error in file upload:', error);
-        res.status(500).json({ message: 'Error uploading files', error: error.message });
+        console.error("Error in file upload:", error);
+        res.status(500).json({
+            message: "Error uploading files",
+            error: error.message,
+        });
     }
 });
 exports.handleFileUpload = handleFileUpload;
@@ -114,20 +119,20 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     const { userId } = req.user;
     const files = req.files;
     let folderId = null;
-    let baseFolderPath = '';
-    let fileRelativePath = '';
-    bb.on('field', (name, val) => {
-        if (name === 'folderId') {
+    let baseFolderPath = "";
+    let fileRelativePath = "";
+    bb.on("field", (name, val) => {
+        if (name === "folderId") {
             folderId = val;
         }
-        if (name === 'relativePath') {
+        if (name === "relativePath") {
             fileRelativePath = val;
         }
     });
     try {
-        bb.on('file', (name, file, info) => __awaiter(void 0, void 0, void 0, function* () {
+        bb.on("file", (name, file, info) => __awaiter(void 0, void 0, void 0, function* () {
             const { filename, mimeType } = info;
-            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
+            const relativePath = fileRelativePath ? fileRelativePath.split("/") : [];
             relativePath.pop();
             if (folderId) {
                 const folderResponse = yield folderService.getFolderById(folderId);
@@ -135,16 +140,16 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     baseFolderPath = folderResponse.folderPath;
                 }
             }
-            const user = yield userService.getUserById(userId);
+            const user = (yield userService.getUserById(userId));
             if (!baseFolderPath) {
-                baseFolderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
+                baseFolderPath = path_1.default.join(process.cwd(), "public", "File Manager", user === null || user === void 0 ? void 0 : user.email);
             }
             const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
             const fileUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(userId)}/${encodeURIComponent(filename)}`;
             const writeStream = fs_extra_1.default.createWriteStream(fullPath);
             file.pipe(writeStream);
             const uploadPromise = new Promise((resolve, reject) => {
-                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+                writeStream.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
                     try {
                         const stats = yield fs_extra_1.default.promises.stat(fullPath);
                         const fileData = yield database_1.default.file.create({
@@ -164,20 +169,20 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                         reject(error);
                     }
                 }));
-                writeStream.on('error', (error) => {
+                writeStream.on("error", (error) => {
                     reject(error);
                 });
             });
             uploadPromises.push(uploadPromise);
         }));
-        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+        bb.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 const results = yield Promise.all(uploadPromises);
-                res.json({ message: 'Files uploaded successfully', files: results });
+                res.json({ message: "Files uploaded successfully", files: results });
             }
             catch (error) {
-                console.error('Error uploading files:', error);
-                res.status(500).json({ error: 'Error uploading files' });
+                console.error("Error uploading files:", error);
+                res.status(500).json({ error: "Error uploading files" });
             }
         }));
         req.pipe(bb);
@@ -187,104 +192,48 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.fileUpload = fileUpload;
-const fileUpload11 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const bb = (0, busboy_1.default)({ headers: req.headers });
-    const uploadPromises = []; // Store promises for file uploads
-    const { userId } = req.user; // Ensure userId is defined
-    const files = req.files;
-    console.log(" ++++++++++++ fileUpload +++++++++++++++++++ ");
-    console.log({ userId });
-    console.log(" +++++++++++ fileUpload ++++++++++++++++++++ ");
-    let folderId = null; // Initialize folderId
-    let baseFolderPath = '';
-    let fileRelativePath = '';
-    // Handle fields from the form
-    bb.on('field', (name, val) => {
-        if (name === 'folderId') {
-            folderId = val;
-        }
-        if (name === 'relativePath') {
-            fileRelativePath = val;
-        }
-    });
+const moveFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { newParentId } = req.body;
     try {
-        // Handle file uploads
-        bb.on('file', (name, file, info) => __awaiter(void 0, void 0, void 0, function* () {
-            const { filename, mimeType } = info;
-            // Use the received relative path or create an empty array if undefined
-            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
-            relativePath.pop(); // Remove filename from path
-            // Determine base folder path
-            if (folderId) {
-                const folderResponse = yield folderService.getFolderById(folderId);
-                if (folderResponse) {
-                    baseFolderPath = folderResponse.folderPath;
-                }
-            }
-            const user = yield userService.getUserById(userId);
-            console.log(" ++++++++++++ fileUpload user+++++++++++++++++++ ");
-            console.log(user);
-            console.log(" +++++++++++ fileUpload user++++++++++++++++++++ ");
-            // // Set base folder path if not provided
-            if (!baseFolderPath) {
-                baseFolderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
-            }
-            const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
-            const fileUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(userId)}/${encodeURIComponent(filename)}`;
-            // Stream file to disk
-            const writeStream = fs_extra_1.default.createWriteStream(fullPath);
-            file.pipe(writeStream);
-            // Handle file upload completion and save data to DB
-            const uploadPromise = new Promise((resolve, reject) => {
-                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-                    try {
-                        //const stats = await fs.stat(fullPath);
-                        // const fileData = await prisma.file.create({
-                        //     data: {
-                        //         name: filename,
-                        //         filePath: fullPath,
-                        //         fileUrl: fileUrl,
-                        //         mimeType: mimeType,
-                        //         userId: userId,
-                        //         folderId: folderId,
-                        //     },
-                        // });
-                        // resolve(fileData);
-                    }
-                    catch (error) {
-                        reject(error);
-                    }
-                }));
-                writeStream.on('error', (error) => {
-                    reject(error);
-                });
-            });
-            uploadPromises.push(uploadPromise);
-        }));
-        // When all files have been processed
-        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                const results = yield Promise.all(uploadPromises);
-                res.json({ message: 'Files uploaded successfully', files: results });
-            }
-            catch (error) {
-                console.error('Error uploading files:', error);
-                res.status(500).json({ error: 'Error uploading files' });
-            }
-        }));
-        // Start the Busboy process
-        req.pipe(bb);
+        const user = yield database_1.default.user.findUnique({
+            where: { id: req.user.id },
+        });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+        const file = yield database_1.default.file.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { folderId: newParentId },
+        });
+        if (!file) {
+            res.status(404).json({ error: "File not found" });
+            return;
+        }
+        // Log file activity
+        yield database_1.default.fileActivity.create({
+            data: {
+                userId: user.id,
+                fileId: file.id,
+                activityType: "File",
+                action: "MOVE FILE",
+                filePath: file.filePath,
+                fileSize: file.size,
+                fileType: file.fileType,
+            },
+        });
+        res.json(file);
     }
     catch (error) {
         next(error);
     }
 });
-exports.fileUpload11 = fileUpload11;
+exports.moveFile = moveFile;
 const checkPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { password, fileId } = req.body;
         if (!password || !fileId) {
-            return res.status(400).json('Missing required password or fileId');
+            return res.status(400).json("Missing required password or fileId");
         }
         const uploadedFile = yield fileService.checkPassword(password, fileId);
         res.status(201).json(uploadedFile);
@@ -300,12 +249,12 @@ const uploadFolder = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         const { parentFolderId } = req.body;
         const files = req.files;
         if (!files || Object.keys(files).length === 0) {
-            return res.status(400).json({ message: 'No folder uploaded' });
+            return res.status(400).json({ message: "No folder uploaded" });
         }
         const uploadedFolder = yield folderService.createFolder(userId, parentFolderId, req.body.folderName);
         for (const [path, fileArray] of Object.entries(files)) {
             const file = fileArray[0];
-            const pathParts = path.split('/');
+            const pathParts = path.split("/");
             pathParts.pop();
             let currentFolderId = uploadedFolder.id;
             for (const folderName of pathParts) {
@@ -327,7 +276,7 @@ const uploadFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const { folderId } = req.body;
         const files = req.files;
         if (!files || files.length === 0) {
-            return res.status(400).json({ message: 'No files uploaded' });
+            return res.status(400).json({ message: "No files uploaded" });
         }
         const uploadedFiles = [];
         for (const file of files) {
@@ -341,16 +290,10 @@ const uploadFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.uploadFiles = uploadFiles;
-const uploadFilee = (file) => __awaiter(void 0, void 0, void 0, function* () {
-    const uploadPath = path_1.default.join(__dirname, '../../uploads', file.originalname);
-    fs_extra_1.default.writeFileSync(uploadPath, file.buffer);
-    return uploadPath;
-});
-exports.uploadFilee = uploadFilee;
 const getBaseFolderPath = (email) => {
-    return process.env.NODE_ENV === 'production'
-        ? path_1.default.join('/var/www/cefmdrive/storage', email)
-        : path_1.default.join(process.cwd(), 'public', 'File Manager', email);
+    return process.env.NODE_ENV === "production"
+        ? path_1.default.join("/var/www/cefmdrive/storage", email)
+        : path_1.default.join(process.cwd(), "public", "File Manager", email);
 };
 const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -358,23 +301,22 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         const uploadPromises = [];
         const { userId } = req.user;
         const userInfo = getUserInfo(req);
-        const { ipAddress, userAgent, deviceType: device, operatingSystem, browser } = userInfo;
+        const { ipAddress, userAgent, deviceType: device, operatingSystem, browser, } = userInfo;
         let folderId = null;
-        let baseFolderPath = '';
-        let fileRelativePath = '';
-        bb.on('field', (name, val) => {
-            if (name === 'folderId') {
+        let baseFolderPath = "";
+        let fileRelativePath = "";
+        bb.on("field", (name, val) => {
+            if (name === "folderId") {
                 folderId = val;
             }
-            if (name === 'relativePath') {
+            if (name === "relativePath") {
                 fileRelativePath = val;
             }
         });
-        bb.on('file', (name, fileStream, info) => __awaiter(void 0, void 0, void 0, function* () {
+        bb.on("file", (name, fileStream, info) => __awaiter(void 0, void 0, void 0, function* () {
             const { filename, mimeType } = info;
-            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
+            const relativePath = fileRelativePath ? fileRelativePath.split("/") : [];
             relativePath.pop();
-            console.log(" 0000000000000000000000000 ");
             // Get folder path from the database
             if (folderId) {
                 const folderResponse = yield folderService.getFolderById(folderId);
@@ -387,55 +329,60 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             if (!baseFolderPath) {
                 baseFolderPath = getBaseFolderPath(user === null || user === void 0 ? void 0 : user.email);
             }
+            console.log(` ++++++++++++++++++++++++++++++ `);
+            console.log(baseFolderPath);
+            console.log(` ++++++++++++++++++++++++++++++ `);
             const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
             const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(filename)}`;
             const writeStream = fs_extra_1.default.createWriteStream(fullPath);
             fileStream.pipe(writeStream);
             uploadPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+                writeStream.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
                     try {
                         const stats = yield fs_extra_1.default.promises.stat(fullPath);
                         // Check storage usage before saving the file
                         const currentStorage = yield database_1.default.storageHistory.findFirst({
                             where: { userId: userId },
-                            orderBy: { createdAt: 'desc' },
+                            orderBy: { createdAt: "desc" },
                         });
                         const newUsedStorage = ((currentStorage === null || currentStorage === void 0 ? void 0 : currentStorage.usedStorage) || 0) + stats.size;
                         const maxStorageSize = (user === null || user === void 0 ? void 0 : user.maxStorageSize) || 0;
                         if (newUsedStorage > maxStorageSize) {
                             fs_extra_1.default.unlinkSync(fullPath);
-                            return reject(new Error('Storage limit exceeded. File not saved.'));
+                            return reject(new Error("Storage limit exceeded. File not saved."));
                         }
                         // Determine file type based on extension or mime type
                         const extension = path_1.default.extname(filename).toLowerCase();
                         const mimeTypes = {
-                            '.pdf': 'Adobe Portable Document Format (PDF)',
-                            '.xlsx': 'Microsoft Excel Spreadsheet (XLSX)',
-                            '.xls': 'Microsoft Excel Spreadsheet (XLS)',
-                            '.png': 'PNG Image',
-                            '.jpg': 'JPEG Image',
-                            '.jpeg': 'JPEG Image',
-                            '.doc': 'Microsoft Word Document',
-                            '.docx': 'Microsoft Word Document',
-                            '.ppt': 'Microsoft PowerPoint Presentation',
-                            '.pptx': 'Microsoft PowerPoint Presentation',
-                            '.txt': 'Plain Text File',
-                            '.zip': 'ZIP Archive',
-                            '.mp4': 'Video File',
-                            '.mov': 'Video File',
-                            '.avi': 'Video File',
-                            '.mkv': 'Video File',
-                            '.webm': 'Video File',
-                            '.mp3': 'Audio File',
-                            '.wav': 'Audio File',
-                            '.aac': 'Audio File',
-                            '.flac': 'Audio File',
-                            '.ogg': 'Audio File',
-                            '.m4a': 'Audio File',
+                            ".pdf": "Adobe Portable Document Format (PDF)",
+                            ".xlsx": "Microsoft Excel Spreadsheet (XLSX)",
+                            ".xls": "Microsoft Excel Spreadsheet (XLS)",
+                            ".png": "PNG Image",
+                            ".jpg": "JPEG Image",
+                            ".jpeg": "JPEG Image",
+                            ".doc": "Microsoft Word Document",
+                            ".docx": "Microsoft Word Document",
+                            ".ppt": "Microsoft PowerPoint Presentation",
+                            ".pptx": "Microsoft PowerPoint Presentation",
+                            ".txt": "Plain Text File",
+                            ".zip": "ZIP Archive",
+                            ".mp4": "Video File",
+                            ".mov": "Video File",
+                            ".avi": "Video File",
+                            ".mkv": "Video File",
+                            ".webm": "Video File",
+                            ".mp3": "Audio File",
+                            ".wav": "Audio File",
+                            ".aac": "Audio File",
+                            ".flac": "Audio File",
+                            ".ogg": "Audio File",
+                            ".m4a": "Audio File",
                         };
                         const fileType = mimeTypes[extension] || mimeType;
                         if (!folderId) {
-                            const folder = yield database_1.default.folder.findFirst({ where: { name: user === null || user === void 0 ? void 0 : user.email } });
+                            const folder = yield database_1.default.folder.findFirst({
+                                where: { name: user === null || user === void 0 ? void 0 : user.email },
+                            });
                             folderId = (folder === null || folder === void 0 ? void 0 : folder.id) || null;
                         }
                         const fileData = yield database_1.default.file.create({
@@ -455,8 +402,8 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                             data: {
                                 userId,
                                 fileId: fileData.id,
-                                activityType: 'File',
-                                action: 'CREATE FILE',
+                                activityType: "File",
+                                action: "CREATE FILE",
                                 ipAddress,
                                 userAgent,
                                 device,
@@ -476,12 +423,27 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                                 userId: userId,
                                 usedStorage: newUsedStorage,
                                 totalStorage: totalStorage,
-                                storageType: 'file',
+                                storageType: "file",
                                 storageLocation: baseFolderPath,
                                 storageUsagePercentage: Math.min(storageUsagePercentage, 100),
                                 storageLimit: totalStorage,
                                 overflowStorage: overflowStorage,
                                 notificationSent: storageUsagePercentage > 90,
+                            },
+                        });
+                        // Handle file versioning
+                        const latestVersion = yield database_1.default.fileVersion.findFirst({
+                            where: { fileId: fileData.id },
+                            orderBy: { versionNumber: "desc" },
+                        });
+                        const newVersionNumber = ((latestVersion === null || latestVersion === void 0 ? void 0 : latestVersion.versionNumber) || 0) + 1;
+                        yield database_1.default.fileVersion.create({
+                            data: {
+                                userId: userId,
+                                fileId: fileData.id,
+                                versionNumber: newVersionNumber,
+                                url: fileUrl,
+                                folderId: folderId,
                             },
                         });
                         resolve(fileData);
@@ -490,22 +452,22 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                         reject(error);
                     }
                 }));
-                writeStream.on('error', (error) => {
+                writeStream.on("error", (error) => {
                     reject(error);
                 });
             })));
         }));
-        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+        bb.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 const results = yield Promise.all(uploadPromises);
-                res.json({ message: 'Files uploaded successfully', files: results });
+                res.json({ message: "Files uploaded successfully", files: results });
             }
             catch (error) {
-                if (error.message === 'Storage limit exceeded. File not saved.') {
+                if (error.message === "Storage limit exceeded. File not saved.") {
                     res.status(400).json({ error: error.message });
                 }
                 else {
-                    res.status(500).json({ error: 'Error uploading files' });
+                    res.status(500).json({ error: "Error uploading files" });
                 }
             }
         }));
@@ -516,330 +478,58 @@ const uploadFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.uploadFile = uploadFile;
-const uploadFile11 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const versionRestoreFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const bb = (0, busboy_1.default)({ headers: req.headers });
-        const uploadPromises = [];
-        const { userId } = req.user;
-        const userInfo = getUserInfo(req);
-        const ipAddress = userInfo.ipAddress;
-        const userAgent = userInfo.userAgent;
-        const device = userInfo.deviceType;
-        const operatingSystem = userInfo.operatingSystem;
-        const browser = userInfo.browser;
-        let folderId = null;
-        let baseFolderPath = '';
-        let fileRelativePath = '';
-        bb.on('field', (name, val) => {
-            if (name === 'folderId') {
-                folderId = val;
-            }
-            if (name === 'relativePath') {
-                fileRelativePath = val;
-            }
+        const version = yield database_1.default.fileVersion.findUnique({
+            where: { id: req.params.versionId, file: { userId: req.user.id } },
         });
-        bb.on('file', (name, fileStream, info) => __awaiter(void 0, void 0, void 0, function* () {
-            const { filename, mimeType } = info;
-            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
-            relativePath.pop();
-            if (folderId) {
-                const folderResponse = yield folderService.getFolderById(folderId);
-                if (folderResponse) {
-                    baseFolderPath = folderResponse.folderPath;
-                }
-            }
-            const user = yield database_1.default.user.findUnique({ where: { id: userId } });
-            // const user = await userService.getUserById(userId);
-            if (!baseFolderPath) {
-                baseFolderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
-            }
-            const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
-            const fileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user === null || user === void 0 ? void 0 : user.email)}/${encodeURIComponent(filename)}`;
-            const writeStream = fs_extra_1.default.createWriteStream(fullPath);
-            fileStream.pipe(writeStream);
-            uploadPromises.push(new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
-                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-                    try {
-                        const stats = yield fs_extra_1.default.promises.stat(fullPath);
-                        //TODO
-                        // Check if the file is valid
-                        // if (!isValidFile(filename)) {
-                        //     fs.unlinkSync(fullPath);
-                        //     return reject(new Error('Invalid file type.'));
-                        // }
-                        // Validate file signature
-                        // if (!checkFileSignature(fullPath)) {
-                        //     fs.unlinkSync(fullPath);
-                        //     return reject(new Error('Invalid file signature.'));
-                        // }
-                        // Scan the file with ClamAV for viruses
-                        // const isClean = await scanFileWithClamAV(fullPath);
-                        //  if (!isClean) {
-                        //     fs.unlinkSync(fullPath);
-                        //     return reject(new Error('File contains malware.'));
-                        // }
-                        // Check storage usage before saving the file
-                        const currentStorage = yield database_1.default.storageHistory.findFirst({
-                            where: { userId: userId },
-                            orderBy: { createdAt: 'desc' },
-                        });
-                        const newUsedStorage = ((currentStorage === null || currentStorage === void 0 ? void 0 : currentStorage.usedStorage) || 0) + stats.size;
-                        const maxStorageSize = (user === null || user === void 0 ? void 0 : user.maxStorageSize) || 0;
-                        if (newUsedStorage > maxStorageSize) {
-                            fs_extra_1.default.unlinkSync(fullPath);
-                            return reject(new Error('Storage limit exceeded. File not saved.'));
-                        }
-                        // Determine file type
-                        let fileType = '';
-                        const extension = path_1.default.extname(filename).toLowerCase();
-                        const mimeTypes = {
-                            '.pdf': 'Adobe Portable Document Format (PDF)',
-                            '.xlsx': 'Microsoft Excel Spreadsheet (XLSX)',
-                            '.xls': 'Microsoft Excel Spreadsheet (XLS)',
-                            '.png': 'PNG Image',
-                            '.jpg': 'JPEG Image',
-                            '.jpeg': 'JPEG Image',
-                            '.doc': 'Microsoft Word Document',
-                            '.docx': 'Microsoft Word Document',
-                            '.ppt': 'Microsoft PowerPoint Presentation',
-                            '.pptx': 'Microsoft PowerPoint Presentation',
-                            '.txt': 'Plain Text File',
-                            '.zip': 'ZIP Archive',
-                            '.mp4': 'Video File',
-                            '.mov': 'Video File',
-                            '.avi': 'Video File',
-                            '.mkv': 'Video File',
-                            '.webm': 'Video File',
-                            '.mp3': 'Audio File',
-                            '.wav': 'Audio File',
-                            '.aac': 'Audio File',
-                            '.flac': 'Audio File',
-                            '.ogg': 'Audio File',
-                            '.m4a': 'Audio File',
-                        };
-                        fileType = mimeTypes[extension] || mimeType;
-                        if (!folderId) {
-                            const folder = yield database_1.default.folder.findFirst({ where: { name: user === null || user === void 0 ? void 0 : user.email } });
-                            folderId = (folder === null || folder === void 0 ? void 0 : folder.id) || null;
-                        }
-                        const fileData = yield database_1.default.file.create({
-                            data: {
-                                name: filename,
-                                filePath: fullPath,
-                                fileUrl: fileUrl,
-                                mimeType: mimeType,
-                                size: stats.size,
-                                userId: userId,
-                                folderId: folderId,
-                                fileType: fileType,
-                            },
-                        });
-                        // Log the file activity
-                        yield database_1.default.fileActivity.create({
-                            data: {
-                                userId,
-                                fileId: fileData.id,
-                                activityType: 'File',
-                                action: 'CREATE FILE',
-                                ipAddress,
-                                userAgent,
-                                device,
-                                operatingSystem,
-                                browser,
-                                filePath: fullPath,
-                                fileSize: stats.size,
-                                fileType: fileType,
-                            },
-                        });
-                        // Update storage history
-                        const totalStorage = (user === null || user === void 0 ? void 0 : user.maxStorageSize) || 0;
-                        const storageUsagePercentage = (newUsedStorage / Math.max(totalStorage, 1)) * 100;
-                        const overflowStorage = Math.max(0, newUsedStorage - totalStorage);
-                        yield database_1.default.storageHistory.create({
-                            data: {
-                                userId: userId,
-                                usedStorage: newUsedStorage,
-                                totalStorage: totalStorage,
-                                storageType: 'file',
-                                storageLocation: baseFolderPath,
-                                storageUsagePercentage: Math.min(storageUsagePercentage, 100),
-                                storageLimit: totalStorage,
-                                overflowStorage: overflowStorage,
-                                notificationSent: storageUsagePercentage > 90,
-                            },
-                        });
-                        resolve(fileData);
-                    }
-                    catch (error) {
-                        reject(error);
-                    }
-                }));
-                writeStream.on('error', (error) => {
-                    reject(error);
-                });
-            })));
-        }));
-        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                const results = yield Promise.all(uploadPromises);
-                res.json({ message: 'Files uploaded successfully', files: results });
-            }
-            catch (error) {
-                if (error.message === 'Storage limit exceeded. File not saved.') {
-                    res.status(400).json({ error: error.message });
-                }
-                else {
-                    res.status(500).json({ error: 'Error uploading files' });
-                }
-            }
-        }));
-        req.pipe(bb);
+        if (!version) {
+            return res.status(404).json({ message: "Version not found" });
+        }
+        const file = yield database_1.default.file.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { fileUrl: version.url },
+        });
+        res.json(file);
     }
     catch (error) {
+        res.status(500).json({ error: "Error restoring file version" });
+    }
+});
+exports.versionRestoreFile = versionRestoreFile;
+const versionsFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const versions = yield database_1.default.fileVersion.findMany({
+            where: { fileId: req.params.id, file: { userId: req.user.id } },
+            orderBy: { createdAt: "desc" },
+        });
+        res.json(versions);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error fetching file versions" });
         next(error);
     }
 });
-exports.uploadFile11 = uploadFile11;
-const uploadFile1 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const bb = (0, busboy_1.default)({ headers: req.headers });
-        const uploadPromises = [];
-        const { userId } = req.user;
-        const userInfo = getUserInfo(req);
-        const ipAddress = userInfo.ipAddress;
-        const userAgent = userInfo.userAgent;
-        const device = userInfo.deviceType;
-        const operatingSystem = userInfo.operatingSystem;
-        const browser = userInfo.browser;
-        console.log(" ============BBBBB================= ");
-        console.log(userId);
-        console.log(" ===========BBBBBBBBBBB================== ");
-        let folderId = null;
-        let baseFolderPath = '';
-        let fileRelativePath = '';
-        bb.on('field', (name, val) => {
-            if (name === 'folderId') {
-                folderId = val;
-            }
-            if (name === 'relativePath') {
-                fileRelativePath = val;
-            }
-        });
-        bb.on('file', (name, file, info) => __awaiter(void 0, void 0, void 0, function* () {
-            const { filename, mimeType } = info;
-            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
-            relativePath.pop();
-            if (folderId) {
-                const folderResponse = yield folderService.getFolderById(folderId);
-                if (folderResponse) {
-                    baseFolderPath = folderResponse.folderPath;
-                }
-            }
-            const user = yield userService.getUserById(userId);
-            if (!baseFolderPath) {
-                baseFolderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
-            }
-            const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
-            const fileUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(user.email)}/${encodeURIComponent(filename)}`;
-            const writeStream = fs_extra_1.default.createWriteStream(fullPath);
-            file.pipe(writeStream);
-            const uploadPromise = new Promise((resolve, reject) => {
-                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-                    try {
-                        console.log(" +++++ 000 fileUpload user 000 +++++ ");
-                        console.log(folderId);
-                        console.log(userId);
-                        console.log(fullPath);
-                        console.log(fileUrl);
-                        console.log(" +++++ 000 fileUpload user 000 ++++ ");
-                        const stats = yield fs_extra_1.default.promises.stat(fullPath);
-                        const fileData = yield database_1.default.file.create({
-                            data: {
-                                name: filename,
-                                filePath: fullPath,
-                                fileUrl: fileUrl,
-                                mimeType: mimeType,
-                                size: stats.size,
-                                userId: userId,
-                                folderId: folderId,
-                                fileType: '', //Add appropriate file Type here
-                            },
-                        });
-                        resolve(fileData);
-                        yield database_1.default.fileActivity.create({
-                            data: {
-                                userId,
-                                fileId: fileData.id,
-                                activityType: 'File',
-                                action: 'CREATE FILE',
-                                ipAddress,
-                                userAgent,
-                                device,
-                                operatingSystem,
-                                browser,
-                                filePath: `${fullPath}`,
-                                fileSize: stats.size,
-                                fileType: 'File',
-                            },
-                        });
-                        yield database_1.default.storageHistory.create({
-                            data: {
-                                userId: userId,
-                                usedStorage: 100,
-                                totalStorage: 1000,
-                                storageType: 'file',
-                                storageLocation: 'storageLocation',
-                                storageUsagePercentage: 10,
-                                storageLimit: 1000,
-                                overflowStorage: 10,
-                                notificationSent: false
-                            },
-                        });
-                    }
-                    catch (error) {
-                        reject(error);
-                    }
-                }));
-                writeStream.on('error', (error) => {
-                    reject(error);
-                });
-            });
-            uploadPromises.push(uploadPromise);
-        }));
-        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-            try {
-                const results = yield Promise.all(uploadPromises);
-                res.json({ message: 'Files uploaded successfully', files: results });
-            }
-            catch (error) {
-                console.error('Error uploading files:', error);
-                res.status(500).json({ error: 'Error uploading files' });
-            }
-        }));
-        req.pipe(bb);
-    }
-    catch (error) {
-        next(error);
-    }
-});
-exports.uploadFile1 = uploadFile1;
+exports.versionsFile = versionsFile;
 const downloadFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        logger_1.default.info('Starting file download process', { fileId: req.params.itemId });
+        logger_1.default.info("Starting file download process", {
+            fileId: req.params.itemId,
+        });
         const fileId = req.params.itemId;
         // Fetch the file from the database
         const file = yield database_1.default.file.findUnique({
             where: { id: fileId },
         });
         if (!file) {
-            logger_1.default.error('File not found in the database', { fileId });
-            return res.status(404).json({ message: 'File not found.' });
+            logger_1.default.error("File not found in the database", { fileId });
+            return res.status(404).json({ message: "File not found." });
         }
         const filePath = path_1.default.join(file.filePath);
         // Check if file exists on the server
         if (!fs_extra_1.default.existsSync(filePath)) {
-            logger_1.default.error('File not found on the server', { filePath });
-            return res.status(404).json({ message: 'File not found on the server.' });
+            logger_1.default.error("File not found on the server", { filePath });
+            return res.status(404).json({ message: "File not found on the server." });
         }
         // // Log the file download action in fileActivity
         // await prisma.fileActivity.create({
@@ -849,25 +539,32 @@ const downloadFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         //         action: 'download file',
         //     },
         // });
-        logger_1.default.info('File download action logged', { fileId });
+        logger_1.default.info("File download action logged", { fileId });
         // Read the file stream
         const fileStream = fs_extra_1.default.createReadStream(filePath);
         // Set appropriate headers
-        const contentDisposition = file.mimeType.startsWith('image/') ? 'inline' : 'attachment';
-        res.setHeader('Content-Disposition', `${contentDisposition}; filename="${encodeURIComponent(file.name)}"`);
-        res.setHeader('Content-Type', file.mimeType);
+        const contentDisposition = file.mimeType.startsWith("image/")
+            ? "inline"
+            : "attachment";
+        res.setHeader("Content-Disposition", `${contentDisposition}; filename="${encodeURIComponent(file.name)}"`);
+        res.setHeader("Content-Type", file.mimeType);
         // Pipe the file stream to the response
         fileStream.pipe(res);
-        fileStream.on('end', () => {
-            logger_1.default.info('File download successful', { fileId });
+        fileStream.on("end", () => {
+            logger_1.default.info("File download successful", { fileId });
         });
-        fileStream.on('error', (err) => {
-            logger_1.default.error('Error while downloading file', { fileId, error: err.message });
+        fileStream.on("error", (err) => {
+            logger_1.default.error("Error while downloading file", {
+                fileId,
+                error: err.message,
+            });
             next(err);
         });
     }
     catch (error) {
-        logger_1.default.error('Error in downloadFiles function', { error: error.message });
+        logger_1.default.error("Error in downloadFiles function", {
+            error: error.message,
+        });
         next(error);
     }
 });
@@ -877,41 +574,41 @@ const downloadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const file = yield (0, fileService_1.getFileById)(fileId);
         if (!file) {
-            return res.status(404).json({ error: 'File not found' });
+            return res.status(404).json({ error: "File not found" });
         }
         const filePath = file.filePath;
         if (!fs_extra_1.default.existsSync(filePath)) {
-            return res.status(404).json({ error: 'File not found on the server' });
+            return res.status(404).json({ error: "File not found on the server" });
         }
         // Determine the MIME type
-        const mimeType = mime_types_1.default.lookup(filePath) || 'application/octet-stream';
+        const mimeType = mime_types_1.default.lookup(filePath) || "application/octet-stream";
         // Get the file name and encode it for the Content-Disposition header
         const fileName = encodeURIComponent(path_1.default.basename(filePath));
         // Set the appropriate headers
-        res.setHeader('Content-Type', mimeType);
-        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${fileName}`);
+        res.setHeader("Content-Type", mimeType);
+        res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${fileName}`);
         // Stream the file
         const fileStream = fs_extra_1.default.createReadStream(filePath);
-        fileStream.on('error', (error) => {
-            console.error('Error streaming file:', error);
-            res.status(500).json({ error: 'Error streaming file' });
+        fileStream.on("error", (error) => {
+            console.error("Error streaming file:", error);
+            res.status(500).json({ error: "Error streaming file" });
         });
         fileStream.pipe(res);
     }
     catch (error) {
-        console.error('Error downloading file:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error("Error downloading file:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 exports.downloadFile = downloadFile;
 const createDocument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const fileId = req.params.itemId;
     try {
-        res.status(201).json('Document created successfully!!!!!!');
+        res.status(201).json("Document created successfully!!!!!!");
     }
     catch (error) {
-        console.error('Error downloading file:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error("Error downloading file:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 exports.createDocument = createDocument;
@@ -920,53 +617,62 @@ const downloadFolder = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const folder = yield folderService.getFolderById(folderId);
         if (!folder) {
-            return res.status(404).json({ error: 'Folder not found' });
+            return res.status(404).json({ error: "Folder not found" });
         }
         const folderPath = folder.folderPath;
         if (!fs_extra_1.default.existsSync(folderPath)) {
             logger_1.default.error(`Folder does not exist on the server, ${folderPath}`);
-            return res.status(500).json({ error: 'Folder does not exist on the file system' });
+            return res
+                .status(500)
+                .json({ error: "Folder does not exist on the file system" });
         }
         const zipStream = yield (0, zipFolder_1.zipFolder)(folderPath);
         zipStream.pipe(res);
     }
     catch (error) {
-        console.error('Error downloading folder:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error("Error downloading folder:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 exports.downloadFolder = downloadFolder;
 const downloadFolders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const folderId = req.params.itemId;
-    logger_1.default.info('Request to download folder', { folderId });
+    logger_1.default.info("Request to download folder", { folderId });
     try {
         // Fetch folder data from the database
         const folder = yield database_1.default.folder.findUnique({
             where: { id: folderId },
         });
         if (!folder) {
-            logger_1.default.error('Folder not found in the database', { folderId });
-            return res.status(404).json({ message: 'Folder not found' });
+            logger_1.default.error("Folder not found in the database", { folderId });
+            return res.status(404).json({ message: "Folder not found" });
         }
         // Define the folder path based on folderPath stored in the database
         const folderPath = path_1.default.join(folder.folderPath);
-        logger_1.default.info('Folder path resolved', { folderId, folderPath });
+        logger_1.default.info("Folder path resolved", { folderId, folderPath });
         // Check if the folder exists on the file system
         if (!fs_extra_1.default.existsSync(folderPath)) {
-            logger_1.default.error('Folder does not exist on the server', { folderPath });
-            return res.status(404).json({ message: 'Folder does not exist on the server' });
+            logger_1.default.error("Folder does not exist on the server", { folderPath });
+            return res
+                .status(404)
+                .json({ message: "Folder does not exist on the server" });
         }
         // Create a zip file
         const zipFileName = `${folder.name}.zip`;
         const zipFilePath = path_1.default.join(process.cwd(), zipFileName);
         // const zipFilePath = path.join(folderPath, zipFileName);
         const output = fs_extra_1.default.createWriteStream(zipFilePath);
-        const archive = (0, archiver_1.default)('zip', { zlib: { level: 9 } });
-        output.on('close', () => {
-            logger_1.default.info(`Zipped ${archive.pointer()} total bytes.`, { zipFileName, folderId });
+        const archive = (0, archiver_1.default)("zip", { zlib: { level: 9 } });
+        output.on("close", () => {
+            logger_1.default.info(`Zipped ${archive.pointer()} total bytes.`, {
+                zipFileName,
+                folderId,
+            });
         });
-        archive.on('error', (err) => {
-            logger_1.default.error('Error occurred while zipping folder', { error: err.message });
+        archive.on("error", (err) => {
+            logger_1.default.error("Error occurred while zipping folder", {
+                error: err.message,
+            });
             throw err;
         });
         // Pipe the zip stream to the output file
@@ -976,17 +682,19 @@ const downloadFolders = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         // Finalize the archive to finish the zip creation
         yield archive.finalize();
         // Wait until the zip file is ready before streaming it to the client
-        output.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
-            logger_1.default.info('ZIP file creation completed', { zipFilePath });
+        output.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
+            logger_1.default.info("ZIP file creation completed", { zipFilePath });
             // Set response headers for downloading the zip file
-            res.setHeader('Content-Type', 'application/zip');
-            res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`);
+            res.setHeader("Content-Type", "application/zip");
+            res.setHeader("Content-Disposition", `attachment; filename="${zipFileName}"`);
             // Stream the zip file to the client
             const zipFileStream = fs_extra_1.default.createReadStream(zipFilePath);
             zipFileStream.pipe(res);
             // Cleanup the zip file after download
-            zipFileStream.on('end', () => {
-                logger_1.default.info('ZIP file streamed to client, deleting file', { zipFilePath });
+            zipFileStream.on("end", () => {
+                logger_1.default.info("ZIP file streamed to client, deleting file", {
+                    zipFilePath,
+                });
                 fs_extra_1.default.unlinkSync(zipFilePath); // Delete the zip file from the server after streaming
             });
             // try {
@@ -1004,7 +712,9 @@ const downloadFolders = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         }));
     }
     catch (error) {
-        logger_1.default.error('An error occurred while downloading the folder', { error: error.message });
+        logger_1.default.error("An error occurred while downloading the folder", {
+            error: error.message,
+        });
         next(error);
     }
 });
@@ -1013,17 +723,23 @@ const deletePermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     const { userId } = req.user;
     const { fileType, fileId } = req.params;
     try {
-        const document = yield database_1.default.document.findUnique({ where: { id: fileId }, });
+        const document = yield database_1.default.document.findUnique({
+            where: { id: fileId },
+        });
         if (document) {
             if (!document) {
-                return res.status(404).json({ error: `File with ID ${fileId} not found.` });
+                return res
+                    .status(404)
+                    .json({ error: `File with ID ${fileId} not found.` });
             }
             yield database_1.default.document.delete({
                 where: { id: fileId },
             });
-            return res.status(404).json({ success: `File with ID ${fileId} deleted permanently.` });
+            return res
+                .status(404)
+                .json({ success: `File with ID ${fileId} deleted permanently.` });
         }
-        if (fileType === 'Folder') {
+        if (fileType === "Folder") {
             // console.log(' +++++++++++++++type FOLDER+++++++++++++++++++++++ ')
             //  console.log({ id, type })
             // console.log(' +++++++++++++++++type+++++++++++++++++++++ ')
@@ -1031,20 +747,26 @@ const deletePermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                 where: { id: fileId },
             });
             if (!folder) {
-                return res.status(404).json({ error: `Folder with ID ${fileId} not found.` });
+                return res
+                    .status(404)
+                    .json({ error: `Folder with ID ${fileId} not found.` });
             }
             // Define folder path
             const folderPath = path_1.default.join(folder.folderPath);
             // Delete folder from the file system
             yield fs_extra_1.default.rm(folderPath, { recursive: true, force: true });
             // Delete folder from database
-            yield database_1.default.folder.delete({ where: { id: fileId }, });
-            return res.status(201).json({ success: `Folder with ID ${fileId} deleted permanently.` });
+            yield database_1.default.folder.delete({ where: { id: fileId } });
+            return res
+                .status(201)
+                .json({ success: `Folder with ID ${fileId} deleted permanently.` });
         }
-        if (fileType === 'File') {
-            const file = yield database_1.default.file.findUnique({ where: { id: fileId }, });
+        if (fileType === "File") {
+            const file = yield database_1.default.file.findUnique({ where: { id: fileId } });
             if (!file) {
-                return res.status(404).json({ error: `File with ID ${fileId} not found.` });
+                return res
+                    .status(404)
+                    .json({ error: `File with ID ${fileId} not found.` });
             }
             // Define file path
             const filePath = path_1.default.join(file.filePath);
@@ -1054,11 +776,13 @@ const deletePermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             yield database_1.default.file.delete({
                 where: { id: fileId },
             });
-            return res.status(404).json({ success: `File with ID ${fileId} deleted permanently.` });
+            return res
+                .status(404)
+                .json({ success: `File with ID ${fileId} deleted permanently.` });
         }
     }
     catch (error) {
-        logger_1.default.error('An error occurred while downloading the folder', { error });
+        logger_1.default.error("An error occurred while downloading the folder", { error });
         next(error);
     }
 });
@@ -1066,7 +790,7 @@ exports.deletePermanently = deletePermanently;
 const restoreFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { fileType, fileId } = req.params;
     try {
-        if (fileType === 'Folder') {
+        if (fileType === "Folder") {
             const folder = yield database_1.default.folder.findUnique({
                 where: { id: fileId },
             });
@@ -1079,7 +803,7 @@ const restoreFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             });
             return { success: `Folder with ID ${fileId} restored`, updatedFolder };
         }
-        if (fileType === 'File') {
+        if (fileType === "File") {
             const file = yield database_1.default.file.findUnique({
                 where: { id: fileId },
             });
@@ -1101,24 +825,24 @@ const restoreFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
 exports.restoreFile = restoreFile;
 const generatePreview = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const previewDir = path_1.default.join(process.cwd(), 'public', 'File Manager', email, 'previews');
+        const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
         // Ensure the preview directory exists using async methods
         yield fs_extra_1.default.mkdir(previewDir, { recursive: true });
         const previewFileName = `${path_1.default.basename(filePath, path_1.default.extname(filePath))}_preview.png`;
         const previewPath = path_1.default.join(previewDir, previewFileName);
-        if (mimeType.startsWith('image/')) {
+        if (mimeType.startsWith("image/")) {
             // Handle image preview generation using async/await
             yield (0, sharp_1.default)(filePath)
-                .resize({ width: 200, height: 200, fit: 'inside' })
+                .resize({ width: 200, height: 200, fit: "inside" })
                 .toFile(previewPath);
         }
-        else if (mimeType === 'application/pdf') {
+        else if (mimeType === "application/pdf") {
             // Handle PDF preview generation
             const options = {
                 density: 100,
                 saveFilename: path_1.default.basename(filePath, path_1.default.extname(filePath)),
                 savePath: previewDir,
-                format: 'png',
+                format: "png",
                 width: 200,
                 height: 200,
             };
@@ -1138,26 +862,26 @@ const generatePreview = (filePath, mimeType, email) => __awaiter(void 0, void 0,
         return `/previews/${previewFileName}`;
     }
     catch (error) {
-        console.error('Error generating preview:', error);
+        console.error("Error generating preview:", error);
         return null;
     }
 });
 const generatePreview4 = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
-    const previewDir = path_1.default.join(process.cwd(), 'public', 'File Manager', email, 'previews');
+    const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
     if (!fs_extra_1.default.existsSync(previewDir)) {
         fs_extra_1.default.mkdirSync(previewDir, { recursive: true });
     }
     const previewFileName = `${path_1.default.basename(filePath, path_1.default.extname(filePath))}_preview.png`;
     const previewPath = path_1.default.join(previewDir, previewFileName);
     try {
-        if (mimeType.startsWith('image/')) {
+        if (mimeType.startsWith("image/")) {
             // Create a readable stream from the original file and a writable stream to the preview file
             const readStream = (0, fs_1.createReadStream)(filePath);
             const writeStream = (0, fs_1.createWriteStream)(previewPath);
             // Pipe the original image to the preview image
             yield (0, util_1.promisify)(stream_1.pipeline)(readStream, writeStream);
         }
-        else if (mimeType === 'application/pdf') {
+        else if (mimeType === "application/pdf") {
             // For PDF files, directly copy the first page as the preview
             const readStream = (0, fs_1.createReadStream)(filePath);
             const writeStream = (0, fs_1.createWriteStream)(previewPath);
@@ -1176,13 +900,13 @@ const generatePreview4 = (filePath, mimeType, email) => __awaiter(void 0, void 0
         // return `/${previewDir}/${previewFileName}`;
     }
     catch (error) {
-        console.error('Error generating preview:', error);
+        console.error("Error generating preview:", error);
         return null;
     }
 });
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 const generatePreview2 = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
-    const previewDir = path_1.default.join(process.cwd(), 'public', 'File Manager', email, 'previews');
+    const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
     yield fs_extra_1.default.ensureDir(previewDir);
     const previewFileName = `${path_1.default.basename(filePath, path_1.default.extname(filePath))}_preview.png`;
     const previewPath = path_1.default.join(previewDir, previewFileName);
@@ -1191,10 +915,10 @@ const generatePreview2 = (filePath, mimeType, email) => __awaiter(void 0, void 0
     console.log(previewPath);
     console.log(" ===========generatePreview================== ");
     try {
-        if (mimeType.startsWith('image/')) {
+        if (mimeType.startsWith("image/")) {
             yield generateImagePreview(filePath, previewPath);
         }
-        else if (mimeType === 'application/pdf') {
+        else if (mimeType === "application/pdf") {
             yield generatePdfPreview(filePath, previewPath);
         }
         else {
@@ -1203,13 +927,13 @@ const generatePreview2 = (filePath, mimeType, email) => __awaiter(void 0, void 0
         return `/previews/${previewFileName}`;
     }
     catch (error) {
-        console.error('Error generating preview:', error);
+        console.error("Error generating preview:", error);
         return null;
     }
 });
 const generateImagePreview = (filePath, previewPath) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, sharp_1.default)(filePath)
-        .resize(200, 200, { fit: 'inside', withoutEnlargement: true })
+        .resize(200, 200, { fit: "inside", withoutEnlargement: true })
         .toFile(previewPath);
 });
 const generatePdfPreview = (filePath, previewPath) => __awaiter(void 0, void 0, void 0, function* () {
@@ -1218,9 +942,7 @@ const generatePdfPreview = (filePath, previewPath) => __awaiter(void 0, void 0, 
         // Use ImageMagick to convert PDF to PNG
         yield execAsync(`magick convert -density 150 -quality 90 -background white -alpha remove "${filePath}[0]" -resize 200x200 "${tempOutputPath}"`);
         // Use sharp to ensure the output is in PNG format and to apply any additional processing if needed
-        yield (0, sharp_1.default)(tempOutputPath)
-            .png()
-            .toFile(previewPath);
+        yield (0, sharp_1.default)(tempOutputPath).png().toFile(previewPath);
     }
     finally {
         // Clean up the temporary file
@@ -1228,7 +950,7 @@ const generatePdfPreview = (filePath, previewPath) => __awaiter(void 0, void 0, 
     }
 });
 const generatePreview1 = (filePath, mimeType, email) => __awaiter(void 0, void 0, void 0, function* () {
-    const previewDir = path_1.default.join(process.cwd(), 'public', 'File Manager', email, 'previews');
+    const previewDir = path_1.default.join(process.cwd(), "public", "File Manager", email, "previews");
     if (!fs_extra_1.default.existsSync(previewDir)) {
         fs_extra_1.default.mkdirSync(previewDir, { recursive: true });
     }
@@ -1239,19 +961,19 @@ const generatePreview1 = (filePath, mimeType, email) => __awaiter(void 0, void 0
     console.log(previewPath);
     console.log(" ===========generatePreview================== ");
     try {
-        if (mimeType.startsWith('image/')) {
+        if (mimeType.startsWith("image/")) {
             yield (0, sharp_1.default)(filePath)
-                .resize(200, 200, { fit: 'inside' })
+                .resize(200, 200, { fit: "inside" })
                 .toFile(previewPath);
         }
-        else if (mimeType === 'application/pdf') {
+        else if (mimeType === "application/pdf") {
             const options = {
                 density: 100,
                 saveFilename: path_1.default.basename(filePath, path_1.default.extname(filePath)),
                 savePath: previewDir,
                 format: "png",
                 width: 200,
-                height: 200
+                height: 200,
             };
             const convert = (0, pdf2pic_1.fromPath)(filePath, options);
             const pageToConvertAsImage = 1;
@@ -1267,7 +989,7 @@ const generatePreview1 = (filePath, mimeType, email) => __awaiter(void 0, void 0
         return `/previews/${previewFileName}`;
     }
     catch (error) {
-        console.error('Error generating preview:', error);
+        console.error("Error generating preview:", error);
         return null;
     }
 });
@@ -1311,19 +1033,19 @@ const previewFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             include: { user: true },
         });
         if (!file) {
-            return res.status(404).json({ message: 'File not found' });
+            return res.status(404).json({ message: "File not found" });
         }
         // if (file.userId !== userId) {
         //     return res.status(403).json({ message: 'Access denied' })
         // }
         if (!fs_extra_1.default.existsSync(file.filePath)) {
-            return res.status(404).json({ error: 'File not found on the server' });
+            return res.status(404).json({ error: "File not found on the server" });
         }
         //const filePath = path.join(process.cwd(), file.filePath as string)
         const filePath = path_1.default.join(file.filePath);
         const fileContent = fs_extra_1.default.readFileSync(filePath);
-        res.setHeader('Content-Type', file.mimeType);
-        res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
+        res.setHeader("Content-Type", file.mimeType);
+        res.setHeader("Content-Disposition", `inline; filename="${file.name}"`);
         res.send(fileContent);
         // const filePath = file.filePath as string;
         // // Set appropriate headers for preview
@@ -1336,36 +1058,82 @@ const previewFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.previewFile = previewFile;
-const downloadFolders1 = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const fileId = req.query.fileId;
-    //const { userId } = req.user as { userId: string };
-    console.log(" ++++++ downloadFolders ++++++++++ ");
-    console.log(req.params.itemId);
-    console.log(" +++++ downloadFolders +++++++++++ ");
-    const file = yield database_1.default.file.findUnique({
-        where: { id: fileId },
-    });
-    if (!file) {
-        throw new Error('File not found.');
+const copyFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.user.id;
+        // const { newParentId } = req.body;
+        const sourceFile = yield database_1.default.file.findUnique({
+            where: { id: req.params.id, userId: req.user.id },
+        });
+        if (!sourceFile) {
+            return res.status(404).json({ error: "File not found" });
+        }
+        // Fetch the user to calculate storage usage
+        const user = yield database_1.default.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        // Generate a new filename for the copy
+        const newFilename = `Copy of ${sourceFile.name}`;
+        const newFilePath = path_1.default.join(path_1.default.dirname(sourceFile.filePath), newFilename);
+        // Copy the file
+        yield fs_extra_1.default.promises.copyFile(sourceFile.filePath, newFilePath);
+        // Create a new file record in the database
+        const copiedFile = yield database_1.default.file.create({
+            data: {
+                name: newFilename,
+                fileType: sourceFile.fileType,
+                size: sourceFile.size,
+                filePath: newFilePath,
+                fileUrl: `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user.email)}/${encodeURIComponent(newFilename)}`,
+                mimeType: sourceFile.mimeType,
+                folderId: sourceFile.folderId,
+                userId,
+            },
+        });
+        // Log file activity
+        yield database_1.default.fileActivity.create({
+            data: {
+                userId,
+                fileId: copiedFile.id,
+                activityType: "File",
+                action: "COPY FILE",
+                filePath: copiedFile.filePath,
+                fileSize: copiedFile.size,
+                fileType: copiedFile.fileType,
+            },
+        });
+        // Update storage history
+        const totalStorage = user.maxStorageSize || 0;
+        const usedStorage = yield database_1.default.file.aggregate({
+            _sum: { size: true },
+            where: { userId },
+        });
+        const newUsedStorage = (usedStorage._sum.size || 0) + sourceFile.size;
+        const storageUsagePercentage = (newUsedStorage / Math.max(totalStorage, 1)) * 100;
+        yield database_1.default.storageHistory.create({
+            data: {
+                userId,
+                usedStorage: newUsedStorage,
+                totalStorage,
+                storageType: "file",
+                storageLocation: copiedFile.filePath,
+                storageUsagePercentage: Math.min(storageUsagePercentage, 100),
+                storageLimit: totalStorage,
+                overflowStorage: Math.max(0, newUsedStorage - totalStorage),
+                notificationSent: storageUsagePercentage > 90,
+            },
+        });
+        res.status(201).json(copiedFile);
     }
-    const filePath = path_1.default.join(file.filePath);
-    if (!fs_extra_1.default.existsSync(filePath)) {
-        throw new Error('File not found on server');
+    catch (error) {
+        console.error("Error copying file:", error);
+        res.status(500).json({ error: "Error copying file" });
     }
-    yield database_1.default.fileActivity.create({
-        data: {
-            //  userId: userId,
-            fileId: fileId,
-            action: 'download',
-        },
-    });
-    const fileBuffer = fs_extra_1.default.readFileSync(filePath);
-    const contentDisposition = file.mimeType.startsWith('image/') ? 'inline' : 'attachment';
-    res.setHeader('Content-Disposition', `${contentDisposition}; filename="${encodeURIComponent(file.name)}"`);
-    res.setHeader('Content-Type', file.mimeType);
-    res.send(fileBuffer);
 });
-exports.downloadFolders1 = downloadFolders1;
+exports.copyFile = copyFile;
 const getFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.user;
@@ -1395,7 +1163,7 @@ const getDocuments = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     try {
         const document = yield fileService.getDocuments(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1409,7 +1177,7 @@ const getCustomDocuments = (req, res, next) => __awaiter(void 0, void 0, void 0,
     try {
         const document = yield fileService.getCustomDocuments(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1423,7 +1191,7 @@ const getShared = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     try {
         const document = yield fileService.getShared(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1437,7 +1205,7 @@ const getTrashed = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     try {
         const document = yield fileService.getTrashed(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1451,7 +1219,7 @@ const getPdf = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const items = yield fileService.getPDFFiles(userId);
         if (!items) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(items);
     }
@@ -1465,7 +1233,7 @@ const getVideo = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     try {
         const items = yield fileService.getVideoFiles(userId);
         if (!items) {
-            return res.status(404).json({ message: 'Video not found' });
+            return res.status(404).json({ message: "Video not found" });
         }
         res.json(items);
     }
@@ -1479,7 +1247,7 @@ const getAudio = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     try {
         const items = yield fileService.getAudioFiles(userId);
         if (!items) {
-            return res.status(404).json({ message: 'Audio not found' });
+            return res.status(404).json({ message: "Audio not found" });
         }
         res.json(items);
     }
@@ -1493,7 +1261,7 @@ const getWord = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const document = yield fileService.getWordFiles(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Word not found' });
+            return res.status(404).json({ message: "Word not found" });
         }
         res.json(document);
     }
@@ -1507,7 +1275,7 @@ const getPhotos = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     try {
         const document = yield fileService.getPhotos(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1521,7 +1289,7 @@ const getExcelFiles = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     try {
         const document = yield fileService.getExcelFiles(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1535,7 +1303,7 @@ const getSharedWithMe = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     try {
         const document = yield fileService.getSharedWithMe(userId);
         if (!document) {
-            return res.status(404).json({ message: 'Document not found' });
+            return res.status(404).json({ message: "Document not found" });
         }
         res.json(document);
     }
@@ -1568,6 +1336,34 @@ const getFileDetails = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getFileDetails = getFileDetails;
+const lockFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const file = yield database_1.default.file.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { locked: true },
+        });
+        res.json(file);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Error locking file" });
+        next(error);
+    }
+});
+exports.lockFile = lockFile;
+const unlockFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const file = yield database_1.default.file.update({
+            where: { id: req.params.id, userId: req.user.id },
+            data: { locked: false },
+        });
+        res.json(file);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Error unlocking file" });
+        next(error);
+    }
+});
+exports.unlockFile = unlockFile;
 const moveToTrash = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.user;
@@ -1588,7 +1384,7 @@ const shareLink = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             include: { user: true },
         });
         if (!file) {
-            return res.status(404).json({ message: 'File not found' });
+            return res.status(404).json({ message: "File not found" });
         }
         // if (file.userId !== userId) {
         //     return res.status(403).json({ message: 'Access denied' })
@@ -1597,8 +1393,8 @@ const shareLink = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         res.status(200).json({ link: fileLink });
     }
     catch (error) {
-        console.error('Error getting file link:', error);
-        res.status(500).json({ message: 'Error getting file link' });
+        console.error("Error getting file link:", error);
+        res.status(500).json({ message: "Error getting file link" });
     }
 });
 exports.shareLink = shareLink;
@@ -1610,13 +1406,13 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             where: { sharedUrl: encodedFileId },
         });
         if (!sharedItem) {
-            console.log('File or folder not found.');
-            return res.status(404).json({ message: 'Item not found' });
+            console.log("File or folder not found.");
+            return res.status(404).json({ message: "Item not found" });
         }
         // Check for expiration
         const currentDate = new Date();
         if (sharedItem.expirationDate && sharedItem.expirationDate < currentDate) {
-            return res.status(400).json({ message: 'The link has expired.' });
+            return res.status(400).json({ message: "The link has expired." });
         }
         // Check if the shared item is a file or folder
         if (sharedItem.shareableType) {
@@ -1626,7 +1422,7 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     where: { id: sharedItem.fileId },
                 });
                 if (!file) {
-                    return res.status(400).json({ message: 'File record not found.' });
+                    return res.status(400).json({ message: "File record not found." });
                 }
                 // Prepare data to be returned
                 const data = {
@@ -1635,7 +1431,7 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     mimeType: file.mimeType,
                     itemId: file.id,
                     isPasswordEnabled: sharedItem.isPasswordEnabled,
-                    shareableType: "File"
+                    shareableType: "File",
                 };
                 return res.status(200).json(data);
             }
@@ -1645,7 +1441,7 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     where: { id: sharedItem.folderId },
                 });
                 if (!folder) {
-                    return res.status(400).json({ message: 'Folder record not found.' });
+                    return res.status(400).json({ message: "Folder record not found." });
                 }
                 // console.log('++++++++++++Folder+++++++++++++++++++++');
                 // console.log(folder);
@@ -1657,16 +1453,16 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     // mimeType: folder.mimeType,
                     itemId: folder.id,
                     isPasswordEnabled: sharedItem.isPasswordEnabled,
-                    shareableType: "Folder"
+                    shareableType: "Folder",
                 };
                 return res.status(200).json(data);
             }
         }
         // If shareableType is not recognized
-        return res.status(400).json({ message: 'Invalid shareable type' });
+        return res.status(400).json({ message: "Invalid shareable type" });
     }
     catch (error) {
-        console.error('Error fetching shared file/folder:', error);
+        console.error("Error fetching shared file/folder:", error);
         return next(error); // Pass the error to the error handling middleware
     }
 });
@@ -1686,7 +1482,7 @@ exports.copyLink = copyLink;
 const shareFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId } = req.user;
-        const { fileId, sharedWith, password, expirationDate, shareWithMessage, isPasswordEnabled, isExpirationEnabled } = req.body;
+        const { fileId, sharedWith, password, expirationDate, shareWithMessage, isPasswordEnabled, isExpirationEnabled, } = req.body;
         const user = yield userService.getUserById(userId);
         if (user) {
             const fileToShare = yield fileService.shareFile(userId, fileId, password, sharedWith, shareWithMessage, isPasswordEnabled, expirationDate, isExpirationEnabled);
@@ -1698,12 +1494,12 @@ const shareFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     toEmail: sharedWith,
                     message: shareWithMessage,
                     fromEmail: user.email,
-                    shareableLink: fileToShare.url
+                    shareableLink: fileToShare.url,
                 };
                 yield (0, email_1.sendSharedLinkEmail)(emailParams);
             }
         }
-        res.json('success');
+        res.json("success");
     }
     catch (error) {
         next(error);

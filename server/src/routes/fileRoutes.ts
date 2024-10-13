@@ -1,85 +1,111 @@
-import { getAudio } from './../controllers/fileController';
-import express from 'express';
-import * as fileController from '../controllers/fileController';
-import * as uploadController from '../controllers/uploadController';
-import { auth } from '../middleware/auth';
-import multer from 'multer';
-import path from 'path';
+import express from "express";
+import * as fileController from "../controllers/fileController";
+import { auth } from "../middleware/auth";
+import multer from "multer";
 
 const router = express.Router();
 
-
 const upload = multer();
 
-router.post('/file-upload-v1', auth, fileController.uploadFile);
+router.post("/:id/unlock", auth, fileController.unlockFile);
+router.post("/:id/lock", auth, fileController.lockFile);
 
-router.post('/file-upload', auth, upload.single('file'), fileController.fileUpload);
+router.post(
+  "/:id/versions/:versionId/restore",
+  auth,
+  fileController.versionRestoreFile
+);
+router.get("/:versionId/versions", auth, fileController.versionsFile);
+router.post("/:id/copy", auth, fileController.copyFile);
+router.put("/:id/move", auth, fileController.moveFile);
+router.post("/file-upload-v1", auth, fileController.uploadFile);
 
-//======================================================================
+router.post(
+  "/file-upload",
+  auth,
+  upload.single("file"),
+  fileController.fileUpload
+);
 
-//router.post('/upload', upload.single('file'), uploadFileController);
+router.post(
+  "/fileUpload",
+  upload.array("files"),
+  auth,
+  fileController.handleFileUpload
+);
 
-router.post('/fileUpload', upload.array('files'), auth, fileController.handleFileUpload);
+router.post("/upload", auth, upload.array("files"), fileController.uploadFiles);
 
-router.post('/upload', auth, upload.array('files'), fileController.uploadFiles);
-router.post('/upload-folder', auth, upload.fields([{ name: 'files', maxCount: 100 }]), fileController.uploadFolder);
-router.post('/download-files', auth, fileController.downloadFiles);
+router.post(
+  "/upload-folder",
+  auth,
+  upload.fields([{ name: "files", maxCount: 100 }]),
+  fileController.uploadFolder
+);
 
-router.post('/upload', upload.single('file'), auth, fileController.uploadFile)
+router.post("/download-files", auth, fileController.downloadFiles);
 
-router.get('/shared-link/:fileId', auth, fileController.shareLink);
+router.post("/upload", upload.single("file"), auth, fileController.uploadFile);
 
-router.post('/create-documents', auth, fileController.createDocument);
+router.get("/shared-link/:fileId", auth, fileController.shareLink);
 
-router.post('/check-password', fileController.checkPassword);
+router.post("/create-documents", auth, fileController.createDocument);
 
-router.post('/upload-file', auth, upload.single('file'), fileController.uploadFile);
+router.post("/check-password", fileController.checkPassword);
 
-router.post('/rename/:fileId', auth, fileController.renameFile);
+router.post(
+  "/upload-file",
+  auth,
+  upload.single("file"),
+  fileController.uploadFile
+);
 
-router.get('/get-document', auth, fileController.getDocuments);
+router.post("/rename/:fileId", auth, fileController.renameFile);
 
-router.get('/get-custom-document', auth, fileController.getCustomDocuments);
+router.get("/get-document", auth, fileController.getDocuments);
 
-router.get('/get-excel', auth, fileController.getExcelFiles);
+router.get("/get-custom-document", auth, fileController.getCustomDocuments);
 
-router.get('/get-video', auth, fileController.getVideo);
+router.get("/get-excel", auth, fileController.getExcelFiles);
 
-router.get('/get-pdf', auth, fileController.getPdf);
+router.get("/get-video", auth, fileController.getVideo);
 
-router.get('/get-audio', auth, fileController.getAudio);
+router.get("/get-pdf", auth, fileController.getPdf);
 
-router.get('/get-word', auth, fileController.getWord);
+router.get("/get-audio", auth, fileController.getAudio);
 
-router.get('/get-photo', auth, fileController.getPhotos);
+router.get("/get-word", auth, fileController.getWord);
 
-router.get('/get-trash', auth, fileController.getTrashed);
+router.get("/get-photo", auth, fileController.getPhotos);
 
-router.get('/get-share', auth, fileController.getShared);
+router.get("/get-trash", auth, fileController.getTrashed);
 
-router.get('/get-sharedwithme', auth, fileController.getSharedWithMe);
+router.get("/get-share", auth, fileController.getShared);
 
-router.get('/details/:fileId', auth, fileController.getFileDetails);
+router.get("/get-sharedwithme", auth, fileController.getSharedWithMe);
 
-router.post('/trash/:fileId', auth, fileController.moveToTrash);
+router.get("/details/:fileId", auth, fileController.getFileDetails);
 
-router.post('/share-file', auth, fileController.shareFile);
+router.post("/trash/:fileId", auth, fileController.moveToTrash);
 
-router.get('/shared-file/:fileId', fileController.sharedFile);
+router.post("/share-file", auth, fileController.shareFile);
 
-router.get('/copy-link/:itemId', auth, fileController.copyLink);
+router.get("/shared-file/:fileId", fileController.sharedFile);
 
-router.get('/preview/:fileId', fileController.previewFile);
+router.get("/copy-link/:itemId", auth, fileController.copyLink);
 
-router.get('/deletePermanently/:fileType/:fileId', auth, fileController.deletePermanently);
+router.get("/preview/:fileId", fileController.previewFile);
 
-router.get('/restore-file/:fileType/:fileId', auth, fileController.restoreFile);
+router.get(
+  "/deletePermanently/:fileType/:fileId",
+  auth,
+  fileController.deletePermanently
+);
 
-router.get('/download-file/:itemId', fileController.downloadFile);
+router.get("/restore-file/:fileType/:fileId", auth, fileController.restoreFile);
 
-router.get('/download-folder/:itemId', fileController.downloadFolder);
+router.get("/download-file/:itemId", fileController.downloadFile);
 
-
-
+router.get("/download-folder/:itemId", fileController.downloadFolder);
 
 export { router as fileRouter };

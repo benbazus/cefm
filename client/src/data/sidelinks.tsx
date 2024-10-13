@@ -70,14 +70,15 @@ export const sidelinks: SideLink[] = [
     href: '/drive/audio',
     icon: <IconFileMusic size={18} color='pink' />,
   },
-  {
-    title: 'Trash',
-    href: '/drive/trash',
-    icon: <IconTrash size={18} color='red' />,
-  },
+
   {
     title: 'Shared',
     href: '/drive/share',
     icon: <IconShare size={18} color='cyan' />,
+  },
+  {
+    title: 'Trash',
+    href: '/drive/trash',
+    icon: <IconTrash size={18} color='red' />,
   },
 ]

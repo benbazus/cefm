@@ -47,9 +47,9 @@ const database_1 = __importDefault(require("../config/database"));
 const getFileDetails = (filePath) => (0, promises_1.stat)(filePath);
 // Function to generate a unique alphanumeric ID
 const uniqueAlphaNumericId = (() => {
-    const heyStack = '0123456789abcdefghijklmnopqrstuvwxyz';
+    const heyStack = "0123456789abcdefghijklmnopqrstuvwxyz";
     const randomInt = () => Math.floor(Math.random() * heyStack.length);
-    return (length = 24) => Array.from({ length }, () => heyStack[randomInt()]).join('');
+    return (length = 24) => Array.from({ length }, () => heyStack[randomInt()]).join("");
 })();
 // Function to generate the file path based on fileName and fileId
 const getFilePath = (fileName, fileId) => `./uploads/file-${fileId}-${fileName}`;
@@ -59,7 +59,9 @@ const uploadRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
     else {
         const fileId = uniqueAlphaNumericId();
-        fs_1.default.createWriteStream(getFilePath(req.body.fileName, fileId), { flags: 'w' });
+        fs_1.default.createWriteStream(getFilePath(req.body.fileName, fileId), {
+            flags: "w",
+        });
         res.status(200).json({ fileId });
     }
 });
@@ -90,17 +92,22 @@ const uploadStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             .then((stats) => {
             res.status(200).json({ totalChunkUploaded: stats.size });
         })
-            .catch(err => {
-            console.error('failed to read file', err);
-            res.status(400).json({ message: 'No file with such credentials', credentials: req.query });
+            .catch((err) => {
+            console.error("failed to read file", err);
+            res
+                .status(400)
+                .json({
+                message: "No file with such credentials",
+                credentials: req.query,
+            });
         });
     }
 });
 exports.uploadStatus = uploadStatus;
 const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const contentRange = req.headers['content-range'];
+    const contentRange = req.headers["content-range"];
     if (!contentRange) {
-        res.status(400).json({ message: 'Missing required headers' });
+        res.status(400).json({ message: "Missing required headers" });
     }
     const match = contentRange === null || contentRange === void 0 ? void 0 : contentRange.match(/bytes=(\d+)-(\d+)\/(\d+)/);
     if (!match) {
@@ -121,20 +128,20 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     console.log({ userId });
     console.log(" +++++++++++ fileUpload ++++++++++++++++++++ ");
     let folderId = null;
-    let baseFolderPath = '';
-    let fileRelativePath = '';
-    bb.on('field', (name, val) => {
-        if (name === 'folderId') {
+    let baseFolderPath = "";
+    let fileRelativePath = "";
+    bb.on("field", (name, val) => {
+        if (name === "folderId") {
             folderId = val;
         }
-        if (name === 'relativePath') {
+        if (name === "relativePath") {
             fileRelativePath = val;
         }
     });
     try {
-        bb.on('file', (name, file, info) => __awaiter(void 0, void 0, void 0, function* () {
+        bb.on("file", (name, file, info) => __awaiter(void 0, void 0, void 0, function* () {
             const { filename, mimeType } = info;
-            const relativePath = fileRelativePath ? fileRelativePath.split('/') : [];
+            const relativePath = fileRelativePath ? fileRelativePath.split("/") : [];
             relativePath.pop();
             if (folderId) {
                 const folderResponse = yield folderService.getFolderById(folderId);
@@ -142,19 +149,16 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                     baseFolderPath = folderResponse.folderPath;
                 }
             }
-            const user = yield userService.getUserById(userId);
-            console.log(" ++++++++++++ fileUpload user+++++++++++++++++++ ");
-            console.log(user);
-            console.log(" +++++++++++ fileUpload user++++++++++++++++++++ ");
+            const user = (yield userService.getUserById(userId));
             if (!baseFolderPath) {
-                baseFolderPath = path_1.default.join(process.cwd(), 'public', 'File Manager', user === null || user === void 0 ? void 0 : user.email);
+                baseFolderPath = path_1.default.join(process.cwd(), "public", "File Manager", user === null || user === void 0 ? void 0 : user.email);
             }
             const fullPath = path_1.default.join(baseFolderPath, ...relativePath, filename);
             const fileUrl = `${process.env.PUBLIC_APP_URL}/File Manager/${encodeURIComponent(userId)}/${encodeURIComponent(filename)}`;
             const writeStream = fs_1.default.createWriteStream(fullPath);
             file.pipe(writeStream);
             const uploadPromise = new Promise((resolve, reject) => {
-                writeStream.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+                writeStream.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
                     try {
                         const stats = yield fs_1.default.promises.stat(fullPath);
                         const fileData = yield database_1.default.file.create({
@@ -174,20 +178,20 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                         reject(error);
                     }
                 }));
-                writeStream.on('error', (error) => {
+                writeStream.on("error", (error) => {
                     reject(error);
                 });
             });
             uploadPromises.push(uploadPromise);
         }));
-        bb.on('finish', () => __awaiter(void 0, void 0, void 0, function* () {
+        bb.on("finish", () => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 const results = yield Promise.all(uploadPromises);
-                res.json({ message: 'Files uploaded successfully', files: results });
+                res.json({ message: "Files uploaded successfully", files: results });
             }
             catch (error) {
-                console.error('Error uploading files:', error);
-                res.status(500).json({ error: 'Error uploading files' });
+                console.error("Error uploading files:", error);
+                res.status(500).json({ error: "Error uploading files" });
             }
         }));
         req.pipe(bb);

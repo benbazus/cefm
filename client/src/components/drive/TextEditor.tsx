@@ -61,12 +61,8 @@ export default function TextEditor({
     link: string
   } | null>(null)
 
-  console.log(' +++++++++++useEuserPermiBBBBBBssionffect++++++++++++++ ')
-  console.log(documentPermission)
-  console.log(' ++++++++++++useuserPermBBBBBBBBBBissionEffect+++++++++++++ ')
-
   useEffect(() => {
-    const socketConnection = io('http://localhost:5000')
+    const socketConnection = io('http://localhost:5002')
     setSocket(socketConnection)
 
     return () => {
@@ -81,26 +77,19 @@ export default function TextEditor({
       quill.setContents(data)
       setDocumentTitle(title)
 
-      // console.log(' +++++++++++useEuserPermissionffect++++++++++++++ ')
-      // console.log(documentPermission)
-      // console.log(decodedDocumentId)
-      // console.log(documentAction)
-      // console.log(permission)
-      // console.log(' ++++++++++++useuserPermissionEffect+++++++++++++ ')
+      // if (documentAction === 'new' && documentPermission === 'WRITE') {
+      //    quill.enable()
+      //  }
 
-      if (documentAction === 'new' && documentPermission === 'WRITE') {
-        quill.enable()
-      }
-
-      if (documentAction === 'new' || documentAction === 'edit') {
-        if (documentPermission === 'WRITE') {
-          quill.enable()
-        } else {
-          quill.disable()
-        }
-      } else {
-        quill.disable()
-      }
+      // if (documentAction === 'new' || documentAction === 'edit') {
+      //   if (documentPermission === 'WRITE') {
+      quill.enable()
+      //   } else {
+      //     quill.disable()
+      //   }
+      // } else {
+      //   quill.disable()
+      // }
     })
 
     const userId = localStorage.getItem('userId')
