@@ -311,32 +311,6 @@
 //     }
 // };
 
-// export const getVideo = async (): Promise<FilesResponse | null> => {
-//     try {
-//         const config = { method: 'GET', url: '/files/get-video' };
-
-//         const response = await axiosRequest(config);
-
-//         return response ? (response.data as FilesResponse) : null;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// }
-
-// export const getAudio = async (): Promise<FilesResponse | null> => {
-//     try {
-//         const config = { method: 'GET', url: '/files/get-audio' };
-
-//         const response = await axiosRequest(config);
-
-//         return response ? (response.data as FilesResponse) : null;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// }
-
 // export const getFolderPath = async (folderId: string) => {
 
 //     try {
@@ -1017,54 +991,6 @@
 //     }
 // }
 
-// export const getSharedItems = async (itemId: string) => {
-//     try {
-//         const response = await api.get(`/files/shared-file/${itemId}`);
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
-
-// export const getExcelFiles = async (): Promise<FilesResponse | null> => {
-//     try {
-//         const config = { method: 'GET', url: '/files/get-excel' };
-
-//         const response = await axiosRequest(config);
-
-//         return response ? (response.data as FilesResponse) : null;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// }
-
-// export const getCustomDocuments = async () => {
-
-//     try {
-
-//         const response = await api.get(`/files/get-custom-document`);
-
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// }
-
-// export const getDocuments = async () => {
-
-//     try {
-
-//         const response = await api.get(`/files/get-document`);
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// }
-
 // export const checkPassword = async (password: string, fileId: string) => {
 
 //     try {
@@ -1403,6 +1329,40 @@ export const getAudio = async (): Promise<FilesResponse | null> => {
   }
 }
 
+export const moveFolderItem = async (itemId: string, newParentId: string) => {
+  try {
+    const config = {
+      method: 'POST',
+      url: `/folders/${itemId}/move`,
+      data: { newParentId },
+    }
+
+    const response = await axiosRequest(config)
+
+    return response ? response.data : null
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
+export const moveFileItem = async (fileId: string, newParentId: string) => {
+  try {
+    const config = {
+      method: 'POST',
+      url: `/files/${fileId}/move`,
+      data: { newFolderId: newParentId },
+    }
+
+    const response = await axiosRequest(config)
+
+    return response ? response.data : null
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
 export const moveItems = async (
   itemId: string,
   newParentId: string,
@@ -1441,6 +1401,23 @@ export const listFiles = async (folderId?: string) => {
     const response = await axiosRequest(config)
 
     return response.data
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
+//copyFolder
+export const copyFolder = async (itemId: string) => {
+  try {
+    const config = {
+      method: 'POST',
+      url: `/folders/${itemId}/copy`,
+    }
+
+    const response = await axiosRequest(config)
+
+    return response ? response.data : null
   } catch (error) {
     handleError(error)
     throw error
@@ -1824,15 +1801,6 @@ export const shareDocumentToUser = async (
   currentUrl: string,
   documentAccess: 'RESTRICTED' | 'ANYONE'
 ) => {
-  console.log(' ++++++++shareDocumentToUser+++++++++++++++++ ')
-  console.log(documentId)
-  console.log(email)
-  console.log(message)
-  console.log(permission)
-  console.log(currentUrl)
-  console.log(documentAccess)
-  console.log(' +++++++++shareDocumentToUser++++++++++++++++ ')
-
   try {
     const config = {
       method: 'POST',
@@ -2287,9 +2255,29 @@ export const getFileUploadRequest = async () => {
   }
 }
 
+export const getFolderDetails = async (folderId: string) => {
+  try {
+    const response = await api.get(`/folders/details/${folderId}`)
+    return response.data
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
 export const getFileDetails = async (fileId: string) => {
   try {
     const response = await api.get(`/files/details/${fileId}`)
+    return response.data
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
+export const moveFolderToTrash = async (folderId: string) => {
+  try {
+    const response = await api.post(`/folders/trash/${folderId}`)
     return response.data
   } catch (error) {
     handleError(error)
@@ -2468,16 +2456,6 @@ export const getPhotos = async (): Promise<FilesResponse | null> => {
   }
 }
 
-// export const getPhotos = async () => {
-//     try {
-//         const response = await api.get(`/files/get-photo`);
-//         return response.data;
-//     } catch (error) {
-//         handleError(error);
-//         throw error;
-//     }
-// };
-
 export const getSharedItems = async (itemId: string) => {
   try {
     const response = await api.get(`/files/shared-file/${itemId}`)
@@ -2598,13 +2576,43 @@ export const downloadItem1 = async (
   }
 }
 
-//restore-file/
+//router.get("/get-folders-tree", auth, folderController.getFoldersTree);
 
-export const restoreFile = async (isFile: boolean, fileId: string) => {
+export const getFoldersTree = async () => {
   try {
-    const fileType = isFile ? 'File' : 'Folder'
+    const response = await api.get('/folders/get-folders-tree')
+    return response.data
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
 
-    const response = await api.get(`/files/restore-file/${fileType}/${fileId}`)
+export const restoreFolder = async (folderId: string) => {
+  try {
+    const response = await api.get(`/folders/restore-folder/${folderId}`)
+    return response.data
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
+export const restoreFile = async (fileId: string) => {
+  try {
+    const response = await api.get(`/files/restore-file/${fileId}`)
+    return response.data
+  } catch (error) {
+    handleError(error)
+    throw error
+  }
+}
+
+export const deleteFolderPermanently = async (folderId: string) => {
+  try {
+    const response = await api.get(
+      `/folders/deleteFolderPermanently/${folderId}`
+    )
     return response.data
   } catch (error) {
     handleError(error)

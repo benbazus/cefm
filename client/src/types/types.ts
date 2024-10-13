@@ -53,14 +53,6 @@ export interface UserResponse extends User {
   error?: string
   twoFactor?: boolean
   isOAuth: boolean
-  // user?: {
-  //   id: string
-  //   name: string;
-  //   email: string;
-  //   image?: string;
-  //   role: UserRole
-  //   isTwoFactorEnabled: boolean
-  // }
 }
 
 export interface AuthResponse {
@@ -219,7 +211,7 @@ export interface FileItemResponse {
   name: string
   createdAt: string
   updatedAt: string
-  size: number
+  totalSize: number
   userId: string
   mimeType?: string
   title: string
@@ -229,6 +221,7 @@ export interface DriveItemsResponse {
   files: FileItemResponse[]
   folders: FileItemResponse[]
   documents: FileItemResponse[]
+  foldersWithSize: FileItemResponse[]
 }
 
 export interface FilesResponse {
@@ -311,6 +304,28 @@ export interface FileItem {
   userId?: string
   locked?: boolean
   parentId?: string
+}
+export interface FolderFileItem {
+  id: string
+  name: string
+  type: 'file' | 'folder'
+  mimeType: string
+  size: number
+  createdAt: string
+  updatedAt: string
+  fileCount?: number
+  sharedWith?: string[]
+  owner: string
+  userId?: string
+  locked?: boolean
+  parentId?: string
+  totalFileSize: string
+  numberOfFiles: number
+  uploadedBy: string
+  numberOfSubfolders: number
+  ownerId: string
+  isShared: string
+  location: string
 }
 
 export interface FolderItem {

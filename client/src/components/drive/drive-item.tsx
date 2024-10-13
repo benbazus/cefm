@@ -1,72 +1,37 @@
 import React, { useMemo, useState } from 'react'
-import { FileItem } from '@/types/types'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getSortedRowModel,
-  SortingState,
-  ColumnFiltersState,
-  getFilteredRowModel,
-  PaginationState,
-} from '@tanstack/react-table'
+import { FileItem, FolderFileItem } from '@/types/types'
 
-import {
-  FileAudio,
-  FileImage,
-  FileText,
-  FileVideo,
-  Folder,
-  File,
-  FileSpreadsheet,
-  FileCode,
-  FileArchive,
-} from 'lucide-react'
-import { encodeFolderId, formatSize } from '@/utils/helpers'
+import { encodeFolderId } from '@/utils/helpers'
 import { useToast } from '@/components/ui/use-toast'
 
-import { addDays, format } from 'date-fns'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-
-import { Checkbox } from '@/components/ui/checkbox'
-
-import { Button } from '../custom/button'
 
 import { useFolder } from '@/contexts/FolderContext'
 import { ShareDialog } from './dialog/ShareDialog'
 import { RenameDialog } from './dialog/RenameDialog'
 import { FileDetailsSheet } from './dialog/FileDetailsDialog'
-import { FileActionMenu } from './drive-button'
 import { ConfirmTrashDialog } from './dialog/ConfirmTrashDialog'
 import { useFolderFile } from '@/contexts/FileFolderContext'
 import {
   downloadItem,
   copyShareLink,
   getFileDetails,
-  renameAFile,
-  moveToTrash,
-  shareAFile,
   deletePermanently,
   restoreFile,
   copyFile,
+  getFolderDetails,
+  copyFolder,
+  restoreFolder,
 } from '@/services/api'
 import PreviewDialog from './dialog/PreviewDialog'
-import { IconFileText, IconFileZip } from '@tabler/icons-react'
+
 import LockDialog from './dialog/LockDialog'
 import MoveItemDialog from './dialog/MoveitemDialog'
 import VersionsDialog from './dialog/VersionsDialog'
-
+import FileTable from '../drive-items/FileTable'
+import ItemGrid from '../drive-items/ItemGrid'
+import FileIcon from '../drive-items/FileIcon'
+import { MoveFolderDialog } from './dialog/MoveFolderDialog'
 interface GridContainerProps {
   fileItems: FileItem[]
   selectedView: {
@@ -79,8 +44,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   fileItems,
   selectedView,
 }) => {
-  const [isPasswordShown, setIsPasswordShown] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null)
   const [confirmTrashFile, setConfirmTrashFile] = useState<FileItem | null>(
     null
@@ -88,32 +51,21 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
   const [selectedItem, setSelectedItem] = useState<FileItem | null>(null)
   const [isVersionsDialogOpen, setIsVersionsDialogOpen] = useState(false)
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-
   const [isLockDialogOpen, setIsLockDialogOpen] = useState(false)
-
-  const location = useLocation()
-  const [shareWithMessage, setShareWithMessage] = useState('')
-  const [sharedWith, setSharedWith] = useState('')
+  const [selectedFile, setSelectedFile] = useState<string | null>(null)
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false)
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+  const [isFileDetailsSheetOpen, setIsFileDetailsSheetOpen] = useState(false)
+  const [isMoveItemToTrashDialogOpen, setIsMoveItemToTrashDialogOpen] =
+    useState(false)
+  const [fileType, setFileType] = useState<'file' | 'folder' | null>(null)
   const [shareFile, setShareFile] = useState<FileItem | null>(null)
   const [renameFile, setRenameFile] = useState<FileItem | null>(null)
   const [newFileName, setNewFileName] = useState('')
-  const [fileDetails, setFileDetails] = useState<FileItem | null>(null)
-  const [isPasswordEnabled, setIsPasswordEnabled] = useState(false)
-  const [password, setPassword] = useState('')
-  const [isExpirationEnabled, setIsExpirationEnabled] = useState(false)
-  const [expirationDate, setExpirationDate] = useState(
-    format(addDays(new Date(), 7), 'yyyy-MM-dd')
-  )
-  const [selectedFile, setSelectedFile] = useState<string | null>(null)
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [rowSelection, setRowSelection] = useState({})
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const pathnames = location.pathname.split('/').filter((x) => x)
+  const [fileDetails, setFileDetails] = useState<FolderFileItem | null>(null)
 
+  const location = useLocation()
   const { triggerRefresh } = useFolderFile()
   const { setFolderId, setFolderName } = useFolder()
   const navigate = useNavigate()
@@ -121,47 +73,10 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
 
   const isTrashPage = window.location.pathname === '/drive/trash'
   const isSharePage = window.location.pathname === '/drive/share'
-
-  const getFileIcon = useMemo(
-    () => (file: FileItem) => {
-      if (file.type === 'folder')
-        return <Folder className='h-12 w-12 text-yellow-500' />
-
-      switch (file.mimeType) {
-        case 'application/pdf':
-          return <FileText className='h-12 w-12 text-red-500' />
-        case 'image/jpeg':
-        case 'image/png':
-        case 'image/gif':
-          return <FileImage className='h-12 w-12 text-green-500' />
-        case 'audio/mpeg':
-        case 'audio/wav':
-          return <FileAudio className='h-12 w-12 text-purple-500' />
-        case 'video/mp4':
-        case 'video/mpeg':
-          return <FileVideo className='h-12 w-12 text-blue-500' />
-        case 'application/vnd.ms-excel':
-        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-          return <FileSpreadsheet className='h-12 w-12 text-green-600' />
-        case 'application/msword':
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-          return <FileText className='h-12 w-12 text-blue-700' />
-        case 'application/x-msdownload':
-          return <FileCode className='h-12 w-12 text-red-600' />
-        case 'application/x-zip-compressed':
-          return <FileArchive className='h-12 w-12 text-yellow-600' />
-        case 'application/doc':
-          return <IconFileText className='h-12 w-12 text-green-600' />
-        case 'application/x-compressed':
-          return <IconFileZip className='h-12 w-12 text-green-600' />
-        default:
-          return <File className='h-12 w-12 text-green-500' />
-      }
-    },
-    []
-  )
-
   const isDocumentPage = location.pathname.startsWith('/drive/document')
+
+  // Add this state variable at the component level
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleFileClick = (id: string) => {
     setSelectedFile(id === selectedFile ? null : id)
@@ -172,11 +87,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
       const encodedFolderId = encodeFolderId(file.id)
       setFolderId(file.id)
       setFolderName(file.name)
-
-      console.log(' ======= handleDoubleClick =========== ')
-      console.log(file.name)
-      console.log(pathnames)
-      console.log(' ======= handleDoubleClick ======== ')
 
       navigate(`/drive/folders/${encodedFolderId}`)
     } else if (file.mimeType === 'application/pdf') {
@@ -257,7 +167,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
 
   const handleShare = (file: FileItem) => {
     setShareFile(file)
-    resetShareDialog()
+    setIsShareDialogOpen(true)
   }
 
   const handleMakeCopy = async (file: FileItem) => {
@@ -265,9 +175,11 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
 
     if (file.type === 'file') {
       await copyFile(file?.id)
-
-      triggerRefresh()
+    } else {
+      setFileType('folder')
+      await copyFolder(file?.id)
     }
+    triggerRefresh()
   }
 
   const handleLockItem = (file: FileItem) => {
@@ -287,13 +199,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     }
   }
 
-  // Handler when a version is restored
-  const handleVersionRestored = () => {
-    // Close the dialog and refresh the files list or trigger any additional logic
-    setIsVersionsDialogOpen(false)
-    triggerRefresh()
-  }
-
   const handleMoveItem = (file: FileItem) => {
     console.log('Move item:', file)
     // if (file.type === 'file') {
@@ -302,111 +207,29 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     // }
   }
 
-  const resetShareDialog = () => {
-    setIsExpirationEnabled(false)
-    setIsPasswordEnabled(false)
-    setPassword('')
-    setExpirationDate(format(addDays(new Date(), 7), 'yyyy-MM-dd'))
-  }
-
-  const validateShareInputs = (): boolean => {
-    const today = format(new Date(), 'yyyy-MM-dd')
-
-    if (isExpirationEnabled && expirationDate < today) {
-      toast({
-        title: 'Expiration Date',
-        description: `Expiration date cannot be in the past.`,
-        variant: 'destructive',
-      })
-      return false
-    }
-
-    if (isPasswordEnabled && (!password || password.length < 6)) {
-      toast({
-        title: 'Password',
-        description: `Password must be at least 6 characters.`,
-        variant: 'destructive',
-      })
-      return false
-    }
-
-    if (!sharedWith) {
-      toast({
-        title: 'Provide Email',
-        description: `Please provide an email address to share with`,
-        variant: 'destructive',
-      })
-      return false
-    }
-
-    return true
-  }
-
-  const confirmShare = async () => {
-    if (!validateShareInputs()) return
-    setLoading(true)
-
-    try {
-      if (!shareFile) return
-
-      await shareAFile(
-        shareFile.id,
-        expirationDate,
-        password,
-        sharedWith,
-        shareWithMessage,
-        isPasswordEnabled,
-        isExpirationEnabled
-      )
-
-      toast({
-        title: 'Share',
-        variant: 'success',
-        description: `File shared successfully with ${sharedWith}`,
-      })
-
-      setShareFile(null)
-    } catch (error) {
-      setLoading(false)
-      console.error('Share error:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to share file',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleRename = (file: FileItem) => {
     setRenameFile(file)
     setNewFileName(file.name)
-  }
 
-  const confirmRename = async () => {
-    if (!renameFile) return
-    try {
-      await renameAFile(renameFile.id, newFileName)
-      toast({
-        title: 'Rename',
-        description: `Renamed ${renameFile.name} to ${newFileName}`,
-      })
-      setRenameFile(null)
-      triggerRefresh()
-    } catch (error) {
-      console.error('Rename error:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to rename file',
-        variant: 'destructive',
-      })
-    }
+    // const nameWithoutExtension = file.name.split('.').slice(0, -1).join('.')
+    //setNewFileName(nameWithoutExtension)
+
+    setIsRenameDialogOpen(true)
   }
 
   const handleDetails = async (file: FileItem) => {
     try {
-      const details = await getFileDetails(file.id)
+      let details
+
+      if (file.type === 'file') {
+        setFileType('file')
+        details = (await getFileDetails(file.id)) as FolderFileItem
+      } else {
+        setFileType('folder')
+        details = (await getFolderDetails(file.id)) as FolderFileItem
+      }
+
+      setIsFileDetailsSheetOpen(true)
       setFileDetails(details)
     } catch (error) {
       console.error('Details error:', error)
@@ -418,37 +241,25 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     }
   }
 
-  const handleMoveToTrash = (file: FileItem) => {
-    setConfirmTrashFile(file)
+  const handleMoveFileItem = (file: FileItem) => {
+    setSelectedItem(file)
+    setIsMoveItemToTrashDialogOpen(true)
   }
 
-  const confirmMoveToTrash = async () => {
-    if (!confirmTrashFile) return
-    try {
-      await moveToTrash(confirmTrashFile.id)
-      toast({
-        title: 'Trash',
-        description: `Moved ${confirmTrashFile.name} to trash`,
-      })
-      setConfirmTrashFile(null)
-      triggerRefresh()
-    } catch (error) {
-      console.error('Move to trash error:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to move file to trash',
-        variant: 'destructive',
-      })
-    }
+  const handleMoveToTrash = (file: FileItem) => {
+    setConfirmTrashFile(file)
+    console.log(' =========handleMoveToTrash=========== ')
+    //triggerRefresh()
   }
 
   const handleRestoreTrash = async (file: FileItem) => {
     try {
       if (file.type === 'file') {
-        await restoreFile(true, file.id)
+        await restoreFile(file.id)
       } else {
-        await restoreFile(false, file.id)
+        await restoreFolder(file.id)
       }
+
       triggerRefresh()
       toast({
         title: 'Restore',
@@ -458,7 +269,7 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
       console.error('Restore error:', error)
       toast({
         title: 'Error',
-        description: 'Failed to restore file from trash',
+        description: 'Failed to restore item from trash',
         variant: 'destructive',
       })
     }
@@ -471,11 +282,14 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
       } else {
         await deletePermanently(false, file.id)
       }
-      triggerRefresh()
+
       toast({
         title: 'Delete',
         description: `Permanently deleted ${file.name}`,
       })
+      triggerRefresh()
+      // Force a re-render by updating a state variable
+      setRefreshKey((prevKey) => prevKey + 1)
     } catch (error) {
       console.error('Delete permanently error:', error)
       toast({
@@ -496,120 +310,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     })
   }
 
-  const columns: ColumnDef<FileItem>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label='Select all'
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label='Select row'
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'name',
-      header: 'Name',
-      cell: ({ row }) => (
-        <div className='flex items-center'>
-          {getFileIcon(row.original)}
-          <span className='ml-2'>{row.getValue('name')}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'type',
-      header: 'Type',
-    },
-    {
-      accessorKey: 'size',
-      header: 'Size',
-      cell: ({ row }) => {
-        const size = row.getValue('size') as number
-        if (row.original.type === 'folder') return '-'
-        const formattedSize =
-          size < 1024
-            ? `${size} B`
-            : size < 1024 * 1024
-              ? `${(size / 1024).toFixed(2)} KB`
-              : `${(size / (1024 * 1024)).toFixed(2)} MB`
-        return formattedSize
-      },
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Created',
-      cell: ({ row }) => {
-        const date = row.getValue('createdAt') as Date
-        return format(new Date(date), 'MMM d, yyyy')
-      },
-    },
-    {
-      accessorKey: 'updatedAt',
-      header: 'Modified',
-      cell: ({ row }) => {
-        const date = row.getValue('updatedAt') as Date
-        return format(new Date(date), 'MMM d, yyyy')
-      },
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const item = row.original
-
-        return (
-          <FileActionMenu
-            file={item}
-            onPreview={handlePreview}
-            onCopyLink={handleCopyLink}
-            onMakeCopy={handleMakeCopy}
-            onLockItem={handleLockItem}
-            onVersionItem={handleVersionItem}
-            onMoveItem={handleMoveItem}
-            onDownload={handleDownload}
-            onShare={handleShare}
-            onRename={handleRename}
-            onDetails={handleDetails}
-            onMoveToTrash={handleMoveToTrash}
-            onRestoreTrash={handleRestoreTrash}
-            onDeletePermanently={handleDeletePermanently}
-            onStopSharing={handleStopSharing}
-            isTrashPage={isTrashPage}
-            isSharePage={isSharePage}
-          />
-        )
-      },
-    },
-  ]
-
-  const table = useReactTable({
-    data: fileItems,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onRowSelectionChange: setRowSelection,
-    pageCount: Math.ceil(fileItems.length / pagination.pageSize),
-    onPaginationChange: setPagination,
-    state: {
-      sorting,
-      columnFilters,
-      rowSelection,
-      pagination,
-    },
-  })
-
   const memoizedFiles = useMemo(
     () => fileItems.filter((item) => item.type === 'file'),
     [fileItems]
@@ -621,159 +321,57 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
 
   const showItemList = () => {
     return (
-      <div>
-        <div className='flex items-center py-4'>
-          <Input
-            placeholder='Filter by name...'
-            value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn('name')?.setFilterValue(event.target.value)
-            }
-            className='max-w-sm'
-          />
-        </div>
-        <div className='rounded-md border'>
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className='h-24 text-center'
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <div className='flex items-center justify-between space-x-2 py-4'>
-          <div className='flex-1 text-sm text-muted-foreground'>
-            {table.getFilteredSelectedRowModel().rows.length} of{' '}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
-          <div className='space-x-2'>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </div>
+      <FileTable
+        fileItems={fileItems}
+        getFileIcon={(file) => <FileIcon file={file} />}
+        isTrashPage={isTrashPage}
+        isSharePage={isSharePage}
+        handlePreview={handlePreview}
+        handleCopyLink={handleCopyLink}
+        handleMakeCopy={handleMakeCopy}
+        handleLockItem={handleLockItem}
+        handleVersionItem={handleVersionItem}
+        handleMoveItem={handleMoveItem}
+        handleMoveFileItem={handleMoveFileItem}
+        handleDownload={handleDownload}
+        handleShare={handleShare}
+        handleRename={handleRename}
+        handleDetails={handleDetails}
+        handleMoveToTrash={handleMoveToTrash}
+        handleRestoreTrash={handleRestoreTrash}
+        handleDeletePermanently={handleDeletePermanently}
+        handleStopSharing={handleStopSharing}
+      />
     )
   }
 
   const showItemGrid = (items: FileItem[]) => {
     return (
-      <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6'>
-        {items.map((file) => (
-          <Card
-            key={file.id}
-            className={`group relative transition-colors duration-200 hover:border-primary ${
-              file.id === selectedFile ? 'border-primary' : ''
-            }`}
-          >
-            {!isDocumentPage && (
-              <div className='absolute right-2 top-2 z-10'>
-                <FileActionMenu
-                  file={file}
-                  onPreview={handlePreview}
-                  onCopyLink={handleCopyLink}
-                  onMakeCopy={handleMakeCopy}
-                  onLockItem={handleLockItem}
-                  onVersionItem={handleVersionItem}
-                  onMoveItem={handleMoveItem}
-                  onDownload={handleDownload}
-                  onShare={handleShare}
-                  onRename={handleRename}
-                  onDetails={handleDetails}
-                  onMoveToTrash={handleMoveToTrash}
-                  onRestoreTrash={handleRestoreTrash}
-                  onDeletePermanently={handleDeletePermanently}
-                  onStopSharing={handleStopSharing}
-                  isTrashPage={isTrashPage}
-                  isSharePage={isSharePage}
-                />
-              </div>
-            )}
-            <CardContent className='p-4'>
-              <div
-                role='button'
-                tabIndex={0}
-                onClick={() => handleFileClick(file.id)}
-                onDoubleClick={() => handleDoubleClick(file)}
-                className='flex flex-col items-center'
-              >
-                {getFileIcon(file)}
-                <span className='sr-only'>{`${file.type} - ${file.mimeType} - ${file.name}`}</span>
-              </div>
-            </CardContent>
-            <CardFooter className='flex flex-col items-start justify-between border-t p-2'>
-              <span
-                className='w-full truncate text-sm font-medium'
-                title={file.name}
-              >
-                {file.name}
-              </span>
-              <div className='flex w-full items-center justify-between text-xs text-muted-foreground'>
-                <span>
-                  {file.type === 'folder'
-                    ? `${file.fileCount || 0} items`
-                    : formatSize(file.size)}
-                </span>
-                <span>{format(new Date(file.updatedAt), 'MMM d, yyyy')}</span>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      <ItemGrid
+        items={items}
+        selectedFile={selectedFile}
+        isDocumentPage={isDocumentPage}
+        isTrashPage={isTrashPage}
+        isSharePage={isSharePage}
+        getFileIcon={(file) => <FileIcon file={file} />}
+        handleFileClick={handleFileClick}
+        handleDoubleClick={handleDoubleClick}
+        handlePreview={handlePreview}
+        handleCopyLink={handleCopyLink}
+        handleMakeCopy={handleMakeCopy}
+        handleLockItem={handleLockItem}
+        handleVersionItem={handleVersionItem}
+        handleMoveFileItem={handleMoveFileItem}
+        handleMoveItem={handleMoveItem}
+        handleDownload={handleDownload}
+        handleShare={handleShare}
+        handleRename={handleRename}
+        handleDetails={handleDetails}
+        handleMoveToTrash={handleMoveToTrash}
+        handleRestoreTrash={handleRestoreTrash}
+        handleDeletePermanently={handleDeletePermanently}
+        handleStopSharing={handleStopSharing}
+      />
     )
   }
 
@@ -781,12 +379,6 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     const items =
       selectedView.contentType === 'files' ? memoizedFiles : memoizedFolders
     return (
-      //  <div className='container mx-auto px-4 py-12'>
-      //   {selectedView.viewType === 'grid'
-      //     ? showItemGrid(items)
-      //     : showItemList()}
-      // </div>
-
       <div className='px-2'>
         {selectedView.viewType === 'grid'
           ? showItemGrid(items)
@@ -795,60 +387,76 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
     )
   }
 
+  const handleCloseRenameDialog = () => {
+    setIsRenameDialogOpen(false)
+    setConfirmTrashFile(null)
+    triggerRefresh()
+  }
+
   return (
     <>
       {showItemDetails()}
+
+      <MoveFolderDialog
+        isOpen={isMoveItemToTrashDialogOpen}
+        onClose={() => {
+          setIsMoveItemToTrashDialogOpen(false)
+          triggerRefresh()
+        }}
+        file={selectedItem}
+        onMoved={() => {
+          setIsMoveItemToTrashDialogOpen(false)
+          triggerRefresh()
+        }}
+      />
+
       <ShareDialog
-        shareFile={shareFile}
-        sharedWith={sharedWith}
-        shareWithMessage={shareWithMessage}
-        expirationDate={expirationDate}
-        isExpirationEnabled={isExpirationEnabled}
-        isPasswordEnabled={isPasswordEnabled}
-        isPasswordShown={isPasswordShown}
-        password={password}
-        loading={loading}
-        onCancel={() => setShareFile(null)}
-        onConfirm={confirmShare}
-        setSharedWith={setSharedWith}
-        setShareWithMessage={setShareWithMessage}
-        setExpirationDate={setExpirationDate}
-        setIsExpirationEnabled={setIsExpirationEnabled}
-        setIsPasswordEnabled={setIsPasswordEnabled}
-        setIsPasswordShown={setIsPasswordShown}
-        setPassword={setPassword}
+        isOpen={isShareDialogOpen}
+        onClose={() => {
+          setIsShareDialogOpen(false)
+          triggerRefresh()
+        }}
+        file={shareFile}
       />
+
       <PreviewDialog
+        isOpen={isPreviewDialogOpen}
+        onClose={() => setIsPreviewDialogOpen(false)}
         previewFile={previewFile}
-        onCancel={() => setPreviewFile(null)}
       />
+
       <ConfirmTrashDialog
+        isOpen={!!confirmTrashFile}
+        onClose={() => {
+          setConfirmTrashFile(null)
+          triggerRefresh()
+        }}
         confirmTrashFile={confirmTrashFile}
-        onCancel={() => setConfirmTrashFile(null)}
-        onConfirm={confirmMoveToTrash}
       />
+
       <RenameDialog
+        isOpen={isRenameDialogOpen}
+        onClose={handleCloseRenameDialog}
         renameFile={renameFile}
         newFileName={newFileName}
-        onCancel={() => setRenameFile(null)}
-        onConfirm={confirmRename}
         setNewFileName={setNewFileName}
       />
 
       <FileDetailsSheet
+        isOpen={isFileDetailsSheetOpen}
+        onClose={() => {
+          setIsFileDetailsSheetOpen(false)
+          triggerRefresh()
+        }}
         fileDetails={fileDetails}
-        onCancel={() => setFileDetails(null)}
+        fileType={fileType}
       />
 
       <MoveItemDialog
         isOpen={isMoveDialogOpen}
-        onClose={() => {
-          setIsMoveDialogOpen(false)
-          triggerRefresh()
-        }}
+        onClose={() => setIsMoveDialogOpen(false)}
         item={selectedItem}
         onMove={() => {
-          // Implement move logic
           setIsMoveDialogOpen(false)
           triggerRefresh()
         }}
@@ -856,23 +464,19 @@ const ItemListContainer: React.FC<GridContainerProps> = ({
 
       <VersionsDialog
         isOpen={isVersionsDialogOpen}
-        onClose={() => {
+        onClose={() => setIsVersionsDialogOpen(false)}
+        file={selectedItem}
+        onVersionRestored={() => {
           setIsVersionsDialogOpen(false)
           triggerRefresh()
         }}
-        file={selectedItem}
-        onVersionRestored={handleVersionRestored}
       />
 
       <LockDialog
         isOpen={isLockDialogOpen}
-        onClose={() => {
-          setIsLockDialogOpen(false)
-          triggerRefresh()
-        }}
+        onClose={() => setIsLockDialogOpen(false)}
         item={selectedItem}
         onLockStatusChanged={() => {
-          // Implement lock status change logic
           setIsLockDialogOpen(false)
           triggerRefresh()
         }}

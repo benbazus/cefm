@@ -8,7 +8,7 @@ import { FolderPlus, FileUp, FolderUp, FileText, Plus } from 'lucide-react'
 import { Button } from '../custom/button'
 import { v4 as uuidv4 } from 'uuid'
 import { encodeFolderId } from '@/utils/helpers'
-import { useNavigate } from 'react-router-dom'
+
 interface NewActionMenuProps {
   onCreateFolder: () => void
   onUploadFile: () => void
@@ -22,34 +22,14 @@ export function NewActionMenu({
   onUploadFolder,
   onCreateDocument,
 }: NewActionMenuProps) {
-  const navigate = useNavigate()
-
-  // const onCreateNewDocument = () => {
-  //   const actionType = 'new'
-  //   navigate(`/document/e/`, {
-  //     state: { actionType },
-  //   })
-  // }
-  const onCreateNewDocument1 = () => {
-    const id = encodeFolderId(uuidv4())
-    const url = `/document/e/${id}?mode=new`
-    window.open(url, '_blank')
-  }
-
   const onCreateNewDocument = () => {
     const id = encodeFolderId(uuidv4())
     const url = `/document/e/${id}/new`
     window.open(url, '_blank')
   }
 
-  // const onCreateNewDocument = () => {
-  //   const id = encodeFolderId(uuidv4())
-  //   const url = `/document/e/${id}/new`
-  //   window.open(url, '_blank')
-  // }
-
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button className='w-48'>
           <Plus className='mr-4 h-6 w-8' />

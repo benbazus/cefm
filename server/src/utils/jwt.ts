@@ -11,7 +11,7 @@ const resetTokenSchema = z.object({
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET as string;
 const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
-const ACCESS_TOKEN_EXPIRY = "30m";
+const ACCESS_TOKEN_EXPIRY = "7d";
 const REFRESH_TOKEN_EXPIRY = "7d";
 const RESET_TOKEN_EXPIRY = "7d";
 

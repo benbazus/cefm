@@ -4,11 +4,27 @@ import { auth } from "../middleware/auth";
 
 const router = express.Router();
 
+router.post(
+  "/deleteFolderPermanently/:folderId",
+  auth,
+  folderController.deleteFolderPermanently
+);
+
+router.get("/get-folders-tree", auth, folderController.getFoldersTree);
+
+router.post("/trash/:folderId", auth, folderController.moveFolderToTrash);
+
+router.post("/restore-folder/:folderId", auth, folderController.restoreFolder);
+
+router.get("/details/:folderId", auth, folderController.getFolderDetails);
+
+router.post("/rename/:folderId", auth, folderController.renameFolder);
+
 router.post("/:id/unlock", auth, folderController.unlockFolder);
 
 router.post("/:id/lock", auth, folderController.lockFolder);
 
-router.post("/:id/copy", auth, folderController.copyFolder);
+router.post("/:folderId/copy", auth, folderController.copyFolder);
 
 router.put("/:id/move", auth, folderController.moveFolder);
 
@@ -27,7 +43,5 @@ router.get(
 router.post("/create-folder", auth, folderController.createNewFolder);
 
 router.post("/download-folder", auth, folderController.downloadFolder);
-
-router.get("/details/:folderId", auth, folderController.getFolderDetails);
 
 export { router as folderRouter };

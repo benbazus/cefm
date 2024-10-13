@@ -19,6 +19,7 @@ import compression from "compression";
 import { errorHandler } from "./middleware/errorHandler";
 import { settingsRouter } from "./routes/settingRoutes";
 import { activityRouter } from "./routes/activityRoutes";
+import url from "url";
 
 dotenv.config();
 
@@ -34,17 +35,22 @@ const allowedOrigins = [
   "http://localhost:5001",
   "http://localhost:5000",
   "https://benhost.net",
+  "https://www.benhost.net", // Add www subdomain if needed
 ];
 
 const server = createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void
-    ) => {
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.some(
+          (allowedOrigin) =>
+            origin.startsWith(allowedOrigin) ||
+            url.parse(allowedOrigin).hostname === url.parse(origin).hostname
+        )
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -53,6 +59,7 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
+  transports: ["websocket", "polling"], // Explicitly define transports
 });
 
 /* MIDDLEWARE */
@@ -66,11 +73,15 @@ app.use(compression());
 
 // CORS configuration
 const corsOptions: cors.CorsOptions = {
-  origin: (
-    origin: string | undefined,
-    callback: (err: Error | null, allow?: boolean) => void
-  ) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+  origin: (origin, callback) => {
+    if (
+      !origin ||
+      allowedOrigins.some(
+        (allowedOrigin) =>
+          origin.startsWith(allowedOrigin) ||
+          url.parse(allowedOrigin).hostname === url.parse(origin).hostname
+      )
+    ) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -89,7 +100,7 @@ app.use(
       scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", "ws:", "wss:", ...allowedOrigins],
+      connectSrc: ["'self'", "wss:", "ws:", ...allowedOrigins],
       frameSrc: ["'self'"],
       upgradeInsecureRequests: [],
     },

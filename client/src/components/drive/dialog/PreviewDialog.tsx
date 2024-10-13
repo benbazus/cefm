@@ -9,18 +9,20 @@ import { FileItem } from '@/types/types'
 
 interface PreviewDialogProps {
   previewFile: FileItem | null
-  onCancel: () => void
+  isOpen: boolean
+  onClose: () => void
 }
 
 export default function PreviewDialog({
   previewFile,
-  onCancel,
+  isOpen,
+  onClose,
 }: PreviewDialogProps) {
   if (!previewFile) return null
 
   return (
     <div className='flex items-center space-x-2'>
-      <Dialog open={!!previewFile} onOpenChange={onCancel}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className='max-w-4xl'>
           <DialogHeader>
             <DialogTitle>{previewFile?.name}</DialogTitle>

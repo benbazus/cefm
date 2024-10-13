@@ -438,23 +438,23 @@ export const getPPFiles = async (
   }
 };
 
-export const getVideoFiles = async (
-  userId: string
-): Promise<{ files: File[] }> => {
-  try {
-    const files = await prisma.file.findMany({
-      where: {
-        fileType: "Video File",
-        userId,
-        trashed: false,
-      },
-    });
-    return { files };
-  } catch (error) {
-    console.error("Error fetching Video files:", error);
-    throw new Error("Failed to fetch Video files");
-  }
-};
+// export const getVideoFiles = async (
+//   userId: string
+// ): Promise<{ files: File[] }> => {
+//   try {
+//     const files = await prisma.file.findMany({
+//       where: {
+//         fileType: "Video File",
+//         userId,
+//         trashed: false,
+//       },
+//     });
+//     return { files };
+//   } catch (error) {
+//     console.error("Error fetching Video files:", error);
+//     throw new Error("Failed to fetch Video files");
+//   }
+// };
 
 export const getPDFFiles = async (
   userId: string

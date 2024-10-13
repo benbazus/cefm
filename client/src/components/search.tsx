@@ -8,15 +8,9 @@ export function Search() {
   const currentPage = location.pathname.split('/').pop()
 
   // Regular expression to check for a valid email
-  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(folderName as string)
+  const isEmail = folderName && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(folderName)
 
   const isWord = /^[a-zA-Z]+$/.test(currentPage as string)
-
-  console.log(' ====== Search ========= ')
-  console.log('Is Word:', isWord)
-  console.log('Folder Name:', folderName)
-  console.log('Is Email:', isEmail)
-  console.log(' ====== Search ========= ')
 
   return (
     <div>
@@ -28,7 +22,9 @@ export function Search() {
           ? currentPage + ' Page'
           : isEmail
             ? 'Dashboard'
-            : folderName + ' Folder'}
+            : folderName
+              ? folderName + ' Folder'
+              : 'Dashboard'}
       </div>
       <Input
         type='search'

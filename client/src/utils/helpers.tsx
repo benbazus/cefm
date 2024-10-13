@@ -19,6 +19,10 @@ import { useNavigate } from 'react-router-dom'
 //   return token
 // }
 
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat().format(num)
+}
+
 export const refreshToken = async () => {
   const refreshToken = localStorage.getItem('refreshToken')
   if (!refreshToken) {

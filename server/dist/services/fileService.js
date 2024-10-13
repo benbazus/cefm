@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleChunkUpload = exports.getFileById = exports.shareFile = exports.shareLink = exports.getFileDetails = exports.moveToTrash = exports.restoreFile = exports.renameFile = exports.getSharedWithMe = exports.getWordFiles = exports.getPDFFiles = exports.getVideoFiles = exports.getPPFiles = exports.getAudioFiles = exports.getExcelFiles = exports.getPhotos = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.checkPassword = exports.getFiles = exports.deleteStorageHistory = exports.updateStorageHistory = exports.getStorageHistory = exports.getStorageHistories = exports.deleteFileActivities = exports.updatefileActivities = exports.getFileActivities = exports.getFilesActivities = exports.saveFileData = exports.uploadFile = void 0;
+exports.handleChunkUpload = exports.getFileById = exports.shareFile = exports.shareLink = exports.getFileDetails = exports.moveToTrash = exports.restoreFile = exports.renameFile = exports.getSharedWithMe = exports.getWordFiles = exports.getPDFFiles = exports.getPPFiles = exports.getAudioFiles = exports.getExcelFiles = exports.getPhotos = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.checkPassword = exports.getFiles = exports.deleteStorageHistory = exports.updateStorageHistory = exports.getStorageHistory = exports.getStorageHistories = exports.deleteFileActivities = exports.updatefileActivities = exports.getFileActivities = exports.getFilesActivities = exports.saveFileData = exports.uploadFile = void 0;
 exports.deleteFile = deleteFile;
 const database_1 = __importDefault(require("../config/database"));
 const path_1 = __importDefault(require("path"));
@@ -373,23 +373,23 @@ const getPPFiles = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getPPFiles = getPPFiles;
-const getVideoFiles = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const files = yield database_1.default.file.findMany({
-            where: {
-                fileType: "Video File",
-                userId,
-                trashed: false,
-            },
-        });
-        return { files };
-    }
-    catch (error) {
-        console.error("Error fetching Video files:", error);
-        throw new Error("Failed to fetch Video files");
-    }
-});
-exports.getVideoFiles = getVideoFiles;
+// export const getVideoFiles = async (
+//   userId: string
+// ): Promise<{ files: File[] }> => {
+//   try {
+//     const files = await prisma.file.findMany({
+//       where: {
+//         fileType: "Video File",
+//         userId,
+//         trashed: false,
+//       },
+//     });
+//     return { files };
+//   } catch (error) {
+//     console.error("Error fetching Video files:", error);
+//     throw new Error("Failed to fetch Video files");
+//   }
+// };
 const getPDFFiles = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const files = yield database_1.default.file.findMany({

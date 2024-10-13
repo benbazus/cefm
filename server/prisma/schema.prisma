@@ -91,6 +91,7 @@ model User {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   Activity              Activity[]
+  FolderVersion         FolderVersion[]
 
   @@map("users")
 }
@@ -246,6 +247,20 @@ model FileVersion {
   userId        String?
 }
 
+model FolderVersion {
+  id            String   @id @default(uuid())
+  folderId      String
+  folder        Folder   @relation(fields: [folderId], references: [id])
+  name          String?
+  folderPath    String?
+  folderUrl     String?
+  location      String?
+  versionNumber Int?
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+}
+
 model File {
   id         String   @id @default(cuid())
   name       String
@@ -294,7 +309,10 @@ model Folder {
   updatedAt    DateTime       @updatedAt
   FileActivity FileActivity[]
   locked       Boolean        @default(false)
-  versions     FileVersion[]
+
+  versionNumber Int             @default(1)
+  versions      FolderVersion[]
+  FileVersion   FileVersion[]
 
   @@map("folders")
 }

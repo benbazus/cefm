@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.unlockFile = exports.lockFile = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.copyFile = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.versionsFile = exports.versionRestoreFile = exports.uploadFile = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.moveFile = exports.fileUpload = exports.handleFileUpload = void 0;
+exports.shareFile = exports.copyLink = exports.sharedFile = exports.shareLink = exports.moveToTrash = exports.unlockFile = exports.lockFile = exports.getFileDetails = exports.renameFile = exports.getSharedWithMe = exports.getExcelFiles = exports.getPhotos = exports.getWord = exports.getAudio = exports.getVideo = exports.getPdf = exports.getTrashed = exports.getShared = exports.getCustomDocuments = exports.getDocuments = exports.deleteFile = exports.getFiles = exports.copyFile = exports.previewFile = exports.restoreFile = exports.deletePermanently = exports.downloadFolders = exports.downloadFolder = exports.createDocument = exports.downloadFile = exports.downloadFiles = exports.versionsFile = exports.versionRestoreFile = exports.uploadFile = exports.uploadFiles = exports.uploadFolder = exports.checkPassword = exports.moveFile = exports.moveFileItem = exports.fileUpload = exports.handleFileUpload = void 0;
 exports.getUserInfo = getUserInfo;
 const fileService = __importStar(require("./../services/fileService"));
 const folderService = __importStar(require("../services/folderService"));
@@ -192,6 +192,69 @@ const fileUpload = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.fileUpload = fileUpload;
+const moveFileItem = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userId } = req.user;
+        const { fileId } = req.params;
+        const { newFolderId } = req.body;
+        // Fetch the file and ensure it belongs to the user
+        const file = yield database_1.default.file.findFirst({
+            where: { id: fileId, userId: userId },
+        });
+        if (!file) {
+            return res.status(404).json({
+                error: "File not found or you do not have permission to move this file.",
+            });
+        }
+        // Fetch the new folder and ensure it belongs to the user
+        const newFolder = yield database_1.default.folder.findFirst({
+            where: { id: newFolderId, userId: userId },
+        });
+        if (!newFolder) {
+            return res.status(404).json({
+                error: "Destination folder not found or you do not have permission to access it.",
+            });
+        }
+        // Construct the new file path
+        const oldPath = file.filePath;
+        const newPath = path_1.default.join(newFolder.folderPath, path_1.default.basename(oldPath));
+        // Move the file on the file system
+        yield fs_extra_1.default.move(oldPath, newPath);
+        // Construct the new fileUrl
+        const user = yield database_1.default.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const newFileUrl = `${process.env.PUBLIC_APP_URL}/cefmdrive/storage/${encodeURIComponent(user.email)}/${encodeURIComponent(path_1.default.relative(newFolder.folderPath, newPath))}`;
+        // Update the file record in the database
+        const updatedFile = yield database_1.default.file.update({
+            where: { id: fileId },
+            data: {
+                filePath: newPath,
+                folderId: newFolderId,
+                fileUrl: newFileUrl,
+            },
+        });
+        // Log file activity
+        yield database_1.default.fileActivity.create({
+            data: {
+                userId,
+                fileId: updatedFile.id,
+                activityType: "File",
+                action: "MOVE FILE",
+                filePath: updatedFile.filePath,
+                fileSize: updatedFile.size,
+                fileType: updatedFile.fileType,
+            },
+        });
+        res.json({ message: "File moved successfully", file: updatedFile });
+    }
+    catch (error) {
+        console.error("Error moving file:", error);
+        next(error);
+    }
+});
+exports.moveFileItem = moveFileItem;
 const moveFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { newParentId } = req.body;
     try {
@@ -770,6 +833,10 @@ const deletePermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, 
             }
             // Define file path
             const filePath = path_1.default.join(file.filePath);
+            // Delete all related FileVersion records
+            yield database_1.default.fileVersion.deleteMany({
+                where: { fileId: fileId },
+            });
             // Delete file from the file system
             yield fs_extra_1.default.unlink(filePath);
             // Delete file from database
@@ -777,49 +844,57 @@ const deletePermanently = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                 where: { id: fileId },
             });
             return res
-                .status(404)
+                .status(200)
                 .json({ success: `File with ID ${fileId} deleted permanently.` });
         }
     }
     catch (error) {
-        logger_1.default.error("An error occurred while downloading the folder", { error });
+        logger_1.default.error("An error occurred while deleting the file", { error });
         next(error);
     }
 });
 exports.deletePermanently = deletePermanently;
 const restoreFile = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { fileType, fileId } = req.params;
+    const { fileId } = req.params;
+    const { userId } = req.user;
     try {
-        if (fileType === "Folder") {
-            const folder = yield database_1.default.folder.findUnique({
-                where: { id: fileId },
-            });
-            if (!folder) {
-                return { error: `folder with ID ${fileId} not found.` };
-            }
-            const updatedFolder = yield database_1.default.folder.update({
-                where: { id: fileId },
-                data: { trashed: false },
-            });
-            return { success: `Folder with ID ${fileId} restored`, updatedFolder };
+        const file = yield database_1.default.file.findUnique({
+            where: { id: fileId, userId: userId },
+        });
+        if (!file) {
+            return res
+                .status(404)
+                .json({ error: `File with ID ${fileId} not found.` });
         }
-        if (fileType === "File") {
-            const file = yield database_1.default.file.findUnique({
-                where: { id: fileId },
-            });
-            if (!file) {
-                return { error: `File with ID ${fileId} not found.` };
-            }
-            const updatedFile = yield database_1.default.file.update({
-                where: { id: fileId },
-                data: { trashed: false },
-            });
-            return { success: `File with ID ${fileId} restored`, updatedFile };
+        if (!file.trashed) {
+            return res
+                .status(400)
+                .json({ error: `File with ID ${fileId} is not in trash.` });
         }
+        const updatedFile = yield database_1.default.file.update({
+            where: { id: fileId },
+            data: { trashed: false },
+        });
+        // Log file activity
+        yield database_1.default.fileActivity.create({
+            data: {
+                userId,
+                fileId: updatedFile.id,
+                activityType: "File",
+                action: "RESTORE FILE",
+                filePath: updatedFile.filePath,
+                fileSize: updatedFile.size,
+                fileType: updatedFile.fileType,
+            },
+        });
+        return res.status(200).json({
+            success: `File with ID ${fileId} restored`,
+            file: updatedFile,
+        });
     }
     catch (error) {
-        console.error(`Error restoring file with ID ${fileId} :`, error);
-        throw new Error(`Failed to restore file with ID ${fileId} .`);
+        console.error(`Error restoring file with ID ${fileId}:`, error);
+        return next(new Error(`Failed to restore file with ID ${fileId}.`));
     }
 });
 exports.restoreFile = restoreFile;
@@ -1231,11 +1306,17 @@ exports.getPdf = getPdf;
 const getVideo = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     try {
-        const items = yield fileService.getVideoFiles(userId);
-        if (!items) {
+        const files = yield database_1.default.file.findMany({
+            where: {
+                fileType: "Video File",
+                userId,
+                trashed: false,
+            },
+        });
+        if (!files) {
             return res.status(404).json({ message: "Video not found" });
         }
-        res.json(items);
+        res.json(files);
     }
     catch (error) {
         next(error);
@@ -1443,14 +1524,10 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 if (!folder) {
                     return res.status(400).json({ message: "Folder record not found." });
                 }
-                // console.log('++++++++++++Folder+++++++++++++++++++++');
-                // console.log(folder);
-                // console.log('++++++++++++Folder+++++++++++++++++++++');
                 // Prepare data to be returned
                 const data = {
                     name: folder.name,
                     size: folder.size,
-                    // mimeType: folder.mimeType,
                     itemId: folder.id,
                     isPasswordEnabled: sharedItem.isPasswordEnabled,
                     shareableType: "Folder",
@@ -1458,12 +1535,11 @@ const sharedFile = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 return res.status(200).json(data);
             }
         }
-        // If shareableType is not recognized
         return res.status(400).json({ message: "Invalid shareable type" });
     }
     catch (error) {
         console.error("Error fetching shared file/folder:", error);
-        return next(error); // Pass the error to the error handling middleware
+        return next(error);
     }
 });
 exports.sharedFile = sharedFile;

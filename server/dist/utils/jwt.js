@@ -23,7 +23,7 @@ const resetTokenSchema = zod_1.z.object({
 });
 const ACCESS_TOKEN_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_SECRET;
-const ACCESS_TOKEN_EXPIRY = "30m";
+const ACCESS_TOKEN_EXPIRY = "7d";
 const REFRESH_TOKEN_EXPIRY = "7d";
 const RESET_TOKEN_EXPIRY = "7d";
 const generateAccessToken = (userId) => __awaiter(void 0, void 0, void 0, function* () {

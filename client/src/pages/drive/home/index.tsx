@@ -28,6 +28,9 @@ export default function HomePage() {
 
       const rootFolders: DriveItemsResponse = await getRootChildren()
       if (rootFolders) {
+        // console.log(' ================================= ')
+        // console.log('rootFolders', rootFolders)
+        // console.log(' ================================= ')
         const fetchedFiles = (rootFolders.files || []).map((file) => ({
           id: file.id,
           name: file.name,
@@ -44,7 +47,7 @@ export default function HomePage() {
           name: folder.name,
           createdAt: new Date(folder.createdAt),
           updatedAt: new Date(folder.updatedAt),
-          size: folder.size,
+          size: folder.totalSize,
           owner: folder.userId,
           type: 'folder' as const,
           mimeType: 'folder',

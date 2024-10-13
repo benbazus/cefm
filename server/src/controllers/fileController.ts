@@ -198,6 +198,94 @@ export const fileUpload = async (
   }
 };
 
+export const moveFileItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = req.user as { userId: string };
+    const { fileId } = req.params;
+    const { newFolderId } = req.body;
+
+    // Fetch the file and ensure it belongs to the user
+    const file = await prisma.file.findFirst({
+      where: { id: fileId, userId: userId },
+    });
+
+    if (!file) {
+      return res.status(404).json({
+        error:
+          "File not found or you do not have permission to move this file.",
+      });
+    }
+
+    // Fetch the new folder and ensure it belongs to the user
+    const newFolder = await prisma.folder.findFirst({
+      where: { id: newFolderId, userId: userId },
+    });
+
+    if (!newFolder) {
+      return res.status(404).json({
+        error:
+          "Destination folder not found or you do not have permission to access it.",
+      });
+    }
+
+    // Construct the new file path
+    const oldPath = file.filePath as string;
+    const newPath = path.join(
+      newFolder.folderPath as string,
+      path.basename(oldPath)
+    );
+
+    // Move the file on the file system
+    await fs.move(oldPath, newPath);
+
+    // Construct the new fileUrl
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const newFileUrl = `${
+      process.env.PUBLIC_APP_URL
+    }/cefmdrive/storage/${encodeURIComponent(
+      user.email as string
+    )}/${encodeURIComponent(
+      path.relative(newFolder.folderPath as string, newPath)
+    )}`;
+
+    // Update the file record in the database
+    const updatedFile = await prisma.file.update({
+      where: { id: fileId },
+      data: {
+        filePath: newPath,
+        folderId: newFolderId,
+        fileUrl: newFileUrl,
+      },
+    });
+
+    // Log file activity
+    await prisma.fileActivity.create({
+      data: {
+        userId,
+        fileId: updatedFile.id,
+        activityType: "File",
+        action: "MOVE FILE",
+        filePath: updatedFile.filePath,
+        fileSize: updatedFile.size,
+        fileType: updatedFile.fileType,
+      },
+    });
+
+    res.json({ message: "File moved successfully", file: updatedFile });
+  } catch (error) {
+    console.error("Error moving file:", error);
+    next(error);
+  }
+};
+
 export const moveFile = async (
   req: Request,
   res: Response,
@@ -943,6 +1031,11 @@ export const deletePermanently = async (
       // Define file path
       const filePath = path.join(file.filePath as string);
 
+      // Delete all related FileVersion records
+      await prisma.fileVersion.deleteMany({
+        where: { fileId: fileId },
+      });
+
       // Delete file from the file system
       await fs.unlink(filePath);
 
@@ -952,11 +1045,11 @@ export const deletePermanently = async (
       });
 
       return res
-        .status(404)
+        .status(200)
         .json({ success: `File with ID ${fileId} deleted permanently.` });
     }
   } catch (error) {
-    logger.error("An error occurred while downloading the folder", { error });
+    logger.error("An error occurred while deleting the file", { error });
     next(error);
   }
 };
@@ -966,45 +1059,51 @@ export const restoreFile = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { fileType, fileId } = req.params;
+  const { fileId } = req.params;
+  const { userId } = req.user as { userId: string };
 
   try {
-    if (fileType === "Folder") {
-      const folder = await prisma.folder.findUnique({
-        where: { id: fileId },
-      });
+    const file = await prisma.file.findUnique({
+      where: { id: fileId, userId: userId },
+    });
 
-      if (!folder) {
-        return { error: `folder with ID ${fileId} not found.` };
-      }
-
-      const updatedFolder = await prisma.folder.update({
-        where: { id: fileId },
-        data: { trashed: false },
-      });
-
-      return { success: `Folder with ID ${fileId} restored`, updatedFolder };
+    if (!file) {
+      return res
+        .status(404)
+        .json({ error: `File with ID ${fileId} not found.` });
     }
 
-    if (fileType === "File") {
-      const file = await prisma.file.findUnique({
-        where: { id: fileId },
-      });
-
-      if (!file) {
-        return { error: `File with ID ${fileId} not found.` };
-      }
-
-      const updatedFile = await prisma.file.update({
-        where: { id: fileId },
-        data: { trashed: false },
-      });
-
-      return { success: `File with ID ${fileId} restored`, updatedFile };
+    if (!file.trashed) {
+      return res
+        .status(400)
+        .json({ error: `File with ID ${fileId} is not in trash.` });
     }
+
+    const updatedFile = await prisma.file.update({
+      where: { id: fileId },
+      data: { trashed: false },
+    });
+
+    // Log file activity
+    await prisma.fileActivity.create({
+      data: {
+        userId,
+        fileId: updatedFile.id,
+        activityType: "File",
+        action: "RESTORE FILE",
+        filePath: updatedFile.filePath as string,
+        fileSize: updatedFile.size,
+        fileType: updatedFile.fileType,
+      },
+    });
+
+    return res.status(200).json({
+      success: `File with ID ${fileId} restored`,
+      file: updatedFile,
+    });
   } catch (error) {
-    console.error(`Error restoring file with ID ${fileId} :`, error);
-    throw new Error(`Failed to restore file with ID ${fileId} .`);
+    console.error(`Error restoring file with ID ${fileId}:`, error);
+    return next(new Error(`Failed to restore file with ID ${fileId}.`));
   }
 };
 
@@ -1566,11 +1665,18 @@ export const getVideo = async (
 ) => {
   const { userId } = req.user as { userId: string };
   try {
-    const items = await fileService.getVideoFiles(userId);
-    if (!items) {
+    const files = await prisma.file.findMany({
+      where: {
+        fileType: "Video File",
+        userId,
+        trashed: false,
+      },
+    });
+
+    if (!files) {
       return res.status(404).json({ message: "Video not found" });
     }
-    res.json(items);
+    res.json(files);
   } catch (error) {
     next(error);
   }
@@ -1842,15 +1948,10 @@ export const sharedFile = async (
           return res.status(400).json({ message: "Folder record not found." });
         }
 
-        // console.log('++++++++++++Folder+++++++++++++++++++++');
-        // console.log(folder);
-        // console.log('++++++++++++Folder+++++++++++++++++++++');
-
         // Prepare data to be returned
         const data = {
           name: folder.name,
           size: folder.size,
-          // mimeType: folder.mimeType,
           itemId: folder.id,
           isPasswordEnabled: sharedItem.isPasswordEnabled,
           shareableType: "Folder",
@@ -1859,11 +1960,10 @@ export const sharedFile = async (
       }
     }
 
-    // If shareableType is not recognized
     return res.status(400).json({ message: "Invalid shareable type" });
   } catch (error) {
     console.error("Error fetching shared file/folder:", error);
-    return next(error); // Pass the error to the error handling middleware
+    return next(error);
   }
 };
 

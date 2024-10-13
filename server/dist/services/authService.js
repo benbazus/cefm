@@ -262,9 +262,6 @@ const createUser = (name, email, password) => __awaiter(void 0, void 0, void 0, 
 });
 exports.createUser = createUser;
 const getUserProfile = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(" ++++ getUserProfile +++++++  ");
-    console.log(userId);
-    console.log(" ++++ getUserProfile +++++++  ");
     const user = yield database_1.default.user.findUnique({
         where: { id: userId },
         select: {

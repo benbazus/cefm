@@ -6667,3 +6667,773 @@ src/controllers/fileController.ts(246,19): error TS2552: Cannot find name 'copie
     at Module.load (node:internal/modules/cjs/loader:1206:32)
     at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
     at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T15:11:30.268Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(224,26): error TS2304: Cannot find name 'result'.
+src/controllers/folderController.ts(226,5): error TS2304: Cannot find name 'next'.
+src/controllers/folderController.ts(225,5): error TS1005: ',' expected.
+src/controllers/folderController.ts(228,1): error TS1128: Declaration or statement expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(224,26): error TS2304: Cannot find name 'result'.
+src/controllers/folderController.ts(226,5): error TS2304: Cannot find name 'next'.
+src/controllers/folderController.ts(225,5): error TS1005: ',' expected.
+src/controllers/folderController.ts(228,1): error TS1128: Declaration or statement expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T15:13:37.140Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(182,45): error TS1005: ':' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(182,45): error TS1005: ':' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T15:14:06.015Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(199,26): error TS18047: 'rootFolder' is possibly 'null'.
+src/controllers/folderController.ts(203,26): error TS18047: 'rootFolder' is possibly 'null'.
+src/controllers/folderController.ts(195,75): error TS1005: ':' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(199,26): error TS18047: 'rootFolder' is possibly 'null'.
+src/controllers/folderController.ts(203,26): error TS18047: 'rootFolder' is possibly 'null'.
+src/controllers/folderController.ts(195,75): error TS1005: ':' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T15:14:45.201Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(195,75): error TS1005: ':' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(195,75): error TS1005: ':' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T15:14:53.458Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(195,75): error TS1005: ':' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(195,75): error TS1005: ':' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:25:05.842Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/fileController.ts(1569,37): error TS2339: Property 'getVideoFiles' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/services/fileService")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/fileController.ts(1569,37): error TS2339: Property 'getVideoFiles' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/services/fileService")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:41:29.120Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/services/folderService.ts(54,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/services/folderService.ts(54,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:43:34.481Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(153,16): error TS2554: Expected 2-3 arguments, but got 1.
+src/controllers/folderController.ts(157,39): error TS2353: Object literal may only specify known properties, and 'recursive' does not exist in type 'NoParamCallback'.
+src/controllers/folderController.ts(159,16): error TS2554: Expected 3 arguments, but got 2.
+src/controllers/folderController.ts(181,9): error TS18004: No value exists in scope for the shorthand property 'ipAddress'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(182,9): error TS18004: No value exists in scope for the shorthand property 'userAgent'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(183,9): error TS18004: No value exists in scope for the shorthand property 'device'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(184,9): error TS18004: No value exists in scope for the shorthand property 'operatingSystem'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(185,9): error TS18004: No value exists in scope for the shorthand property 'browser'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(153,16): error TS2554: Expected 2-3 arguments, but got 1.
+src/controllers/folderController.ts(157,39): error TS2353: Object literal may only specify known properties, and 'recursive' does not exist in type 'NoParamCallback'.
+src/controllers/folderController.ts(159,16): error TS2554: Expected 3 arguments, but got 2.
+src/controllers/folderController.ts(181,9): error TS18004: No value exists in scope for the shorthand property 'ipAddress'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(182,9): error TS18004: No value exists in scope for the shorthand property 'userAgent'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(183,9): error TS18004: No value exists in scope for the shorthand property 'device'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(184,9): error TS18004: No value exists in scope for the shorthand property 'operatingSystem'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(185,9): error TS18004: No value exists in scope for the shorthand property 'browser'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:44:23.070Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(153,16): error TS2554: Expected 2-3 arguments, but got 1.
+src/controllers/folderController.ts(157,39): error TS2353: Object literal may only specify known properties, and 'recursive' does not exist in type 'NoParamCallback'.
+src/controllers/folderController.ts(159,16): error TS2554: Expected 3 arguments, but got 2.
+src/controllers/folderController.ts(181,9): error TS18004: No value exists in scope for the shorthand property 'ipAddress'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(182,9): error TS18004: No value exists in scope for the shorthand property 'userAgent'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(183,9): error TS18004: No value exists in scope for the shorthand property 'device'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(184,9): error TS18004: No value exists in scope for the shorthand property 'operatingSystem'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(185,9): error TS18004: No value exists in scope for the shorthand property 'browser'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(153,16): error TS2554: Expected 2-3 arguments, but got 1.
+src/controllers/folderController.ts(157,39): error TS2353: Object literal may only specify known properties, and 'recursive' does not exist in type 'NoParamCallback'.
+src/controllers/folderController.ts(159,16): error TS2554: Expected 3 arguments, but got 2.
+src/controllers/folderController.ts(181,9): error TS18004: No value exists in scope for the shorthand property 'ipAddress'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(182,9): error TS18004: No value exists in scope for the shorthand property 'userAgent'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(183,9): error TS18004: No value exists in scope for the shorthand property 'device'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(184,9): error TS18004: No value exists in scope for the shorthand property 'operatingSystem'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(185,9): error TS18004: No value exists in scope for the shorthand property 'browser'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:46:47.779Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(226,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(245,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(226,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(245,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:47:08.712Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(221,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(240,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(80,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(221,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(240,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(121,75): error TS1005: ')' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:47:44.888Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(78,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(219,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(238,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(119,75): error TS1005: ')' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(78,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(219,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(238,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(119,75): error TS1005: ')' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:48:20.206Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(78,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(218,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(237,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(78,24): error TS2304: Cannot find name 'getBaseFolderPath'.
+src/controllers/folderController.ts(218,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(237,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:49:00.597Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:49:30.917Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,23): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,30): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:51:15.222Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:54:16.085Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T18:54:41.973Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T19:01:27.678Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(204,29): error TS2339: Property 'createWriteStream' does not exist on type 'typeof import("node:fs/promises")'.
+src/controllers/folderController.ts(223,36): error TS2339: Property 'createReadStream' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-11T19:26:15.686Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T06:39:52.630Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(1,10): error TS2300: Duplicate identifier 'Request'.
+src/controllers/folderController.ts(1,19): error TS2300: Duplicate identifier 'Response'.
+src/controllers/folderController.ts(1,29): error TS2300: Duplicate identifier 'NextFunction'.
+src/controllers/folderController.ts(4,8): error TS2300: Duplicate identifier 'path'.
+src/controllers/folderController.ts(6,8): error TS2300: Duplicate identifier 'prisma'.
+src/controllers/folderController.ts(8,59): error TS2300: Duplicate identifier 'fs'.
+src/controllers/folderController.ts(10,10): error TS2300: Duplicate identifier 'chmod'.
+src/controllers/folderController.ts(39,10): error TS2300: Duplicate identifier 'Request'.
+src/controllers/folderController.ts(39,19): error TS2300: Duplicate identifier 'Response'.
+src/controllers/folderController.ts(39,29): error TS2300: Duplicate identifier 'NextFunction'.
+src/controllers/folderController.ts(40,10): error TS2300: Duplicate identifier 'prisma'.
+src/controllers/folderController.ts(40,24): error TS2307: Cannot find module '../prisma' or its corresponding type declarations.
+src/controllers/folderController.ts(41,8): error TS2300: Duplicate identifier 'fs'.
+src/controllers/folderController.ts(42,8): error TS2300: Duplicate identifier 'path'.
+src/controllers/folderController.ts(43,10): error TS2300: Duplicate identifier 'chmod'.
+src/controllers/folderController.ts(98,11): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(101,20): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(105,63): error TS18046: 'fsError' is of type 'unknown'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(1,10): error TS2300: Duplicate identifier 'Request'.
+src/controllers/folderController.ts(1,19): error TS2300: Duplicate identifier 'Response'.
+src/controllers/folderController.ts(1,29): error TS2300: Duplicate identifier 'NextFunction'.
+src/controllers/folderController.ts(4,8): error TS2300: Duplicate identifier 'path'.
+src/controllers/folderController.ts(6,8): error TS2300: Duplicate identifier 'prisma'.
+src/controllers/folderController.ts(8,59): error TS2300: Duplicate identifier 'fs'.
+src/controllers/folderController.ts(10,10): error TS2300: Duplicate identifier 'chmod'.
+src/controllers/folderController.ts(39,10): error TS2300: Duplicate identifier 'Request'.
+src/controllers/folderController.ts(39,19): error TS2300: Duplicate identifier 'Response'.
+src/controllers/folderController.ts(39,29): error TS2300: Duplicate identifier 'NextFunction'.
+src/controllers/folderController.ts(40,10): error TS2300: Duplicate identifier 'prisma'.
+src/controllers/folderController.ts(40,24): error TS2307: Cannot find module '../prisma' or its corresponding type declarations.
+src/controllers/folderController.ts(41,8): error TS2300: Duplicate identifier 'fs'.
+src/controllers/folderController.ts(42,8): error TS2300: Duplicate identifier 'path'.
+src/controllers/folderController.ts(43,10): error TS2300: Duplicate identifier 'chmod'.
+src/controllers/folderController.ts(98,11): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(101,20): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(105,63): error TS18046: 'fsError' is of type 'unknown'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T06:40:04.982Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(92,11): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(95,20): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(99,63): error TS18046: 'fsError' is of type 'unknown'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(92,11): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(95,20): error TS18046: 'fsError' is of type 'unknown'.
+src/controllers/folderController.ts(99,63): error TS18046: 'fsError' is of type 'unknown'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T06:53:41.359Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,1): error TS1161: Unterminated regular expression literal.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,1): error TS1161: Unterminated regular expression literal.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T07:02:06.111Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(690,14): error TS2339: Property 'promises' does not exist on type 'typeof import("node:fs/promises")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(690,14): error TS2339: Property 'promises' does not exist on type 'typeof import("node:fs/promises")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T07:20:31.314Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(763,9): error TS2353: Object literal may only specify known properties, and 'date' does not exist in type 'StorageHistoryWhereInput'.
+src/controllers/folderController.ts(791,11): error TS2353: Object literal may only specify known properties, and 'date' does not exist in type 'Without<StorageHistoryCreateInput, StorageHistoryUncheckedCreateInput> & StorageHistoryUncheckedCreateInput'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(763,9): error TS2353: Object literal may only specify known properties, and 'date' does not exist in type 'StorageHistoryWhereInput'.
+src/controllers/folderController.ts(791,11): error TS2353: Object literal may only specify known properties, and 'date' does not exist in type 'Without<StorageHistoryCreateInput, StorageHistoryUncheckedCreateInput> & StorageHistoryUncheckedCreateInput'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T07:41:36.956Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(52,62): error TS18004: No value exists in scope for the shorthand property 'id'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(55,14): error TS2304: Cannot find name 'res'.
+src/controllers/folderController.ts(60,18): error TS18004: No value exists in scope for the shorthand property 'id'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(67,46): error TS2304: Cannot find name 'userId'.
+src/controllers/folderController.ts(49,1): error TS1128: Declaration or statement expected.
+src/controllers/folderController.ts(49,2): error TS1128: Declaration or statement expected.
+src/controllers/folderController.ts(49,18): error TS1005: ';' expected.
+src/controllers/folderController.ts(54,22): error TS1109: Expression expected.
+src/controllers/folderController.ts(55,53): error TS1005: ')' expected.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(52,62): error TS18004: No value exists in scope for the shorthand property 'id'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(55,14): error TS2304: Cannot find name 'res'.
+src/controllers/folderController.ts(60,18): error TS18004: No value exists in scope for the shorthand property 'id'. Either declare one or provide an initializer.
+src/controllers/folderController.ts(67,46): error TS2304: Cannot find name 'userId'.
+src/controllers/folderController.ts(49,1): error TS1128: Declaration or statement expected.
+src/controllers/folderController.ts(49,2): error TS1128: Declaration or statement expected.
+src/controllers/folderController.ts(49,18): error TS1005: ';' expected.
+src/controllers/folderController.ts(54,22): error TS1109: Expression expected.
+src/controllers/folderController.ts(55,53): error TS1005: ')' expected.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T08:09:25.567Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(149,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(150,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(151,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(152,9): error TS2322: Type '{ increment: number; }' is not assignable to type 'number'.
+src/controllers/folderController.ts(808,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(809,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(810,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(811,9): error TS2322: Type '{ increment: number; }' is not assignable to type 'number'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(149,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(150,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(151,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(152,9): error TS2322: Type '{ increment: number; }' is not assignable to type 'number'.
+src/controllers/folderController.ts(808,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(809,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(810,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/controllers/folderController.ts(811,9): error TS2322: Type '{ increment: number; }' is not assignable to type 'number'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T14:02:51.677Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,56): error TS2339: Property 'moveFolderToTrash' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(9,57): error TS2339: Property 'getFolderDetails' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(11,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(13,51): error TS2339: Property 'unlockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(15,49): error TS2339: Property 'lockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(17,55): error TS2339: Property 'copyFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(19,48): error TS2339: Property 'moveFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(21,60): error TS2339: Property 'getFileCount' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(23,55): error TS2551: Property 'getRootFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'. Did you mean 'getFolders'?
+src/routes/folderRoutes.ts(25,57): error TS2339: Property 'getRootChildren' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(30,20): error TS2339: Property 'getChildrenFoldersByParentFolderId' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(33,54): error TS2339: Property 'createNewFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(35,56): error TS2339: Property 'downloadFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,56): error TS2339: Property 'moveFolderToTrash' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(9,57): error TS2339: Property 'getFolderDetails' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(11,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(13,51): error TS2339: Property 'unlockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(15,49): error TS2339: Property 'lockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(17,55): error TS2339: Property 'copyFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(19,48): error TS2339: Property 'moveFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(21,60): error TS2339: Property 'getFileCount' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(23,55): error TS2551: Property 'getRootFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'. Did you mean 'getFolders'?
+src/routes/folderRoutes.ts(25,57): error TS2339: Property 'getRootChildren' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(30,20): error TS2339: Property 'getChildrenFoldersByParentFolderId' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(33,54): error TS2339: Property 'createNewFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(35,56): error TS2339: Property 'downloadFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T14:03:14.458Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,56): error TS2339: Property 'moveFolderToTrash' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(9,57): error TS2339: Property 'getFolderDetails' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(11,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(13,51): error TS2339: Property 'unlockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(15,49): error TS2339: Property 'lockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(17,55): error TS2339: Property 'copyFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(19,48): error TS2339: Property 'moveFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(21,60): error TS2339: Property 'getFileCount' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(23,55): error TS2339: Property 'getRootFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(25,57): error TS2339: Property 'getRootChildren' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(30,20): error TS2339: Property 'getChildrenFoldersByParentFolderId' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(33,54): error TS2339: Property 'createNewFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(35,56): error TS2339: Property 'downloadFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(7,56): error TS2339: Property 'moveFolderToTrash' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(9,57): error TS2339: Property 'getFolderDetails' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(11,57): error TS2339: Property 'renameFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(13,51): error TS2339: Property 'unlockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(15,49): error TS2339: Property 'lockFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(17,55): error TS2339: Property 'copyFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(19,48): error TS2339: Property 'moveFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(21,60): error TS2339: Property 'getFileCount' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(23,55): error TS2339: Property 'getRootFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(25,57): error TS2339: Property 'getRootChildren' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(30,20): error TS2339: Property 'getChildrenFoldersByParentFolderId' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(33,54): error TS2339: Property 'createNewFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+src/routes/folderRoutes.ts(35,56): error TS2339: Property 'downloadFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T14:05:14.639Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(61,7): error TS2322: Type '{ userId: string; }' is not assignable to type 'FolderWhereUniqueInput'.
+  Type '{ userId: string; }' is not assignable to type '{ id: string; } & { id?: string | undefined; AND?: FolderWhereInput | FolderWhereInput[] | undefined; OR?: FolderWhereInput[] | undefined; ... 21 more ...; FileVersion?: FileVersionListRelationFilter | undefined; }'.
+    Property 'id' is missing in type '{ userId: string; }' but required in type '{ id: string; }'.
+src/controllers/folderController.ts(69,40): error TS2345: Argument of type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is not assignable to parameter of type 'any[]'.
+  Type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is missing the following properties from type 'any[]': length, pop, push, concat, and 29 more.
+src/controllers/folderController.ts(77,16): error TS18046: 'error' is of type 'unknown'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(61,7): error TS2322: Type '{ userId: string; }' is not assignable to type 'FolderWhereUniqueInput'.
+  Type '{ userId: string; }' is not assignable to type '{ id: string; } & { id?: string | undefined; AND?: FolderWhereInput | FolderWhereInput[] | undefined; OR?: FolderWhereInput[] | undefined; ... 21 more ...; FileVersion?: FileVersionListRelationFilter | undefined; }'.
+    Property 'id' is missing in type '{ userId: string; }' but required in type '{ id: string; }'.
+src/controllers/folderController.ts(69,40): error TS2345: Argument of type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is not assignable to parameter of type 'any[]'.
+  Type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is missing the following properties from type 'any[]': length, pop, push, concat, and 29 more.
+src/controllers/folderController.ts(77,16): error TS18046: 'error' is of type 'unknown'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T14:06:18.328Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(72,40): error TS2345: Argument of type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is not assignable to parameter of type 'any[]'.
+  Type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is missing the following properties from type 'any[]': length, pop, push, concat, and 29 more.
+src/controllers/folderController.ts(80,16): error TS18046: 'error' is of type 'unknown'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/folderController.ts(72,40): error TS2345: Argument of type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is not assignable to parameter of type 'any[]'.
+  Type '{ id: string; userId: string; createdAt: Date; name: string; updatedAt: Date; folderPath: string | null; parentId: string | null; folderUrl: string | null; size: number | null; ... 4 more ...; versionNumber: number; }' is missing the following properties from type 'any[]': length, pop, push, concat, and 29 more.
+src/controllers/folderController.ts(80,16): error TS18046: 'error' is of type 'unknown'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T14:16:34.231Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(9,65): error TS2339: Property 'restoreFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(9,65): error TS2339: Property 'restoreFolder' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-12T14:28:59.878Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(10,20): error TS2339: Property 'deleteFolderPermanently' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/routes/folderRoutes.ts(10,20): error TS2339: Property 'deleteFolderPermanently' does not exist on type 'typeof import("D:/Projects/React Projects/Christ Embassy/cefm/server/src/controllers/folderController")'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)
+2024-10-13T03:47:23.256Z [file-manager-app-logs] error: uncaughtException: ⨯ Unable to compile TypeScript:
+src/controllers/fileController.ts(253,46): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | number | boolean'.
+  Type 'null' is not assignable to type 'string | number | boolean'.
+
+TSError: ⨯ Unable to compile TypeScript:
+src/controllers/fileController.ts(253,46): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | number | boolean'.
+  Type 'null' is not assignable to type 'string | number | boolean'.
+
+    at createTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1427:10)
+    at Object.require.extensions.<computed> [as .ts] (D:\Projects\React Projects\Christ Embassy\cefm\server\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1206:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1022:12)
+    at Module.require (node:internal/modules/cjs/loader:1231:19)

@@ -35,6 +35,7 @@ interface FileActionMenuProps {
   onRename: (file: FileItem) => void
   onDetails: (file: FileItem) => void
   onMoveToTrash: (file: FileItem) => void
+  onMoveFileItem: (file: FileItem) => void
   onRestoreTrash: (file: FileItem) => void
   onDeletePermanently: (file: FileItem) => void
   onStopSharing: (file: FileItem) => void
@@ -55,6 +56,7 @@ export const FileActionMenu: React.FC<FileActionMenuProps> = ({
   onRename,
   onDetails,
   onMoveToTrash,
+  onMoveFileItem,
   onRestoreTrash,
   onDeletePermanently,
   onStopSharing,
@@ -64,7 +66,7 @@ export const FileActionMenu: React.FC<FileActionMenuProps> = ({
   const isFolder = file.type === 'folder' // Check if the item is a folder
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='h-8 w-8 p-0'>
           <span className='sr-only'>Open menu</span>
@@ -109,10 +111,7 @@ export const FileActionMenu: React.FC<FileActionMenuProps> = ({
               Rename
             </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => onVersionItem(file)}
-              className='hidden'
-            >
+            <DropdownMenuItem onClick={() => onVersionItem(file)}>
               <Info className='mr-2 h-4 w-4 text-gray-600' />
               Stop Sharing
             </DropdownMenuItem>
@@ -188,6 +187,14 @@ export const FileActionMenu: React.FC<FileActionMenuProps> = ({
                   <Edit className='mr-2 h-4 w-4 text-yellow-600' />
                   Rename
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onLockItem(file)}>
+                  <Edit className='mr-2 h-4 w-4 text-yellow-600' />
+                  Lock
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onVersionItem(file)}>
+                  <Info className='mr-2 h-4 w-4 text-gray-600' />
+                  File Version
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onShare(file)}>
                   <Share2 className='mr-2 h-4 w-4 text-blue-600' />
                   Share
@@ -200,9 +207,16 @@ export const FileActionMenu: React.FC<FileActionMenuProps> = ({
                   <Link className='mr-2 h-4 w-4 text-gray-600' />
                   Copy Link
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onMoveItem(file)}>
+                <DropdownMenuItem
+                  onClick={() => onMoveItem(file)}
+                  className='hidden'
+                >
                   <FolderInput className='mr-2 h-4 w-4 text-gray-600' />
                   Move File
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onMoveFileItem(file)}>
+                  <Trash2 className='mr-2 h-4 w-4 text-red-600' />
+                  Move File Item
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onMakeCopy(file)}>
                   <Copy className='mr-2 h-4 w-4 text-gray-600' />

@@ -3,7 +3,7 @@ import { File, Folder, Prisma } from "@prisma/client";
 import * as userService from "../services/userService";
 import path from "path";
 import { promises as fs } from "fs";
-import { generateUniqueId } from "../utils/helpers";
+import { generateUniqueId, getBaseFolderPath } from "../utils/helpers";
 import bcrypt from "bcrypt";
 
 interface FolderDetails {
@@ -26,11 +26,11 @@ interface CreateFolderResult {
 }
 
 // Helper function to determine the base folder path
-const getBaseFolderPath = (email: string): string => {
-  return process.env.NODE_ENV === "production"
-    ? path.join("/var/www/cefmdrive/storage", email)
-    : path.join(process.cwd(), "public", "File Manager", email);
-};
+// const getBaseFolderPath = (email: string): string => {
+//   return process.env.NODE_ENV === "production"
+//     ? path.join("/var/www/cefmdrive/storage", email)
+//     : path.join(process.cwd(), "public", "File Manager", email);
+// };
 
 // Create new folder function
 export const createNewFolder = async (
@@ -228,47 +228,47 @@ export const getFoldersAndFilesByFolderId = async (
   }
 };
 
-export const getRootChildren = async (
-  userId: string
-): Promise<{ folders: Folder[]; files: File[]; documents: Document[] }> => {
-  try {
-    const user = await userService.getUserById(userId);
+// export const getRootChildren = async (
+//   userId: string
+// ): Promise<{ folders: Folder[]; files: File[]; documents: Document[] }> => {
+//   try {
+//     const user = await userService.getUserById(userId);
 
-    if (!user) {
-      throw new Error("User not found");
-    }
+//     if (!user) {
+//       throw new Error("User not found");
+//     }
 
-    const rootFolder = await prisma.folder.findFirst({
-      where: {
-        name: user?.email as string,
-        userId,
-        parentId: null,
-        trashed: false,
-      },
-    });
+//     const rootFolder = await prisma.folder.findFirst({
+//       where: {
+//         name: user?.email as string,
+//         userId,
+//         parentId: null,
+//         trashed: false,
+//       },
+//     });
 
-    if (!rootFolder) {
-      throw new Error("Root folder not found for the specified user");
-    }
+//     if (!rootFolder) {
+//       throw new Error("Root folder not found for the specified user");
+//     }
 
-    const folders = await prisma.folder.findMany({
-      where: { parentId: rootFolder.id, userId, trashed: false },
-    });
+//     const folders = await prisma.folder.findMany({
+//       where: { parentId: rootFolder.id, userId, trashed: false },
+//     });
 
-    const files = await prisma.file.findMany({
-      where: { folderId: rootFolder.id, trashed: false },
-    });
+//     const files = await prisma.file.findMany({
+//       where: { folderId: rootFolder.id, trashed: false },
+//     });
 
-    const documents = await prisma.document.findMany({
-      where: { trashed: false },
-    });
+//     const documents = await prisma.document.findMany({
+//       where: { trashed: false },
+//     });
 
-    return { folders, files, documents };
-  } catch (error) {
-    console.error("Error in getRootChildren:", error);
-    throw error;
-  }
-};
+//     return { folders, files, documents };
+//   } catch (error) {
+//     console.error("Error in getRootChildren:", error);
+//     throw error;
+//   }
+// };
 
 export const createFolder = async (
   userId: string,

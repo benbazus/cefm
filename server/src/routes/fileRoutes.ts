@@ -7,6 +7,8 @@ const router = express.Router();
 
 const upload = multer();
 
+router.post("/:fileId/move", auth, fileController.moveFileItem);
+
 router.post("/:id/unlock", auth, fileController.unlockFile);
 router.post("/:id/lock", auth, fileController.lockFile);
 
@@ -102,7 +104,7 @@ router.get(
   fileController.deletePermanently
 );
 
-router.get("/restore-file/:fileType/:fileId", auth, fileController.restoreFile);
+router.get("/restore-file/:fileId", auth, fileController.restoreFile);
 
 router.get("/download-file/:itemId", fileController.downloadFile);
 

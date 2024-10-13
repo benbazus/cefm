@@ -49,46 +49,41 @@ const login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
         }
         const { email, password, code } = req.body;
         const result = yield authService.login(email, password, code);
-        if ('success' in result || 'error' in result || 'twoFactor' in result) {
+        if ("success" in result || "error" in result || "twoFactor" in result) {
             return res.json(result);
         }
         const { accessToken, refreshToken, user } = result;
-        res.cookie('refreshToken', refreshToken, {
+        res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
         res.json({
-            message: 'Login successful',
-            accessToken, refreshToken,
+            message: "Login successful",
+            accessToken,
+            refreshToken,
             user,
         });
-        console.log(" +++++++++ result +++++++++++++  ");
-        console.log(result);
-        console.log(" +++++++ result ++++++++++++++  ");
     }
     catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'An error occurred during login' });
+        console.error("Login error:", error);
+        res.status(500).json({ error: "An error occurred during login" });
     }
 });
 exports.login = login;
 const refreshToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { refreshToken } = req.body;
-        console.log(" +++++++++ refreshToken +++++++++++++  ");
-        console.log(refreshToken);
-        console.log(" +++++++ refreshToken ++++++++++++++  ");
         const accessToken = yield authService.refreshToken(refreshToken);
         if (!accessToken) {
-            return res.status(401).json({ error: 'Invalid refresh token' });
+            return res.status(401).json({ error: "Invalid refresh token" });
         }
         res.json({ accessToken });
     }
     catch (error) {
-        console.error('Refresh token error:', error);
-        res.status(401).json({ error: 'Invalid refresh token' });
+        console.error("Refresh token error:", error);
+        res.status(401).json({ error: "Invalid refresh token" });
     }
 });
 exports.refreshToken = refreshToken;
@@ -96,12 +91,12 @@ const logout = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const { refreshToken } = req.body;
         yield database_1.default.refreshToken.delete({ where: { token: refreshToken } });
-        res.clearCookie('refreshToken');
-        res.json({ message: 'Logout successful' });
+        res.clearCookie("refreshToken");
+        res.json({ message: "Logout successful" });
     }
     catch (error) {
-        console.error('Logout error:', error);
-        res.status(500).json({ error: 'An error occurred during logout' });
+        console.error("Logout error:", error);
+        res.status(500).json({ error: "An error occurred during logout" });
     }
 });
 exports.logout = logout;
@@ -111,8 +106,11 @@ const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield database_1.default.user.findUnique({
             where: { email },
         });
-        if (!user || user.otpToken !== otp || !user.otpExpires || user.otpExpires < new Date()) {
-            return res.status(400).json({ error: 'Invalid or expired OTP' });
+        if (!user ||
+            user.otpToken !== otp ||
+            !user.otpExpires ||
+            user.otpExpires < new Date()) {
+            return res.status(400).json({ error: "Invalid or expired OTP" });
         }
         // Clear OTP and mark email as verified
         yield database_1.default.user.update({
@@ -123,11 +121,11 @@ const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 emailVerified: new Date(),
             },
         });
-        res.json({ message: 'OTP verified successfully' });
+        res.json({ message: "OTP verified successfully" });
     }
     catch (error) {
-        console.error('Error verifying OTP:', error);
-        res.status(500).json({ error: 'An error occurred while verifying OTP' });
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ error: "An error occurred while verifying OTP" });
     }
 });
 exports.verifyOtp = verifyOtp;
@@ -138,14 +136,16 @@ const resendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             where: { email },
         });
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: "User not found" });
         }
         const { otp, otpExpires } = (0, helpers_1.generateOtp)();
         yield database_1.default.user.update({
             where: { id: user.id },
             data: { lastActive: new Date(), otpToken: otp, otpExpires },
         });
-        const existingToken = yield database_1.default.twoFactorToken.findFirst({ where: { email } });
+        const existingToken = yield database_1.default.twoFactorToken.findFirst({
+            where: { email },
+        });
         if (existingToken) {
             yield database_1.default.twoFactorToken.delete({ where: { id: existingToken.id } });
         }
@@ -164,11 +164,11 @@ const resendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //     },
         // });
         // await sendOtpEmail(email, otp);
-        res.json({ message: 'New OTP sent successfully' });
+        res.json({ message: "New OTP sent successfully" });
     }
     catch (error) {
-        console.error('Error resending OTP:', error);
-        res.status(500).json({ error: 'An error occurred while resending OTP' });
+        console.error("Error resending OTP:", error);
+        res.status(500).json({ error: "An error occurred while resending OTP" });
     }
 });
 exports.resendOtp = resendOtp;
@@ -176,7 +176,7 @@ const emailVerification = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     try {
         const { token } = req.params;
         yield authService.newVerification(token);
-        res.json({ success: 'Email confirmed successfully.' });
+        res.json({ success: "Email confirmed successfully." });
     }
     catch (error) {
         next(error);
@@ -187,7 +187,11 @@ const register = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { name, email, password } = req.body;
         yield authService.register(name, email, password);
-        res.status(201).json({ message: 'User registered. Please check your email to confirm your account.' });
+        res
+            .status(201)
+            .json({
+            message: "User registered. Please check your email to confirm your account.",
+        });
     }
     catch (error) {
         next(error);
@@ -211,7 +215,7 @@ const forgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const { email } = req.body;
         const resetToken = yield authService.createPasswordResetToken(email);
         yield (0, email_1.sendPasswordResetEmail)(email, resetToken);
-        res.json({ message: 'Password reset email sent.' });
+        res.json({ message: "Password reset email sent." });
     }
     catch (error) {
         next(error);
@@ -223,7 +227,7 @@ const resetPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         const { token } = req.params;
         const { password } = req.body;
         yield authService.resetPassword(token, password);
-        res.json({ message: 'Password reset successfully.' });
+        res.json({ message: "Password reset successfully." });
     }
     catch (error) {
         next(error);

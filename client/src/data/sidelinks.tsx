@@ -77,7 +77,7 @@ export const sidelinks: SideLink[] = [
     icon: <IconShare size={18} color='cyan' />,
   },
   {
-    title: 'Trash',
+    title: 'Trashed',
     href: '/drive/trash',
     icon: <IconTrash size={18} color='red' />,
   },

@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFolderDetails = exports.getFolderFileCount1 = exports.getFolderFileCount = exports.shareFolder = exports.getFolderById = exports.renameFolder = exports.findOrCreateFolder = exports.createFolder = exports.getRootChildren = exports.getFoldersAndFilesByFolderId = exports.getRootFolder = exports.createNewFolder = void 0;
+exports.getFolderDetails = exports.getFolderFileCount1 = exports.getFolderFileCount = exports.shareFolder = exports.getFolderById = exports.renameFolder = exports.findOrCreateFolder = exports.createFolder = exports.getFoldersAndFilesByFolderId = exports.getRootFolder = exports.createNewFolder = void 0;
 const database_1 = __importDefault(require("../config/database"));
 const userService = __importStar(require("../services/userService"));
 const path_1 = __importDefault(require("path"));
@@ -43,11 +43,11 @@ const fs_1 = require("fs");
 const helpers_1 = require("../utils/helpers");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 // Helper function to determine the base folder path
-const getBaseFolderPath = (email) => {
-    return process.env.NODE_ENV === "production"
-        ? path_1.default.join("/var/www/cefmdrive/storage", email)
-        : path_1.default.join(process.cwd(), "public", "File Manager", email);
-};
+// const getBaseFolderPath = (email: string): string => {
+//   return process.env.NODE_ENV === "production"
+//     ? path.join("/var/www/cefmdrive/storage", email)
+//     : path.join(process.cwd(), "public", "File Manager", email);
+// };
 // Create new folder function
 const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgent, operatingSystem, browser, device) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -56,7 +56,7 @@ const createNewFolder = (userId, folderName, parentFolderId, ipAddress, userAgen
             return { success: false, message: "User not found" };
         }
         const email = user === null || user === void 0 ? void 0 : user.email;
-        const baseFolder = getBaseFolderPath(email);
+        const baseFolder = (0, helpers_1.getBaseFolderPath)(email);
         let newFolderPath;
         let newFolderUrl;
         let location;
@@ -202,40 +202,40 @@ const getFoldersAndFilesByFolderId = (userId, parentId) => __awaiter(void 0, voi
     }
 });
 exports.getFoldersAndFilesByFolderId = getFoldersAndFilesByFolderId;
-const getRootChildren = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const user = yield userService.getUserById(userId);
-        if (!user) {
-            throw new Error("User not found");
-        }
-        const rootFolder = yield database_1.default.folder.findFirst({
-            where: {
-                name: user === null || user === void 0 ? void 0 : user.email,
-                userId,
-                parentId: null,
-                trashed: false,
-            },
-        });
-        if (!rootFolder) {
-            throw new Error("Root folder not found for the specified user");
-        }
-        const folders = yield database_1.default.folder.findMany({
-            where: { parentId: rootFolder.id, userId, trashed: false },
-        });
-        const files = yield database_1.default.file.findMany({
-            where: { folderId: rootFolder.id, trashed: false },
-        });
-        const documents = yield database_1.default.document.findMany({
-            where: { trashed: false },
-        });
-        return { folders, files, documents };
-    }
-    catch (error) {
-        console.error("Error in getRootChildren:", error);
-        throw error;
-    }
-});
-exports.getRootChildren = getRootChildren;
+// export const getRootChildren = async (
+//   userId: string
+// ): Promise<{ folders: Folder[]; files: File[]; documents: Document[] }> => {
+//   try {
+//     const user = await userService.getUserById(userId);
+//     if (!user) {
+//       throw new Error("User not found");
+//     }
+//     const rootFolder = await prisma.folder.findFirst({
+//       where: {
+//         name: user?.email as string,
+//         userId,
+//         parentId: null,
+//         trashed: false,
+//       },
+//     });
+//     if (!rootFolder) {
+//       throw new Error("Root folder not found for the specified user");
+//     }
+//     const folders = await prisma.folder.findMany({
+//       where: { parentId: rootFolder.id, userId, trashed: false },
+//     });
+//     const files = await prisma.file.findMany({
+//       where: { folderId: rootFolder.id, trashed: false },
+//     });
+//     const documents = await prisma.document.findMany({
+//       where: { trashed: false },
+//     });
+//     return { folders, files, documents };
+//   } catch (error) {
+//     console.error("Error in getRootChildren:", error);
+//     throw error;
+//   }
+// };
 const createFolder = (userId, parentId, name) => __awaiter(void 0, void 0, void 0, function* () {
     return database_1.default.folder.create({
         data: {

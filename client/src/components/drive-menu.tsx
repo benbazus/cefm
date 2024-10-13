@@ -21,7 +21,7 @@ const DriveTopMenu: React.FC = () => {
   const currentPage = location.pathname.split('/').pop()
 
   const isExcludedPage = [
-    '/drive/trash',
+    // '/drive/trash',
     '/drive/excel',
     '/drive/photo',
     '/drive/audio',
