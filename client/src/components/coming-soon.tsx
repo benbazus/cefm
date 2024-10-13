@@ -7,7 +7,7 @@ export default function ComingSoon() {
         <IconPlanet size={72} />
         <h1 className='text-4xl font-bold leading-tight'>Coming Soon 👀</h1>
         <p className='text-center text-muted-foreground'>
-          This page has not been created yet. <br />
+          This page has not been created yet. We are working on it. <br />
           Stay tuned though!
         </p>
       </div>

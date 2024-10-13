@@ -10,11 +10,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { authToken, loading } = useAuth()
   const location = useLocation()
 
-  console.log(' +++++++++ ProtectedRoute +++++++++++++  ')
-  console.log(loading)
-  console.log(authToken)
-  console.log(' +++++++ ProtectedRoute ++++++++++++++  ')
-
   if (loading) {
     // You can replace this with a loading spinner or component
     return <div>Loading...</div>
